@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-br from-emerald-900 to-teal-900 text-white py-12">
+    <footer className="bg-linear-to-br from-emerald-900 to-teal-900 text-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-3 gap-12 mb-8">
           <div>
@@ -73,7 +73,7 @@ export default function Footer() {
             <ul className="space-y-3 text-emerald-100">
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-5 h-5 mt-1 flex-shrink-0"
+                  className="w-5 h-5 mt-1 shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -97,7 +97,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-5 h-5 mt-1 flex-shrink-0"
+                  className="w-5 h-5 mt-1 shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -113,7 +113,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <svg
-                  className="w-5 h-5 mt-1 flex-shrink-0"
+                  className="w-5 h-5 mt-1 shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

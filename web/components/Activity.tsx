@@ -2,14 +2,14 @@ export default function Activity() {
   return (
     <section
       id="kegiatan"
-      className="py-20 bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50"
+      className="py-20 bg-linear-to-br from-emerald-50 via-teal-50 to-green-50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Kegiatan & Ekstrakurikuler
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-emerald-600 to-teal-600 mx-auto rounded-full mb-4"></div>
+          <div className="w-24 h-1 bg-linear-to-r from-emerald-600 to-teal-600 mx-auto rounded-full mb-4"></div>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Berbagai kegiatan untuk mengembangkan bakat dan minat siswa
           </p>
@@ -17,7 +17,7 @@ export default function Activity() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg group">
-            <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
+            <div className="aspect-video bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
               <span className="text-6xl">🎨</span>
             </div>
             <div className="p-6">
@@ -35,7 +35,7 @@ export default function Activity() {
           </div>
 
           <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg group">
-            <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
+            <div className="aspect-video bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
               <span className="text-6xl">🎤</span>
             </div>
             <div className="p-6">
@@ -50,7 +50,7 @@ export default function Activity() {
           </div>
 
           <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg group">
-            <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
+            <div className="aspect-video bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
               <span className="text-6xl">🥋</span>
             </div>
             <div className="p-6">
@@ -65,7 +65,7 @@ export default function Activity() {
           </div>
 
           <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg group">
-            <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
+            <div className="aspect-video bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
               <span className="text-6xl">🏀</span>
             </div>
             <div className="p-6">
@@ -80,7 +80,7 @@ export default function Activity() {
           </div>
 
           <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg group">
-            <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
+            <div className="aspect-video bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
               <span className="text-6xl">🤖</span>
             </div>
             <div className="p-6">
@@ -97,7 +97,7 @@ export default function Activity() {
           </div>
 
           <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg group">
-            <div className="aspect-video bg-gradient-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
+            <div className="aspect-video bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center">
               <span className="text-6xl">📖</span>
             </div>
             <div className="p-6">
@@ -112,7 +112,7 @@ export default function Activity() {
           </div>
         </div>
 
-        <div className="mt-16 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-12 text-white">
+        <div className="mt-16 bg-linear-to-r from-emerald-500 to-teal-600 rounded-3xl p-12 text-white">
           <div className="max-w-4xl mx-auto text-center">
             <h3 className="text-3xl font-bold mb-6">Prestasi Kami</h3>
             <div className="grid md:grid-cols-3 gap-8">

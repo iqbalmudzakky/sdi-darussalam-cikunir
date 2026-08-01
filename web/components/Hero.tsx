@@ -1,7 +1,7 @@
 export default function Hero() {
   return (
     <section className="relative pt-20 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50"></div>
+      <div className="absolute inset-0 bg-linear-to-br from-emerald-50 via-teal-50 to-green-50"></div>
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-400 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-400 rounded-full blur-3xl"></div>
@@ -17,7 +17,7 @@ export default function Hero() {
             </div>
             <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
               Membentuk Generasi
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-600 to-teal-600">
                 {" "}
                 Cerdas & Berakhlak Mulia
               </span>
@@ -30,7 +30,7 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row gap-4">
               <a
                 href="#kontak"
-                className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
+                className="px-8 py-4 bg-linear-to-r from-emerald-600 to-teal-600 text-white rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
               >
                 Daftar Sekarang
               </a>
@@ -60,9 +60,9 @@ export default function Hero() {
           </div>
           <div className="relative">
             <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-2">
-              <div className="aspect-[4/3] bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center">
+              <div className="aspect-4/3 bg-linear-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center">
                 <div className="text-center">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-4">
+                  <div className="w-32 h-32 mx-auto bg-linear-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-4">
                     <svg
                       className="w-16 h-16 text-white"
                       fill="none"
@@ -83,7 +83,7 @@ export default function Hero() {
                 </div>
               </div>
             </div>
-            <div className="absolute -bottom-4 -right-4 w-full h-full bg-gradient-to-br from-emerald-200 to-teal-200 rounded-3xl"></div>
+            <div className="absolute -bottom-4 -right-4 w-full h-full bg-linear-to-br from-emerald-200 to-teal-200 rounded-3xl"></div>
           </div>
         </div>
       </div>
