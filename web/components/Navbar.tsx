@@ -4,15 +4,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+            <div className="w-12 h-12 bg-linear-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-xl">SD</span>
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">
-                SDI Darussalam
+                SDI Darussalam Cikunir
               </h1>
               <p className="text-xs text-emerald-600">
-                Cikunir, Bekasi Selatan
+                Kota Bekasi, Jawa Barat
               </p>
             </div>
           </div>
