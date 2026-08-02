@@ -16,10 +16,10 @@ func New(cfg config.Config) *slog.Logger {
 	opts := &slog.HandlerOptions{Level: level}
 
 	var handler slog.Handler
-	if cfg.Env == "production" {
-		handler = slog.NewJSONHandler(os.Stdout, opts)
-	} else {
+	if cfg.Env == "development" {
 		handler = slog.NewTextHandler(os.Stdout, opts)
+	} else {
+		handler = slog.NewJSONHandler(os.Stdout, opts)
 	}
 
 	return slog.New(handler)

@@ -13,6 +13,7 @@ type Config struct {
 	Env                string
 	CORSAllowedOrigins []string
 	RateLimitPerMinute int
+	DatabaseURL        string
 }
 
 func Load() Config {
@@ -43,6 +44,7 @@ func Load() Config {
 		Env:                env,
 		CORSAllowedOrigins: origins,
 		RateLimitPerMinute: rateLimit,
+		DatabaseURL:        os.Getenv("DATABASE_URL"),
 	}
 }
 

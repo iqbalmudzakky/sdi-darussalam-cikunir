@@ -1,5 +1,7 @@
 package activity
 
+import "time"
+
 type Activity struct {
 	ID          string
 	Title       string
@@ -7,4 +9,6 @@ type Activity struct {
 	Emoji       string
 	Badge       string
 	PhotoURL    *string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }

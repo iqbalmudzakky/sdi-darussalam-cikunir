@@ -9,12 +9,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/config"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/handler"
 )
 
-func New(cfg config.Config, log *slog.Logger) http.Handler {
+func New(cfg config.Config, log *slog.Logger, pool *pgxpool.Pool) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
@@ -29,7 +30,7 @@ func New(cfg config.Config, log *slog.Logger) http.Handler {
 		AllowCredentials: true,
 	}))
 
-	r.Get("/health", handler.Health)
+	r.Get("/health", handler.NewHealthHandler(pool).ServeHTTP)
 
 	return r
 }
