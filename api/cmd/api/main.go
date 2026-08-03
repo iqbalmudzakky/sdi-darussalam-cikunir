@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/authn"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/config"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/db"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/logger"
@@ -27,7 +28,13 @@ func main() {
 	}
 	defer pool.Close()
 
-	r := router.New(cfg, log, pool)
+	verifier, err := authn.NewVerifier(ctx, cfg.SupabaseJWKSURL)
+	if err != nil {
+		log.Error("failed to set up JWT verifier", "error", err)
+		os.Exit(1)
+	}
+
+	r := router.New(cfg, log, pool, verifier)
 
 	log.Info("server starting", "port", cfg.Port, "env", cfg.Env)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {

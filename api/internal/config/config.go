@@ -14,6 +14,7 @@ type Config struct {
 	CORSAllowedOrigins []string
 	RateLimitPerMinute int
 	DatabaseURL        string
+	SupabaseJWKSURL    string
 }
 
 func Load() Config {
@@ -45,6 +46,7 @@ func Load() Config {
 		CORSAllowedOrigins: origins,
 		RateLimitPerMinute: rateLimit,
 		DatabaseURL:        os.Getenv("DATABASE_URL"),
+		SupabaseJWKSURL:    os.Getenv("SUPABASE_JWKS_URL"),
 	}
 }
 

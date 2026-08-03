@@ -11,11 +11,12 @@ import (
 	"github.com/go-chi/httprate"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/authn"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/config"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/handler"
 )
 
-func New(cfg config.Config, log *slog.Logger, pool *pgxpool.Pool) http.Handler {
+func New(cfg config.Config, log *slog.Logger, pool *pgxpool.Pool, verifier *authn.Verifier) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Recoverer)
@@ -31,6 +32,11 @@ func New(cfg config.Config, log *slog.Logger, pool *pgxpool.Pool) http.Handler {
 	}))
 
 	r.Get("/health", handler.NewHealthHandler(pool).ServeHTTP)
+
+	r.Group(func(r chi.Router) {
+		r.Use(verifier.Middleware)
+		r.Get("/me", handler.Me)
+	})
 
 	return r
 }
