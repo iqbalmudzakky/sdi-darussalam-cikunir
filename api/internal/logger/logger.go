@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/common"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/config"
 )
 
@@ -22,5 +23,5 @@ func New(cfg config.Config) *slog.Logger {
 		handler = slog.NewJSONHandler(os.Stdout, opts)
 	}
 
-	return slog.New(handler)
+	return slog.New(common.NewContextHandler(handler))
 }

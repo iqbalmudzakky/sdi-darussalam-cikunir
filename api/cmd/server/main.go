@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/activity"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/authn"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/config"
 	"github.com/iqbalmudzakky/sdi-darussalam-cikunir/api/internal/db"
@@ -34,7 +35,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	r := router.New(cfg, log, pool, verifier)
+	activityRepo := activity.NewRepository(pool)
+	activityService := activity.NewService(activityRepo)
+	activityHandler := activity.NewHandler(activityService)
+
+	r := router.New(cfg, log, pool, verifier, activityHandler)
 
 	log.Info("server starting", "port", cfg.Port, "env", cfg.Env)
 	if err := http.ListenAndServe(":"+cfg.Port, r); err != nil {
