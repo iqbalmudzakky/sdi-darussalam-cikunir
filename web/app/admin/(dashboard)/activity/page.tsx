@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActivityEditCard } from "@/components/admin/ActivityEditCard";
 import { useActivityAdminPage } from "@/hooks/useActivityAdminPage";
@@ -38,7 +38,9 @@ export default function AdminActivityPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Memuat data...</p>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        </div>
       ) : loadError ? (
         <p className="text-sm text-red-600">
           Gagal memuat data kegiatan. Coba refresh halaman.
@@ -49,6 +51,7 @@ export default function AdminActivityPage() {
             <div
               key={item.id}
               ref={item.id === newlyAddedId ? newCardRef : undefined}
+              className="h-full"
             >
               <ActivityEditCard
                 item={item}

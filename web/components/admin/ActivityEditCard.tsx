@@ -40,7 +40,7 @@ export function ActivityEditCard({
   } = useActivityEditCard({ item, isNew, onSave, onDelete });
 
   return (
-    <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg">
+    <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg h-full flex flex-col">
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
@@ -72,7 +72,7 @@ export function ActivityEditCard({
         className="hidden"
       />
 
-      <div className="p-6 space-y-4">
+      <div className="p-6 space-y-4 flex-1 flex flex-col">
         {isEditing ? (
           <>
             <div className="space-y-1.5">
@@ -95,6 +95,18 @@ export function ActivityEditCard({
                 value={displayed.description}
                 onChange={(e) => updateDraft({ description: e.target.value })}
                 className="rounded-xl min-h-24"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`emoji-${item.id}`}>
+                Emoji (ikon kalau belum ada foto)
+              </Label>
+              <Input
+                id={`emoji-${item.id}`}
+                value={displayed.emoji}
+                onChange={(e) => updateDraft({ emoji: e.target.value })}
+                placeholder="mis. 🎨"
+                className="rounded-xl"
               />
             </div>
             <div className="space-y-1.5">
@@ -170,7 +182,7 @@ export function ActivityEditCard({
         ) : (
           <>
             <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-            <p className="text-gray-600">{item.description}</p>
+            <p className="text-gray-600 flex-1">{item.description}</p>
             <div className="flex gap-2">
               <Button
                 type="button"
