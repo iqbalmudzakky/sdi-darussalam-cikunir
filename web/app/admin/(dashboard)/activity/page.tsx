@@ -8,6 +8,7 @@ import { useActivityAdminPage } from "@/hooks/useActivityAdminPage";
 export default function AdminActivityPage() {
   const {
     items,
+    isLoading,
     newlyAddedId,
     newCardRef,
     handleAddNew,
@@ -35,21 +36,25 @@ export default function AdminActivityPage() {
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {items.map((item) => (
-          <div
-            key={item.id}
-            ref={item.id === newlyAddedId ? newCardRef : undefined}
-          >
-            <ActivityEditCard
-              item={item}
-              isNew={item.id === newlyAddedId}
-              onSave={handleSave}
-              onDelete={handleDelete}
-            />
-          </div>
-        ))}
-      </div>
+      {isLoading ? (
+        <p className="text-sm text-gray-500">Memuat data...</p>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              ref={item.id === newlyAddedId ? newCardRef : undefined}
+            >
+              <ActivityEditCard
+                item={item}
+                isNew={item.id === newlyAddedId}
+                onSave={handleSave}
+                onDelete={handleDelete}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

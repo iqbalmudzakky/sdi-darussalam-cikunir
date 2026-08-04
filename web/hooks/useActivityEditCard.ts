@@ -4,8 +4,8 @@ import type { ActivityItem } from "@/types/Activity";
 type UseActivityEditCardParams = {
   item: ActivityItem;
   isNew: boolean;
-  onSave: (updated: ActivityItem) => void;
-  onDelete: (id: string) => void;
+  onSave: (updated: ActivityItem) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
 };
 
 export function useActivityEditCard({
@@ -16,6 +16,9 @@ export function useActivityEditCard({
 }: UseActivityEditCardParams) {
   const [isEditing, setIsEditing] = useState(isNew);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [draft, setDraft] = useState<ActivityItem>(item);
   const [titleError, setTitleError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,21 +40,36 @@ export function useActivityEditCard({
     updateDraft({ photo_url: URL.createObjectURL(file) });
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!draft.title.trim()) {
       setTitleError(true);
       return;
     }
-    onSave(draft);
-    setIsEditing(false);
-  }
+    setSaveError(false);
+    setIsSaving(true);
+    const success = await onSave(draft);
+    setIsSaving(false);
 
-  function handleCancel() {
-    if (isNew) {
-      onDelete(item.id);
+    if (!success) {
+      setSaveError(true);
       return;
     }
     setIsEditing(false);
+  }
+
+  async function handleCancel() {
+    if (isNew) {
+      await onDelete(item.id);
+      return;
+    }
+    setIsEditing(false);
+  }
+
+  async function handleConfirmDelete() {
+    setIsDeleting(true);
+    const success = await onDelete(item.id);
+    setIsDeleting(false);
+    if (success) setIsConfirmingDelete(false);
   }
 
   const displayed = isEditing ? draft : item;
@@ -60,6 +78,9 @@ export function useActivityEditCard({
     isEditing,
     isConfirmingDelete,
     setIsConfirmingDelete,
+    isSaving,
+    saveError,
+    isDeleting,
     draft: displayed,
     titleError,
     fileInputRef,
@@ -68,5 +89,6 @@ export function useActivityEditCard({
     handlePhotoChange,
     handleSave,
     handleCancel,
+    handleConfirmDelete,
   };
 }

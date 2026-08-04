@@ -11,8 +11,8 @@ import type { ActivityItem } from "@/types/Activity";
 type ActivityEditCardProps = {
   item: ActivityItem;
   isNew?: boolean;
-  onSave: (updated: ActivityItem) => void;
-  onDelete: (id: string) => void;
+  onSave: (updated: ActivityItem) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
 };
 
 export function ActivityEditCard({
@@ -25,6 +25,9 @@ export function ActivityEditCard({
     isEditing,
     isConfirmingDelete,
     setIsConfirmingDelete,
+    isSaving,
+    saveError,
+    isDeleting,
     draft: displayed,
     titleError,
     fileInputRef,
@@ -33,6 +36,7 @@ export function ActivityEditCard({
     handlePhotoChange,
     handleSave,
     handleCancel,
+    handleConfirmDelete,
   } = useActivityEditCard({ item, isNew, onSave, onDelete });
 
   return (
@@ -104,12 +108,19 @@ export function ActivityEditCard({
               />
             </div>
 
+            {saveError && (
+              <p className="text-xs text-red-600">
+                Gagal menyimpan. Coba lagi.
+              </p>
+            )}
+
             <div className="flex gap-2 pt-1">
               <Button
                 type="button"
                 size="sm"
                 variant="ghost"
                 onClick={handleCancel}
+                disabled={isSaving}
                 className="flex-1"
               >
                 <X className="w-4 h-4" />
@@ -119,10 +130,11 @@ export function ActivityEditCard({
                 type="button"
                 size="sm"
                 onClick={handleSave}
+                disabled={isSaving}
                 className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
               >
                 <Check className="w-4 h-4" />
-                Simpan
+                {isSaving ? "Menyimpan..." : "Simpan"}
               </Button>
             </div>
           </>
@@ -138,6 +150,7 @@ export function ActivityEditCard({
                 size="sm"
                 variant="ghost"
                 onClick={() => setIsConfirmingDelete(false)}
+                disabled={isDeleting}
                 className="flex-1"
               >
                 Batal
@@ -145,11 +158,12 @@ export function ActivityEditCard({
               <Button
                 type="button"
                 size="sm"
-                onClick={() => onDelete(item.id)}
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
                 className="flex-1 bg-red-600 text-white hover:bg-red-700"
               >
                 <Trash2 className="w-4 h-4" />
-                Ya, Hapus
+                {isDeleting ? "Menghapus..." : "Ya, Hapus"}
               </Button>
             </div>
           </>

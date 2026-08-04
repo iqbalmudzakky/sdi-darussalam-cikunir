@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { MOCK_ACTIVITIES } from "@/lib/mock/Activities";
 import type { ActivityItem } from "@/types/Activity";
 
 export function useActivityAdminPage() {
-  const [items, setItems] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
+  const [items, setItems] = useState<ActivityItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
   const newCardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch("/api/activities")
+      .then((res) => res.json())
+      .then((data: ActivityItem[]) => setItems(data))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   useEffect(() => {
     if (newlyAddedId) {
@@ -30,20 +37,56 @@ export function useActivityAdminPage() {
     setNewlyAddedId(id);
   }
 
-  function handleSave(updated: ActivityItem) {
+  async function handleSave(updated: ActivityItem): Promise<boolean> {
+    const isNew = updated.id === newlyAddedId;
+    const payload = {
+      title: updated.title,
+      description: updated.description,
+      emoji: updated.emoji,
+      badge: updated.badge,
+      photo_url: updated.photo_url,
+    };
+
+    const response = isNew
+      ? await fetch("/api/activities", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+      : await fetch(`/api/activities/${updated.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+    if (!response.ok) return false;
+
+    const saved: ActivityItem = await response.json();
+    const previousId = updated.id;
+
     setItems((prev) =>
-      prev.map((item) => (item.id === updated.id ? updated : item)),
+      prev.map((item) => (item.id === previousId ? saved : item)),
     );
-    if (updated.id === newlyAddedId) setNewlyAddedId(null);
+    if (isNew) setNewlyAddedId(null);
+    return true;
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string): Promise<boolean> {
+    if (id !== newlyAddedId) {
+      const response = await fetch(`/api/activities/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) return false;
+    }
+
     setItems((prev) => prev.filter((item) => item.id !== id));
     if (id === newlyAddedId) setNewlyAddedId(null);
+    return true;
   }
 
   return {
     items,
+    isLoading,
     newlyAddedId,
     newCardRef,
     handleAddNew,
