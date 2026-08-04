@@ -11,7 +11,8 @@ export async function GET() {
   try {
     const activities = await listActivities();
     return NextResponse.json(activities);
-  } catch {
+  } catch (error) {
+    console.error("GET /api/activities failed:", error);
     return NextResponse.json(
       { error: "Failed to list activities" },
       { status: 500 }
@@ -33,7 +34,8 @@ export async function POST(request: Request) {
   try {
     const activity = await createActivity(body);
     return NextResponse.json(activity, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error("POST /api/activities failed:", error);
     return NextResponse.json(
       { error: "Failed to create activity" },
       { status: 500 }

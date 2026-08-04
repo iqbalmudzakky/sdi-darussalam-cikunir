@@ -4,13 +4,20 @@ import type { ActivityItem } from "@/types/Activity";
 export function useActivityAdminPage() {
   const [items, setItems] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
   const newCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/activities")
-      .then((res) => res.json())
-      .then((data: ActivityItem[]) => setItems(data))
+      .then(async (res) => {
+        if (!res.ok) {
+          setLoadError(true);
+          return;
+        }
+        setItems(await res.json());
+      })
+      .catch(() => setLoadError(true))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -87,6 +94,7 @@ export function useActivityAdminPage() {
   return {
     items,
     isLoading,
+    loadError,
     newlyAddedId,
     newCardRef,
     handleAddNew,

@@ -9,6 +9,7 @@ export default function AdminActivityPage() {
   const {
     items,
     isLoading,
+    loadError,
     newlyAddedId,
     newCardRef,
     handleAddNew,
@@ -38,6 +39,10 @@ export default function AdminActivityPage() {
 
       {isLoading ? (
         <p className="text-sm text-gray-500">Memuat data...</p>
+      ) : loadError ? (
+        <p className="text-sm text-red-600">
+          Gagal memuat data kegiatan. Coba refresh halaman.
+        </p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item) => (
