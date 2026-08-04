@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { ActivityItem } from "@/types/Activity";
 
 type UseActivityEditCardParams = {
@@ -19,13 +20,17 @@ export function useActivityEditCard({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(false);
   const [draft, setDraft] = useState<ActivityItem>(item);
   const [titleError, setTitleError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingPhotoFileRef = useRef<File | null>(null);
 
   function startEditing() {
     setDraft(item);
     setTitleError(false);
+    pendingPhotoFileRef.current = null;
     setIsEditing(true);
   }
 
@@ -37,6 +42,9 @@ export function useActivityEditCard({
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    setUploadError(false);
+    pendingPhotoFileRef.current = file;
     updateDraft({ photo_url: URL.createObjectURL(file) });
   }
 
@@ -45,19 +53,48 @@ export function useActivityEditCard({
       setTitleError(true);
       return;
     }
+
+    let photoUrl = draft.photo_url;
+    const pendingFile = pendingPhotoFileRef.current;
+
+    if (pendingFile) {
+      setUploadError(false);
+      setIsUploading(true);
+
+      const supabase = createClient();
+      const filePath = `${crypto.randomUUID()}-${pendingFile.name}`;
+      const { error } = await supabase.storage
+        .from("activity-photos")
+        .upload(filePath, pendingFile);
+
+      setIsUploading(false);
+
+      if (error) {
+        setUploadError(true);
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("activity-photos").getPublicUrl(filePath);
+      photoUrl = publicUrl;
+    }
+
     setSaveError(false);
     setIsSaving(true);
-    const success = await onSave(draft);
+    const success = await onSave({ ...draft, photo_url: photoUrl });
     setIsSaving(false);
 
     if (!success) {
       setSaveError(true);
       return;
     }
+    pendingPhotoFileRef.current = null;
     setIsEditing(false);
   }
 
   async function handleCancel() {
+    pendingPhotoFileRef.current = null;
     if (isNew) {
       await onDelete(item.id);
       return;
@@ -81,6 +118,8 @@ export function useActivityEditCard({
     isSaving,
     saveError,
     isDeleting,
+    isUploading,
+    uploadError,
     draft: displayed,
     titleError,
     fileInputRef,

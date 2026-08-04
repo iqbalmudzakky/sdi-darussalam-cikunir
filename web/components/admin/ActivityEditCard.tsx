@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Upload, X, Check, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Upload, X, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,8 @@ export function ActivityEditCard({
     isSaving,
     saveError,
     isDeleting,
+    isUploading,
+    uploadError,
     draft: displayed,
     titleError,
     fileInputRef,
@@ -44,7 +46,7 @@ export function ActivityEditCard({
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        disabled={!isEditing}
+        disabled={!isEditing || isUploading}
         className="relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center overflow-hidden disabled:cursor-default"
       >
         {displayed.photo_url ? (
@@ -57,11 +59,18 @@ export function ActivityEditCard({
           <span className="text-6xl">{displayed.emoji}</span>
         )}
 
-        {isEditing && (
-          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1.5 text-white opacity-0 hover:opacity-100 transition-opacity">
-            <Upload className="w-6 h-6" />
-            <span className="text-sm font-medium">Ganti foto</span>
+        {isUploading ? (
+          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1.5 text-white">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span className="text-sm font-medium">Mengunggah...</span>
           </div>
+        ) : (
+          isEditing && (
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1.5 text-white opacity-0 hover:opacity-100 transition-opacity">
+              <Upload className="w-6 h-6" />
+              <span className="text-sm font-medium">Ganti foto</span>
+            </div>
+          )
         )}
       </button>
       <input
@@ -71,6 +80,11 @@ export function ActivityEditCard({
         onChange={handlePhotoChange}
         className="hidden"
       />
+      {isEditing && uploadError && (
+        <p className="text-xs text-red-600 px-6 pt-2">
+          Gagal unggah foto. Coba lagi.
+        </p>
+      )}
 
       <div className="p-6 space-y-4 flex-1 flex flex-col">
         {isEditing ? (
