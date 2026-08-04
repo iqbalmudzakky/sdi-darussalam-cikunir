@@ -1,28 +1,19 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getMockSession } from "@/lib/auth/MockAuth";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    if (!getMockSession()) {
-      router.replace("/admin/login");
-      return;
-    }
-    setIsChecking(false);
-  }, [router]);
-
-  if (isChecking) {
-    return null;
+  if (!user) {
+    redirect("/admin/login");
   }
 
   return (
