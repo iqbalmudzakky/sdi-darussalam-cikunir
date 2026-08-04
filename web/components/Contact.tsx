@@ -6,7 +6,7 @@ export default function Contact() {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Hubungi Kami
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-emerald-600 to-teal-600 mx-auto rounded-full mb-4"></div>
+          <div className="w-24 h-1 bg-linear-to-r from-emerald-600 to-teal-600 mx-auto rounded-full mb-4"></div>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Tertarik mendaftarkan putra-putri Anda? Hubungi kami untuk informasi
             lebih lanjut
@@ -16,7 +16,7 @@ export default function Contact() {
         <div className="grid lg:grid-cols-2 gap-12">
           <div className="space-y-8">
             <div className="flex gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-7 h-7 text-white"
                   fill="none"
@@ -52,7 +52,7 @@ export default function Contact() {
             </div>
 
             <div className="flex gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-7 h-7 text-white"
                   fill="none"
@@ -78,7 +78,7 @@ export default function Contact() {
             </div>
 
             <div className="flex gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-7 h-7 text-white"
                   fill="none"
@@ -104,7 +104,7 @@ export default function Contact() {
             </div>
 
             <div className="flex gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shrink-0">
                 <svg
                   className="w-7 h-7 text-white"
                   fill="none"
@@ -187,7 +187,7 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-8">
+          <div className="bg-linear-to-br from-emerald-50 to-teal-50 rounded-3xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               Formulir Pendaftaran Online
             </h3>
@@ -244,7 +244,7 @@ export default function Contact() {
               </div>
               <button
                 type="submit"
-                className="w-full px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
+                className="w-full px-8 py-4 bg-linear-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
               >
                 Kirim Pendaftaran
               </button>

@@ -6,7 +6,7 @@ export default function About() {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Tentang Kami
           </h2>
-          <div className="w-24 h-1 bg-gradient-to-r from-emerald-600 to-teal-600 mx-auto rounded-full"></div>
+          <div className="w-24 h-1 bg-linear-to-r from-emerald-600 to-teal-600 mx-auto rounded-full"></div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -26,7 +26,7 @@ export default function About() {
               dan karakter yang mulia.
             </p>
             <div className="grid grid-cols-2 gap-6 pt-6">
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl">
+              <div className="bg-linear-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl">
                 <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
                   <span className="text-2xl">🎯</span>
                 </div>
@@ -35,7 +35,7 @@ export default function About() {
                   Terakreditasi dengan nilai sangat baik
                 </p>
               </div>
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl">
+              <div className="bg-linear-to-br from-emerald-50 to-teal-50 p-6 rounded-2xl">
                 <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
                   <span className="text-2xl">🏆</span>
                 </div>
@@ -48,7 +48,7 @@ export default function About() {
           </div>
 
           <div className="space-y-8">
-            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 text-white">
+            <div className="bg-linear-to-br from-emerald-500 to-teal-600 rounded-3xl p-8 text-white">
               <h3 className="text-2xl font-bold mb-6">Visi Kami</h3>
               <p className="text-emerald-50 leading-relaxed">
                 Menjadi lembaga pendidikan Islam unggulan yang menghasilkan
@@ -63,7 +63,7 @@ export default function About() {
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center shrink-0 mt-1">
                     <svg
                       className="w-4 h-4 text-emerald-600"
                       fill="currentColor"
@@ -82,7 +82,7 @@ export default function About() {
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center shrink-0 mt-1">
                     <svg
                       className="w-4 h-4 text-emerald-600"
                       fill="currentColor"
@@ -100,7 +100,7 @@ export default function About() {
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center shrink-0 mt-1">
                     <svg
                       className="w-4 h-4 text-emerald-600"
                       fill="currentColor"
@@ -118,7 +118,7 @@ export default function About() {
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center shrink-0 mt-1">
                     <svg
                       className="w-4 h-4 text-emerald-600"
                       fill="currentColor"
