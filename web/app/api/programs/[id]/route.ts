@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import { updateActivity, deleteActivity } from "@/lib/data/activities";
+import { updateProgram, deleteProgram } from "@/lib/data/programs";
 
 export async function PUT(
   request: Request,
@@ -18,12 +18,12 @@ export async function PUT(
   }
 
   try {
-    const activity = await updateActivity(id, body);
-    return NextResponse.json(activity);
+    const program = await updateProgram(id, body);
+    return NextResponse.json(program);
   } catch (error) {
-    console.error(`PUT /api/activities/${id} failed:`, error);
+    console.error(`PUT /api/programs/${id} failed:`, error);
     return NextResponse.json(
-      { error: "Failed to update activity" },
+      { error: "Failed to update program" },
       { status: 500 },
     );
   }
@@ -41,12 +41,12 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await deleteActivity(id);
+    await deleteProgram(id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error(`DELETE /api/activities/${id} failed:`, error);
+    console.error(`DELETE /api/programs/${id} failed:`, error);
     return NextResponse.json(
-      { error: "Failed to delete activity" },
+      { error: "Failed to delete program" },
       { status: 500 },
     );
   }
