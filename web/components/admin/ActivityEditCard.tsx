@@ -5,8 +5,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { useActivityEditCard } from "@/hooks/useActivityEditCard";
 import type { ActivityItem } from "@/types/Activity";
+
+const EMOJI_OPTIONS = [
+  { emoji: "🎨", label: "Seni & Kaligrafi" },
+  { emoji: "🖌️", label: "Melukis" },
+  { emoji: "🎤", label: "Nasyid & Qiraah" },
+  { emoji: "🎵", label: "Musik" },
+  { emoji: "🎹", label: "Piano" },
+  { emoji: "🎸", label: "Gitar" },
+  { emoji: "📖", label: "Membaca & Tahfidz" },
+  { emoji: "🕌", label: "Kegiatan Islami" },
+  { emoji: "✏️", label: "Menulis" },
+  { emoji: "🧮", label: "Matematika" },
+  { emoji: "🔬", label: "Sains" },
+  { emoji: "🤖", label: "Robotika & Coding" },
+  { emoji: "🌍", label: "Pramuka" },
+  { emoji: "🥋", label: "Pencak Silat" },
+  { emoji: "🏀", label: "Basket" },
+  { emoji: "⚽", label: "Sepak Bola & Futsal" },
+  { emoji: "🏸", label: "Bulu Tangkis" },
+  { emoji: "🏊", label: "Renang" },
+  { emoji: "🚴", label: "Bersepeda" },
+  { emoji: "🎭", label: "Drama & Teater" },
+  { emoji: "📚", label: "Perpustakaan" },
+  { emoji: "🧩", label: "Logika & Puzzle" },
+  { emoji: "🎯", label: "Fokus & Target" },
+  { emoji: "🏆", label: "Prestasi" },
+  { emoji: "🎪", label: "Kegiatan Umum" },
+  { emoji: "⭐", label: "Unggulan" },
+];
 
 type ActivityEditCardProps = {
   item: ActivityItem;
@@ -40,6 +70,10 @@ export function ActivityEditCard({
     handleCancel,
     handleConfirmDelete,
   } = useActivityEditCard({ item, isNew, onSave, onDelete });
+
+  const hasCustomEmoji =
+    !!displayed.emoji &&
+    !EMOJI_OPTIONS.some((opt) => opt.emoji === displayed.emoji);
 
   return (
     <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg h-full flex flex-col">
@@ -115,13 +149,24 @@ export function ActivityEditCard({
               <Label htmlFor={`emoji-${item.id}`}>
                 Emoji (ikon kalau belum ada foto)
               </Label>
-              <Input
+              <Select
                 id={`emoji-${item.id}`}
                 value={displayed.emoji}
                 onChange={(e) => updateDraft({ emoji: e.target.value })}
-                placeholder="mis. 🎨"
                 className="rounded-xl"
-              />
+              >
+                {!displayed.emoji && <option value="">Pilih emoji</option>}
+                {hasCustomEmoji && (
+                  <option value={displayed.emoji}>
+                    {displayed.emoji} (saat ini)
+                  </option>
+                )}
+                {EMOJI_OPTIONS.map((opt) => (
+                  <option key={opt.emoji} value={opt.emoji}>
+                    {opt.emoji} {opt.label}
+                  </option>
+                ))}
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor={`badge-${item.id}`}>Label (opsional)</Label>
