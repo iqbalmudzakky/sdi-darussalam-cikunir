@@ -60,9 +60,8 @@ export default function LoginPage() {
       password,
     });
 
-    setIsLoading(false);
-
     if (signInError) {
+      setIsLoading(false);
       setError("Email atau password salah.");
       return;
     }
