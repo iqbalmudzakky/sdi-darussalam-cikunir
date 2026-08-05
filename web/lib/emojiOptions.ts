@@ -25,4 +25,8 @@ export const EMOJI_OPTIONS = [
   { emoji: "🏆", label: "Prestasi" },
   { emoji: "🎪", label: "Kegiatan Umum" },
   { emoji: "⭐", label: "Unggulan" },
+  { emoji: "🏫", label: "Ruang Kelas / Gedung Sekolah" },
+  { emoji: "💻", label: "Komputer & Teknologi" },
+  { emoji: "🍽️", label: "Kantin" },
+  { emoji: "🚐", label: "Antar Jemput / Transportasi" },
 ];
