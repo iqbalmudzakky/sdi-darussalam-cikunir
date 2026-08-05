@@ -23,7 +23,7 @@ export default async function Activity() {
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="relative bg-white rounded-3xl overflow-hidden shadow-lg group"
+              className="relative bg-white rounded-3xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
             >
               <div className="aspect-video bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center overflow-hidden">
                 {activity.photo_url ? (

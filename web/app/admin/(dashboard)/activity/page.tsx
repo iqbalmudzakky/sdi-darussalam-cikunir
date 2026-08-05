@@ -1,21 +1,90 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActivityEditCard } from "@/components/admin/ActivityEditCard";
-import { useActivityAdminPage } from "@/hooks/useActivityAdminPage";
+import { ActivityFormDialog } from "@/components/admin/ActivityFormDialog";
+import {
+  listActivities,
+  createActivity,
+  updateActivity,
+  deleteActivity,
+} from "@/lib/api/activities";
+import type { ActivityItem } from "@/types/Activity";
+
+const BLANK_ACTIVITY: Omit<ActivityItem, "id"> = {
+  emoji: "",
+  title: "",
+  description: "",
+  badge: "",
+  photo_url: null,
+};
 
 export default function AdminActivityPage() {
-  const {
-    items,
-    isLoading,
-    loadError,
-    newlyAddedId,
-    newCardRef,
-    handleAddNew,
-    handleSave,
-    handleDelete,
-  } = useActivityAdminPage();
+  const [items, setItems] = useState<ActivityItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+
+  useEffect(() => {
+    loadActivities();
+  }, []);
+
+  async function loadActivities() {
+    try {
+      const data = await listActivities();
+      setItems(data);
+    } catch (error) {
+      console.error("Failed to load activities:", error);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleAdd(value: typeof BLANK_ACTIVITY): Promise<boolean> {
+    try {
+      const saved = await createActivity(value);
+      setItems((prev) => [...prev, saved]);
+      return true;
+    } catch (error) {
+      console.error("Failed to create activity:", error);
+      return false;
+    }
+  }
+
+  async function handleSave(updated: ActivityItem): Promise<boolean> {
+    const payload = {
+      title: updated.title,
+      description: updated.description,
+      emoji: updated.emoji,
+      badge: updated.badge,
+      photo_url: updated.photo_url,
+    };
+
+    try {
+      const saved = await updateActivity(updated.id, payload);
+      setItems((prev) =>
+        prev.map((item) => (item.id === updated.id ? saved : item)),
+      );
+      return true;
+    } catch (error) {
+      console.error("Failed to save activity:", error);
+      return false;
+    }
+  }
+
+  async function handleDelete(id: string): Promise<boolean> {
+    try {
+      await deleteActivity(id);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      return true;
+    } catch (error) {
+      console.error("Failed to delete activity:", error);
+      return false;
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -29,7 +98,7 @@ export default function AdminActivityPage() {
         <Button
           type="button"
           variant="gradient"
-          onClick={handleAddNew}
+          onClick={() => setIsAddOpen(true)}
           className="px-5 py-2.5 font-semibold"
         >
           <Plus />
@@ -48,14 +117,9 @@ export default function AdminActivityPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {items.map((item) => (
-            <div
-              key={item.id}
-              ref={item.id === newlyAddedId ? newCardRef : undefined}
-              className="h-full"
-            >
+            <div key={item.id} className="h-full">
               <ActivityEditCard
                 item={item}
-                isNew={item.id === newlyAddedId}
                 onSave={handleSave}
                 onDelete={handleDelete}
               />
@@ -63,6 +127,14 @@ export default function AdminActivityPage() {
           ))}
         </div>
       )}
+
+      <ActivityFormDialog
+        open={isAddOpen}
+        onOpenChange={setIsAddOpen}
+        title="Tambah Kegiatan"
+        initialValue={BLANK_ACTIVITY}
+        onSubmit={handleAdd}
+      />
     </div>
   );
 }
