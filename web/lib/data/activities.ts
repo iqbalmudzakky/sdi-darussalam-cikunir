@@ -1,25 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
+import { removeStoragePhoto } from "@/lib/storage";
 import type { ActivityItem } from "@/types/Activity";
 
 const COLUMNS = "id, title, description, emoji, badge, photo_url";
 const PHOTO_BUCKET = "activity-photos";
-
-function extractStoragePath(publicUrl: string): string | null {
-  const marker = `/${PHOTO_BUCKET}/`;
-  const index = publicUrl.indexOf(marker);
-  if (index === -1) return null;
-  return publicUrl.slice(index + marker.length);
-}
-
-async function removePhoto(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  photoUrl: string | null,
-) {
-  if (!photoUrl) return;
-  const path = extractStoragePath(photoUrl);
-  if (!path) return;
-  await supabase.storage.from(PHOTO_BUCKET).remove([path]);
-}
 
 export async function listActivities(): Promise<ActivityItem[]> {
   const supabase = await createClient();
@@ -68,7 +52,7 @@ export async function updateActivity(
   if (error) throw error;
 
   if (existing?.photo_url && existing.photo_url !== input.photo_url) {
-    await removePhoto(supabase, existing.photo_url);
+    await removeStoragePhoto(supabase, PHOTO_BUCKET, existing.photo_url);
   }
 
   return data;
@@ -85,5 +69,5 @@ export async function deleteActivity(id: string): Promise<void> {
 
   if (error) throw error;
 
-  await removePhoto(supabase, data?.photo_url ?? null);
+  await removeStoragePhoto(supabase, PHOTO_BUCKET, data?.photo_url ?? null);
 }
