@@ -22,6 +22,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { EMOJI_OPTIONS } from "@/lib/emojiOptions";
+import { useToast } from "@/hooks/useToast";
 import type { ActivityItem } from "@/types/Activity";
 
 type ActivityFormValue = Omit<ActivityItem, "id">;
@@ -41,12 +42,11 @@ export function ActivityFormDialog({
   initialValue,
   onSubmit,
 }: ActivityFormDialogProps) {
+  const toast = useToast();
   const [draft, setDraft] = useState(initialValue);
   const [titleError, setTitleError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingPhotoFileRef = useRef<File | null>(null);
 
@@ -54,8 +54,6 @@ export function ActivityFormDialog({
     if (open) {
       setDraft(initialValue);
       setTitleError(false);
-      setSaveError(false);
-      setUploadError(false);
       pendingPhotoFileRef.current = null;
     }
   }, [open]);
@@ -72,7 +70,6 @@ export function ActivityFormDialog({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadError(false);
     pendingPhotoFileRef.current = file;
     updateDraft({ photo_url: URL.createObjectURL(file) });
   }
@@ -87,7 +84,6 @@ export function ActivityFormDialog({
     const pendingFile = pendingPhotoFileRef.current;
 
     if (pendingFile) {
-      setUploadError(false);
       setIsUploading(true);
 
       const supabase = createClient();
@@ -99,7 +95,7 @@ export function ActivityFormDialog({
       setIsUploading(false);
 
       if (error) {
-        setUploadError(true);
+        toast.error("Gagal unggah foto", "Coba lagi.");
         return;
       }
 
@@ -109,15 +105,15 @@ export function ActivityFormDialog({
       photoUrl = publicUrl;
     }
 
-    setSaveError(false);
     setIsSaving(true);
     const success = await onSubmit({ ...draft, photo_url: photoUrl });
     setIsSaving(false);
 
     if (!success) {
-      setSaveError(true);
+      toast.error("Gagal menyimpan kegiatan", "Coba lagi.");
       return;
     }
+    toast.success("Kegiatan disimpan");
     onOpenChange(false);
   }
 
@@ -167,12 +163,6 @@ export function ActivityFormDialog({
             onChange={handlePhotoChange}
             className="hidden"
           />
-          {uploadError && (
-            <p className="text-xs text-red-600">
-              Gagal unggah foto. Coba lagi.
-            </p>
-          )}
-
           <div className="space-y-1.5">
             <Label htmlFor="activity-title">Judul</Label>
             <Input
@@ -208,7 +198,9 @@ export function ActivityFormDialog({
                   {(value: string | null) => {
                     if (!value) return "Pilih emoji";
                     const opt = EMOJI_OPTIONS.find((o) => o.emoji === value);
-                    return opt ? `${opt.emoji} ${opt.label}` : `${value} (saat ini)`;
+                    return opt
+                      ? `${opt.emoji} ${opt.label}`
+                      : `${value} (saat ini)`;
                   }}
                 </SelectValue>
               </SelectTrigger>
@@ -236,10 +228,6 @@ export function ActivityFormDialog({
               className="rounded-xl"
             />
           </div>
-
-          {saveError && (
-            <p className="text-xs text-red-600">Gagal menyimpan. Coba lagi.</p>
-          )}
 
           <div className="flex gap-2 pt-1">
             <Button

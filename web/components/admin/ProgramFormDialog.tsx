@@ -21,6 +21,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { EMOJI_OPTIONS } from "@/lib/emojiOptions";
+import { useToast } from "@/hooks/useToast";
 import type { ProgramItem } from "@/types/Program";
 
 type ProgramFormValue = Omit<ProgramItem, "id">;
@@ -40,16 +41,15 @@ export function ProgramFormDialog({
   initialValue,
   onSubmit,
 }: ProgramFormDialogProps) {
+  const toast = useToast();
   const [draft, setDraft] = useState(initialValue);
   const [titleError, setTitleError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     if (open) {
       setDraft(initialValue);
       setTitleError(false);
-      setSaveError(false);
     }
   }, [open]);
 
@@ -66,14 +66,14 @@ export function ProgramFormDialog({
       setTitleError(true);
       return;
     }
-    setSaveError(false);
     setIsSaving(true);
     const success = await onSubmit(draft);
     setIsSaving(false);
     if (!success) {
-      setSaveError(true);
+      toast.error("Gagal menyimpan program", "Coba lagi.");
       return;
     }
+    toast.success("Program disimpan");
     onOpenChange(false);
   }
 
@@ -139,10 +139,6 @@ export function ProgramFormDialog({
               </SelectContent>
             </Select>
           </div>
-
-          {saveError && (
-            <p className="text-xs text-red-600">Gagal menyimpan. Coba lagi.</p>
-          )}
 
           <div className="flex gap-2 pt-1">
             <Button

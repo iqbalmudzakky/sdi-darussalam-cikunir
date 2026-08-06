@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ProgramFormDialog } from "@/components/admin/ProgramFormDialog";
+import { useToast } from "@/hooks/useToast";
 import type { ProgramItem } from "@/types/Program";
 
 type ProgramEditCardProps = {
@@ -24,6 +25,7 @@ export function ProgramEditCard({
   onSave,
   onDelete,
 }: ProgramEditCardProps) {
+  const toast = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -32,7 +34,12 @@ export function ProgramEditCard({
     setIsDeleting(true);
     const success = await onDelete(item.id);
     setIsDeleting(false);
-    if (success) setIsConfirmingDelete(false);
+    if (success) {
+      setIsConfirmingDelete(false);
+      toast.success("Program dihapus");
+    } else {
+      toast.error("Gagal menghapus program", "Coba lagi.");
+    }
   }
 
   return (

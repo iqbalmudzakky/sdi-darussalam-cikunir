@@ -1,4 +1,21 @@
+import { cva } from "class-variance-authority";
 import { listFacilities } from "@/lib/data/facilities";
+
+const facilityCardVariants = cva([
+  "group relative aspect-square overflow-hidden rounded-2xl",
+  "shadow-md hover:shadow-lg transition-all duration-300",
+]);
+
+const facilityFallbackVariants = cva([
+  "absolute inset-0 flex items-center justify-center",
+  "bg-linear-to-br from-emerald-500 to-teal-600",
+]);
+
+const facilityScrimVariants = cva([
+  "absolute inset-0 transition-colors duration-300",
+  "bg-linear-to-t from-black/70 via-black/10 to-transparent",
+  "group-hover:from-black/90 group-hover:via-black/50",
+]);
 
 export default async function Facility() {
   const facilities = await listFacilities();
@@ -19,15 +36,29 @@ export default async function Facility() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {facilities.map((facility) => (
-            <div
-              key={facility.id}
-              className="bg-linear-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 text-center group hover:shadow-lg transition-all duration-300"
-            >
-              <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
-                <span className="text-4xl">{facility.emoji}</span>
+            <div key={facility.id} className={facilityCardVariants()}>
+              {facility.photo_url ? (
+                <img
+                  src={facility.photo_url}
+                  alt={facility.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              ) : (
+                <div className={facilityFallbackVariants()}>
+                  <span className="text-6xl">{facility.emoji}</span>
+                </div>
+              )}
+              <div className={facilityScrimVariants()} />
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <h3 className="font-bold text-white text-center">
+                  {facility.title}
+                </h3>
+                {facility.subtitle && (
+                  <p className="text-white/90 text-sm text-center mt-1 max-h-0 opacity-0 overflow-hidden transition-all duration-300 group-hover:max-h-10 group-hover:opacity-100">
+                    {facility.subtitle}
+                  </p>
+                )}
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">{facility.title}</h3>
-              <p className="text-gray-600 text-sm">{facility.subtitle}</p>
             </div>
           ))}
         </div>

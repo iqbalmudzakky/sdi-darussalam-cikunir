@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ActivityFormDialog } from "@/components/admin/ActivityFormDialog";
+import { useToast } from "@/hooks/useToast";
 import type { ActivityItem } from "@/types/Activity";
 
 type ActivityEditCardProps = {
@@ -24,6 +25,7 @@ export function ActivityEditCard({
   onSave,
   onDelete,
 }: ActivityEditCardProps) {
+  const toast = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -32,7 +34,12 @@ export function ActivityEditCard({
     setIsDeleting(true);
     const success = await onDelete(item.id);
     setIsDeleting(false);
-    if (success) setIsConfirmingDelete(false);
+    if (success) {
+      setIsConfirmingDelete(false);
+      toast.success("Kegiatan dihapus");
+    } else {
+      toast.error("Gagal menghapus kegiatan", "Coba lagi.");
+    }
   }
 
   return (

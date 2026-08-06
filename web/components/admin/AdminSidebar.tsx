@@ -4,12 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  Home,
   Info,
   BookOpen,
   Building2,
   CalendarDays,
-  Phone,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,12 +15,10 @@ import { createClient } from "@/lib/supabase/client";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/hero", label: "Beranda", icon: Home },
-  { href: "/admin/about", label: "Tentang", icon: Info },
+  { href: "/admin/about", label: "Profil Sekolah", icon: Info },
   { href: "/admin/program", label: "Program", icon: BookOpen },
   { href: "/admin/facility", label: "Fasilitas", icon: Building2 },
   { href: "/admin/activity", label: "Kegiatan", icon: CalendarDays },
-  { href: "/admin/contact", label: "Kontak", icon: Phone },
 ];
 
 export function AdminSidebar() {

@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { getHeroContent } from "@/lib/data/hero";
+import { getSchoolProfile } from "@/lib/data/schoolProfile";
 
 const ctaPrimaryVariants = cva([
   "px-8 py-4 rounded-full font-semibold text-center",
@@ -14,7 +14,7 @@ const ctaSecondaryVariants = cva([
 ]);
 
 export default async function Hero() {
-  const hero = await getHeroContent();
+  const profile = await getSchoolProfile();
 
   return (
     <section className="relative pt-20 overflow-hidden">
@@ -33,15 +33,12 @@ export default async function Hero() {
               </span>
             </div>
             <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-              {hero.headline_main}
+              Membentuk Generasi
               <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-600 to-teal-600">
                 {" "}
-                {hero.headline_highlight}
+                Cerdas & Berakhlak Mulia
               </span>
             </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
-              {hero.description}
-            </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a href="#kontak" className={ctaPrimaryVariants()}>
                 Daftar Sekarang
@@ -52,23 +49,17 @@ export default async function Hero() {
             </div>
             <div className="flex gap-8 pt-8">
               <div>
-                <p className="text-3xl font-bold text-emerald-600">
-                  {hero.stat1_value}
-                </p>
+                <p className="text-3xl font-bold text-emerald-600">15+</p>
                 <p className="text-gray-600">Tahun Berpengalaman</p>
               </div>
               <div className="border-l-2 border-gray-200"></div>
               <div>
-                <p className="text-3xl font-bold text-emerald-600">
-                  {hero.stat2_value}
-                </p>
+                <p className="text-3xl font-bold text-emerald-600">500+</p>
                 <p className="text-gray-600">Siswa Aktif</p>
               </div>
               <div className="border-l-2 border-gray-200"></div>
               <div>
-                <p className="text-3xl font-bold text-emerald-600">
-                  {hero.stat3_value}
-                </p>
+                <p className="text-3xl font-bold text-emerald-600">30+</p>
                 <p className="text-gray-600">Tenaga Pendidik</p>
               </div>
             </div>
@@ -76,9 +67,9 @@ export default async function Hero() {
           <div className="relative">
             <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-2">
               <div className="aspect-4/3 bg-linear-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center overflow-hidden">
-                {hero.photo_url ? (
+                {profile.photo_url ? (
                   <img
-                    src={hero.photo_url}
+                    src={profile.photo_url}
                     alt="Foto gedung sekolah"
                     className="w-full h-full object-cover rounded-2xl"
                   />

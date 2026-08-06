@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import { getHeroContent, updateHeroContent } from "@/lib/data/hero";
+import {
+  getSchoolProfile,
+  updateSchoolProfile,
+} from "@/lib/data/schoolProfile";
 
 export async function GET() {
   const user = await requireUser();
@@ -9,12 +12,12 @@ export async function GET() {
   }
 
   try {
-    const hero = await getHeroContent();
-    return NextResponse.json(hero);
+    const profile = await getSchoolProfile();
+    return NextResponse.json(profile);
   } catch (error) {
-    console.error("GET /api/hero failed:", error);
+    console.error("GET /api/school-profile failed:", error);
     return NextResponse.json(
-      { error: "Failed to load hero content" },
+      { error: "Failed to load school profile" },
       { status: 500 },
     );
   }
@@ -29,12 +32,12 @@ export async function PUT(request: Request) {
   const body = await request.json();
 
   try {
-    const hero = await updateHeroContent(body);
-    return NextResponse.json(hero);
+    const profile = await updateSchoolProfile(body);
+    return NextResponse.json(profile);
   } catch (error) {
-    console.error("PUT /api/hero failed:", error);
+    console.error("PUT /api/school-profile failed:", error);
     return NextResponse.json(
-      { error: "Failed to save hero content" },
+      { error: "Failed to save school profile" },
       { status: 500 },
     );
   }
