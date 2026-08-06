@@ -13,7 +13,12 @@ import {
 } from "@/lib/api/facilities";
 import type { FacilityItem } from "@/types/Facility";
 
-const BLANK_FACILITY = { emoji: "", title: "", subtitle: "" };
+const BLANK_FACILITY: Omit<FacilityItem, "id"> = {
+  emoji: "",
+  title: "",
+  subtitle: "",
+  photo_url: null,
+};
 
 export default function AdminFacilityPage() {
   const [items, setItems] = useState<FacilityItem[]>([]);
@@ -53,6 +58,7 @@ export default function AdminFacilityPage() {
       title: updated.title,
       subtitle: updated.subtitle,
       emoji: updated.emoji,
+      photo_url: updated.photo_url,
     };
 
     try {

@@ -11,6 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FacilityFormDialog } from "@/components/admin/FacilityFormDialog";
+import { useToast } from "@/hooks/useToast";
 import type { FacilityItem } from "@/types/Facility";
 
 type FacilityEditCardProps = {
@@ -24,6 +25,7 @@ export function FacilityEditCard({
   onSave,
   onDelete,
 }: FacilityEditCardProps) {
+  const toast = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -32,14 +34,27 @@ export function FacilityEditCard({
     setIsDeleting(true);
     const success = await onDelete(item.id);
     setIsDeleting(false);
-    if (success) setIsConfirmingDelete(false);
+    if (success) {
+      setIsConfirmingDelete(false);
+      toast.success("Fasilitas dihapus");
+    } else {
+      toast.error("Gagal menghapus fasilitas", "Coba lagi.");
+    }
   }
 
   return (
     <>
       <div className="relative bg-linear-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 text-center h-full flex flex-col">
-        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shrink-0">
-          <span className="text-4xl">{item.emoji}</span>
+        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shrink-0 overflow-hidden">
+          {item.photo_url ? (
+            <img
+              src={item.photo_url}
+              alt={item.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-4xl">{item.emoji}</span>
+          )}
         </div>
         <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
         <p className="text-gray-600 text-sm flex-1">{item.subtitle}</p>

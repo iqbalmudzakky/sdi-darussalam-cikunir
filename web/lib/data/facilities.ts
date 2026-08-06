@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
+import { removeStoragePhoto } from "@/lib/storage";
 import type { FacilityItem } from "@/types/Facility";
 
-const COLUMNS = "id, title, subtitle, emoji";
+const COLUMNS = "id, title, subtitle, emoji, photo_url";
+const PHOTO_BUCKET = "facility-photos";
 
 export async function listFacilities(): Promise<FacilityItem[]> {
   const supabase = await createClient();
@@ -33,6 +35,13 @@ export async function updateFacility(
   input: Omit<FacilityItem, "id">,
 ): Promise<FacilityItem> {
   const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("facilities")
+    .select("photo_url")
+    .eq("id", id)
+    .single();
+
   const { data, error } = await supabase
     .from("facilities")
     .update(input)
@@ -41,11 +50,24 @@ export async function updateFacility(
     .single();
 
   if (error) throw error;
+
+  if (existing?.photo_url && existing.photo_url !== input.photo_url) {
+    await removeStoragePhoto(supabase, PHOTO_BUCKET, existing.photo_url);
+  }
+
   return data;
 }
 
 export async function deleteFacility(id: string): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.from("facilities").delete().eq("id", id);
+  const { data, error } = await supabase
+    .from("facilities")
+    .delete()
+    .eq("id", id)
+    .select("photo_url")
+    .single();
+
   if (error) throw error;
+
+  await removeStoragePhoto(supabase, PHOTO_BUCKET, data?.photo_url ?? null);
 }

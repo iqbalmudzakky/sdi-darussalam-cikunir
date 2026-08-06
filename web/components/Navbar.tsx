@@ -1,4 +1,19 @@
+"use client";
+
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+
+const NAV_LINKS = [
+  { href: "#tentang", label: "Tentang" },
+  { href: "#program", label: "Program" },
+  { href: "#fasilitas", label: "Fasilitas" },
+  { href: "#kegiatan", label: "Kegiatan" },
+  { href: "#kontak", label: "Kontak" },
+];
+
 export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,53 +32,45 @@ export default function Navbar() {
             </div>
           </div>
           <div className="hidden md:flex gap-8">
-            <a
-              href="#tentang"
-              className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
-            >
-              Tentang
-            </a>
-            <a
-              href="#program"
-              className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
-            >
-              Program
-            </a>
-            <a
-              href="#fasilitas"
-              className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
-            >
-              Fasilitas
-            </a>
-            <a
-              href="#kegiatan"
-              className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
-            >
-              Kegiatan
-            </a>
-            <a
-              href="#kontak"
-              className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
-            >
-              Kontak
-            </a>
+            {NAV_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
-          <button className="md:hidden text-gray-700">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-label={isMenuOpen ? "Tutup menu" : "Buka menu"}
+            aria-expanded={isMenuOpen}
+            className="md:hidden text-gray-700"
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
+
+        {isMenuOpen && (
+          <div className="md:hidden flex flex-col gap-1 pb-4">
+            {NAV_LINKS.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setIsMenuOpen(false)}
+                className="px-2 py-2.5 rounded-xl text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition-colors font-medium"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </nav>
   );
