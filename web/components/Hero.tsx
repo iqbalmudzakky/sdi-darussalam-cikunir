@@ -36,7 +36,7 @@ export default async function Hero() {
               Membentuk Generasi
               <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-600 to-teal-600">
                 {" "}
-                Cerdas & Berakhlak Mulia
+                Cerdas & Berakhlakulkarimah
               </span>
             </h1>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -54,12 +54,12 @@ export default async function Hero() {
               </div>
               <div className="border-l-2 border-gray-200"></div>
               <div>
-                <p className="text-3xl font-bold text-emerald-600">500+</p>
+                <p className="text-3xl font-bold text-emerald-600">683</p>
                 <p className="text-gray-600">Siswa Aktif</p>
               </div>
               <div className="border-l-2 border-gray-200"></div>
               <div>
-                <p className="text-3xl font-bold text-emerald-600">30+</p>
+                <p className="text-3xl font-bold text-emerald-600">65</p>
                 <p className="text-gray-600">Tenaga Pendidik</p>
               </div>
             </div>

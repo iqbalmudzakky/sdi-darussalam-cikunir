@@ -1,4 +1,5 @@
 import { getSchoolProfile } from "@/lib/data/schoolProfile";
+import { RegistrationForm } from "@/components/RegistrationForm";
 
 export default async function Contact() {
   const profile = await getSchoolProfile();
@@ -184,64 +185,7 @@ export default async function Contact() {
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               Formulir Pendaftaran Online
             </h3>
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Orang Tua
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                  placeholder="Masukkan nama lengkap"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Calon Siswa
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                  placeholder="Masukkan nama calon siswa"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nomor WhatsApp
-                </label>
-                <input
-                  type="tel"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                  placeholder="08XX-XXXX-XXXX"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                  placeholder="email@example.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Pesan
-                </label>
-                <textarea
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
-                  placeholder="Tulis pesan atau pertanyaan Anda..."
-                ></textarea>
-              </div>
-              <button
-                type="submit"
-                className="w-full px-8 py-4 bg-linear-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 transition-all duration-300"
-              >
-                Kirim Pendaftaran
-              </button>
-            </form>
+            <RegistrationForm />
           </div>
         </div>
       </div>
