@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -8,10 +9,12 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
+  Inbox,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { getPendingFollowUpCount } from "@/lib/api/registrations";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -19,11 +22,29 @@ const NAV_ITEMS = [
   { href: "/admin/program", label: "Program", icon: BookOpen },
   { href: "/admin/facility", label: "Fasilitas", icon: Building2 },
   { href: "/admin/activity", label: "Kegiatan", icon: CalendarDays },
+  { href: "/admin/registrations", label: "Pendaftar", icon: Inbox },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    loadPendingCount();
+    window.addEventListener("registrations-updated", loadPendingCount);
+    return () =>
+      window.removeEventListener("registrations-updated", loadPendingCount);
+  }, []);
+
+  async function loadPendingCount() {
+    try {
+      const count = await getPendingFollowUpCount();
+      setPendingCount(count);
+    } catch (error) {
+      console.error("Failed to load pending follow-up count:", error);
+    }
+  }
 
   async function handleLogout() {
     const supabase = createClient();
@@ -64,6 +85,11 @@ export function AdminSidebar() {
             >
               <Icon className="w-4 h-4" />
               {label}
+              {href === "/admin/registrations" && pendingCount > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-semibold text-white">
+                  {pendingCount}
+                </span>
+              )}
             </Link>
           );
         })}
