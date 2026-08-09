@@ -1,87 +1,79 @@
 import { cva } from "class-variance-authority";
 import { getSchoolProfile } from "@/lib/data/schoolProfile";
 
-const ctaPrimaryVariants = cva([
-  "px-8 py-4 rounded-full font-semibold text-center",
-  "bg-linear-to-r from-emerald-600 to-teal-600 text-white",
-  "hover:shadow-lg hover:scale-105 transition-all duration-300",
-]);
+const ctaPrimaryVariants = cva(["px-6 py-3.5 sm:px-8 sm:py-4 rounded-full font-semibold text-center", "bg-linear-to-r from-emerald-600 to-teal-600 text-white", "hover:shadow-lg sm:hover:scale-105 transition-all duration-300"]);
 
-const ctaSecondaryVariants = cva([
-  "px-8 py-4 rounded-full font-semibold text-center",
-  "bg-white text-emerald-600 border-2 border-emerald-600",
-  "hover:bg-emerald-50 transition-all duration-300",
-]);
+const ctaSecondaryVariants = cva(["px-6 py-3.5 sm:px-8 sm:py-4 rounded-full font-semibold text-center", "bg-white text-emerald-600 border-2 border-emerald-600", "hover:bg-emerald-50 transition-all duration-300"]);
 
 export default async function Hero() {
   const profile = await getSchoolProfile();
 
   return (
-    <section className="relative pt-20 overflow-hidden">
+    <section className="relative overflow-hidden pt-16 sm:pt-20">
+      {/* Background */}
       <div className="absolute inset-0 bg-linear-to-br from-emerald-50 via-teal-50 to-green-50"></div>
+
+      {/* Decorative Background */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-400 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-400 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-0 h-48 w-48 rounded-full bg-emerald-400 blur-3xl sm:left-10 sm:h-72 sm:w-72"></div>
+        <div className="absolute right-0 bottom-20 h-64 w-64 rounded-full bg-teal-400 blur-3xl sm:right-10 sm:h-96 sm:w-96"></div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <div className="inline-block px-4 py-2 bg-emerald-100 rounded-full">
-              <span className="text-emerald-700 font-semibold text-sm">
-                🌟 Sekolah Dasar Islam Unggulan
-              </span>
+      <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8 lg:py-32">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
+          {/* Hero Content */}
+          <div className="min-w-0 space-y-6 sm:space-y-8">
+            {/* Badge */}
+            <div className="inline-block rounded-full bg-emerald-100 px-3 py-2 sm:px-4">
+              <span className="text-xs font-semibold text-emerald-700 sm:text-sm">🌟 Sekolah Dasar Islam Unggulan</span>
             </div>
-            <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+
+            {/* Heading */}
+            <h1 className="break-words text-3xl leading-tight font-bold text-gray-900 sm:text-4xl md:text-5xl lg:text-6xl">
               Membentuk Generasi
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-600 to-teal-600">
-                {" "}
-                Cerdas & Berakhlakulkarimah
-              </span>
+              <span className="block bg-linear-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Cerdas & Berakhlakulkarimah</span>
             </h1>
-            <div className="flex flex-col sm:flex-row gap-4">
+
+            {/* CTA */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
               <a href="#kontak" className={ctaPrimaryVariants()}>
                 Daftar Sekarang
               </a>
+
               <a href="#tentang" className={ctaSecondaryVariants()}>
                 Pelajari Lebih Lanjut
               </a>
             </div>
-            <div className="flex gap-8 pt-8">
-              <div>
-                <p className="text-3xl font-bold text-emerald-600">15+</p>
-                <p className="text-gray-600">Tahun Berpengalaman</p>
+
+            {/* Statistics */}
+            <div className="grid grid-cols-3 divide-x divide-gray-200 pt-4 sm:pt-8">
+              <div className="min-w-0 pr-2 text-center sm:pr-5 sm:text-left">
+                <p className="text-2xl font-bold text-emerald-600 sm:text-3xl">15+</p>
+                <p className="mt-1 text-xs leading-relaxed text-gray-600 sm:text-sm md:text-base">Tahun Berpengalaman</p>
               </div>
-              <div className="border-l-2 border-gray-200"></div>
-              <div>
-                <p className="text-3xl font-bold text-emerald-600">683</p>
-                <p className="text-gray-600">Siswa Aktif</p>
+
+              <div className="min-w-0 px-2 text-center sm:px-5 sm:text-left">
+                <p className="text-2xl font-bold text-emerald-600 sm:text-3xl">683</p>
+                <p className="mt-1 text-xs leading-relaxed text-gray-600 sm:text-sm md:text-base">Siswa Aktif</p>
               </div>
-              <div className="border-l-2 border-gray-200"></div>
-              <div>
-                <p className="text-3xl font-bold text-emerald-600">65</p>
-                <p className="text-gray-600">Tenaga Pendidik</p>
+
+              <div className="min-w-0 pl-2 text-center sm:pl-5 sm:text-left">
+                <p className="text-2xl font-bold text-emerald-600 sm:text-3xl">65</p>
+                <p className="mt-1 text-xs leading-relaxed text-gray-600 sm:text-sm md:text-base">Tenaga Pendidik</p>
               </div>
             </div>
           </div>
+
+          {/* Hero Image */}
           <div className="relative">
-            <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-2">
-              <div className="aspect-4/3 bg-linear-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center overflow-hidden">
+            <div className="relative z-10 rounded-3xl bg-white p-2 shadow-2xl">
+              <div className="aspect-4/3 flex items-center justify-center overflow-hidden rounded-2xl bg-linear-to-br from-emerald-100 to-teal-100">
                 {profile.photo_url ? (
-                  <img
-                    src={profile.photo_url}
-                    alt="Foto gedung sekolah"
-                    className="w-full h-full object-cover rounded-2xl"
-                  />
+                  <img src={profile.photo_url} alt="Foto gedung sekolah" className="h-full w-full rounded-2xl object-cover" />
                 ) : (
-                  <div className="text-center">
-                    <div className="w-32 h-32 mx-auto bg-linear-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mb-4">
-                      <svg
-                        className="w-16 h-16 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                  <div className="px-4 text-center">
+                    <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-emerald-500 to-teal-600 sm:h-32 sm:w-32">
+                      <svg className="h-12 w-12 text-white sm:h-16 sm:w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -90,14 +82,15 @@ export default async function Hero() {
                         />
                       </svg>
                     </div>
-                    <p className="text-gray-600 font-medium">
-                      Foto Gedung Sekolah
-                    </p>
+
+                    <p className="text-sm font-medium text-gray-600 sm:text-base">Foto Gedung Sekolah</p>
                   </div>
                 )}
               </div>
             </div>
-            <div className="absolute -bottom-4 -right-4 w-full h-full bg-linear-to-br from-emerald-200 to-teal-200 rounded-3xl"></div>
+
+            {/* Decorative Shadow */}
+            <div className="absolute -right-3 -bottom-3 h-full w-full rounded-3xl bg-linear-to-br from-emerald-200 to-teal-200 sm:-right-4 sm:-bottom-4"></div>
           </div>
         </div>
       </div>
