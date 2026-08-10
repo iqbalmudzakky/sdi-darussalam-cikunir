@@ -19,6 +19,7 @@ const BLANK_ACTIVITY: Omit<ActivityItem, "id"> = {
   description: "",
   badge: "",
   photo_url: null,
+  youtube_url: null,
 };
 
 export default function AdminActivityPage() {
@@ -61,6 +62,7 @@ export default function AdminActivityPage() {
       emoji: updated.emoji,
       badge: updated.badge,
       photo_url: updated.photo_url,
+      youtube_url: updated.youtube_url,
     };
 
     try {

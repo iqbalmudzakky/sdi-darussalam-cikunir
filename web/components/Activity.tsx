@@ -1,4 +1,4 @@
-import { listActivities } from "@/lib/data/activities";
+import { listActivities } from "@/lib/actions/activities";
 import ActivityContent from "@/components/ActivityContent";
 
 export default async function Activity() {

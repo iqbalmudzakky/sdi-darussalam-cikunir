@@ -1,11 +1,128 @@
 "use client";
 
 import { useEffect, useRef, useState, type TouchEvent } from "react";
+import { cva } from "class-variance-authority";
+import { Play } from "lucide-react";
+import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/youtube";
 import type { ActivityItem } from "@/types/Activity";
 
 type ActivityContentProps = {
   activities: ActivityItem[];
 };
+
+const activityCardVariants = cva(
+  [
+    "group relative overflow-hidden rounded-3xl",
+    "aspect-video",
+    "transition-[transform,box-shadow] duration-300 ease-out",
+
+    // Desktop hover
+    "md:hover:-translate-y-2 md:hover:shadow-2xl",
+  ],
+  {
+    variants: {
+      active: {
+        true: "-translate-y-2 shadow-2xl",
+        false: "translate-y-0 shadow-md",
+      },
+    },
+  },
+);
+
+const activityFallbackVariants = cva([
+  "absolute inset-0 flex items-center justify-center",
+  "bg-linear-to-br from-emerald-200 to-teal-200",
+]);
+
+const activityImageVariants = cva(
+  [
+    "absolute inset-0 h-full w-full object-cover",
+    "transition-transform duration-500 ease-out",
+    "md:group-hover:scale-105",
+  ],
+  {
+    variants: {
+      active: {
+        true: "scale-105",
+        false: "scale-100",
+      },
+    },
+  },
+);
+
+const activityEmojiVariants = cva(
+  [
+    "text-5xl transition-transform duration-300 ease-out",
+    "sm:text-6xl",
+    "md:group-hover:scale-110",
+  ],
+  {
+    variants: {
+      active: {
+        true: "scale-110",
+        false: "scale-100",
+      },
+    },
+  },
+);
+
+const activityPlayButtonVariants = cva(
+  [
+    "flex h-14 w-14 items-center justify-center rounded-full bg-white/90 shadow-lg",
+    "transition-transform duration-300 ease-out",
+    "sm:h-16 sm:w-16",
+    "md:group-hover:scale-110",
+  ],
+  {
+    variants: {
+      active: {
+        true: "scale-110",
+        false: "scale-100",
+      },
+    },
+  },
+);
+
+const activityOverlayVariants = cva(
+  [
+    "absolute inset-0 bg-linear-to-t to-transparent",
+    "transition-all duration-300 ease-out",
+    "md:from-black/70 md:via-black/10",
+    "md:group-hover:from-black/90 md:group-hover:via-black/50",
+  ],
+  {
+    variants: {
+      active: {
+        true: "from-black/90 via-black/50",
+        false: "from-black/70 via-black/10",
+      },
+    },
+  },
+);
+
+const activityBadgeVariants = cva([
+  "absolute right-3 top-3 rounded-full bg-emerald-500 px-2.5 py-1",
+  "text-xs font-semibold text-white shadow-sm",
+  "sm:right-4 sm:top-4 sm:px-3 sm:text-sm",
+]);
+
+const activityDescriptionVariants = cva(
+  [
+    "mt-1.5 line-clamp-3 wrap-break-word overflow-hidden",
+    "text-center text-sm leading-relaxed text-white/90",
+    "transition-[max-height,opacity,transform] duration-300 ease-out",
+    "md:max-h-0 md:translate-y-2 md:opacity-0",
+    "md:group-hover:max-h-28 md:group-hover:translate-y-0 md:group-hover:opacity-100",
+  ],
+  {
+    variants: {
+      active: {
+        true: "max-h-28 translate-y-0 opacity-100",
+        false: "max-h-0 translate-y-2 opacity-0",
+      },
+    },
+  },
+);
 
 export default function ActivityContent({ activities }: ActivityContentProps) {
   /*
@@ -30,7 +147,9 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
    * Manual hold mempunyai prioritas lebih tinggi
    * daripada auto-hover berdasarkan posisi center.
    */
-  const [pressedActivityId, setPressedActivityId] = useState<string | null>(null);
+  const [pressedActivityId, setPressedActivityId] = useState<string | null>(
+    null,
+  );
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -135,7 +254,9 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
        * center tolerance.
        */
       if (closestActivityId && closestDistance <= centerTolerance) {
-        setCenterActiveId((current) => (current === closestActivityId ? current : closestActivityId));
+        setCenterActiveId((current) =>
+          current === closestActivityId ? current : closestActivityId,
+        );
       } else {
         setCenterActiveId((current) => (current === null ? current : null));
       }
@@ -148,7 +269,8 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
         return;
       }
 
-      animationFrameRef.current = window.requestAnimationFrame(updateCenterActivity);
+      animationFrameRef.current =
+        window.requestAnimationFrame(updateCenterActivity);
     };
 
     window.addEventListener("scroll", requestUpdate, {
@@ -189,7 +311,10 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
    * Tidak langsung dianggap sebagai hold karena
    * mungkin user sebenarnya akan melakukan scroll.
    */
-  const handleTouchStart = (activityId: string, event: TouchEvent<HTMLDivElement>) => {
+  const handleTouchStart = (
+    activityId: string,
+    event: TouchEvent<HTMLDivElement>,
+  ) => {
     if (!isMobile) return;
 
     const touch = event.touches[0];
@@ -267,7 +392,81 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
            * 2. Kalau tidak ada yang ditahan,
            *    Activity di tengah viewport yang hover.
            */
-          const isMobileActive = isMobile ? (pressedActivityId !== null ? pressedActivityId === activity.id : centerActiveId === activity.id) : false;
+          const isMobileActive = isMobile
+            ? pressedActivityId !== null
+              ? pressedActivityId === activity.id
+              : centerActiveId === activity.id
+            : false;
+
+          const videoId = activity.youtube_url
+            ? extractYouTubeVideoId(activity.youtube_url)
+            : null;
+          const thumbnailUrl = videoId ? getYouTubeThumbnailUrl(videoId) : null;
+          const imageUrl = thumbnailUrl ?? activity.photo_url;
+
+          const cardInner = (
+            <>
+              {/* Activity Image / Thumbnail / Fallback */}
+              {imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imageUrl}
+                  alt={activity.title}
+                  className={activityImageVariants({ active: isMobileActive })}
+                />
+              ) : (
+                <div className={activityFallbackVariants()}>
+                  <span
+                    className={activityEmojiVariants({
+                      active: isMobileActive,
+                    })}
+                  >
+                    {activity.emoji}
+                  </span>
+                </div>
+              )}
+
+              {/* Play Button, hanya untuk video YouTube */}
+              {videoId && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div
+                    className={activityPlayButtonVariants({
+                      active: isMobileActive,
+                    })}
+                  >
+                    <Play className="h-6 w-6 translate-x-0.5 fill-emerald-600 text-emerald-600 sm:h-7 sm:w-7" />
+                  </div>
+                </div>
+              )}
+
+              {/* Image Overlay */}
+              <div
+                className={activityOverlayVariants({ active: isMobileActive })}
+              />
+
+              {/* Activity Badge */}
+              {activity.badge && (
+                <div className={activityBadgeVariants()}>{activity.badge}</div>
+              )}
+
+              {/* Activity Title + Description */}
+              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                <h3 className="wrap-break-word text-center text-base font-bold text-white sm:text-lg">
+                  {activity.title}
+                </h3>
+
+                {activity.description && (
+                  <p
+                    className={activityDescriptionVariants({
+                      active: isMobileActive,
+                    })}
+                  >
+                    {activity.description}
+                  </p>
+                )}
+              </div>
+            </>
+          );
 
           return (
             <div
@@ -275,98 +474,24 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
               ref={(element) => {
                 activityRefs.current[activity.id] = element;
               }}
-              className={`
-                group relative min-w-0
-                overflow-hidden rounded-3xl
-                bg-white shadow-md
-
-                transition-[transform,box-shadow]
-                duration-300
-                ease-out
-
-                md:hover:-translate-y-2
-                md:hover:shadow-2xl
-
-                ${isMobileActive ? "-translate-y-2 shadow-2xl" : "translate-y-0 shadow-md"}
-              `}
+              className={activityCardVariants({ active: isMobileActive })}
               onTouchStart={(event) => handleTouchStart(activity.id, event)}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onTouchCancel={handleTouchCancel}
             >
-              {/* Activity Image */}
-              <div className="aspect-video overflow-hidden bg-linear-to-br from-emerald-200 to-teal-200">
-                {activity.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={activity.photo_url}
-                    alt={activity.title}
-                    className={`
-                      h-full w-full
-                      object-cover
-
-                      transition-transform
-                      duration-500
-                      ease-out
-
-                      md:group-hover:scale-105
-
-                      ${isMobileActive ? "scale-105" : "scale-100"}
-                    `}
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <span
-                      className={`
-                        text-5xl
-
-                        transition-transform
-                        duration-300
-                        ease-out
-
-                        sm:text-6xl
-
-                        md:group-hover:scale-110
-
-                        ${isMobileActive ? "scale-110" : "scale-100"}
-                      `}
-                    >
-                      {activity.emoji}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Activity Content */}
-              <div className="p-5 sm:p-6">
-                <h3 className="mb-2 break-words text-center text-lg font-bold text-gray-900 sm:text-xl">{activity.title}</h3>
-
-                <p className="break-words text-justify text-sm leading-relaxed text-gray-600 sm:text-base">{activity.description}</p>
-              </div>
-
-              {/* Activity Badge */}
-              {activity.badge && (
-                <div
-                  className="
-                    absolute right-3 top-3
-                    rounded-full
-                    bg-emerald-500
-                    px-2.5 py-1
-
-                    text-xs
-                    font-semibold
-                    text-white
-
-                    shadow-sm
-
-                    sm:right-4
-                    sm:top-4
-                    sm:px-3
-                    sm:text-sm
-                  "
+              {videoId && activity.youtube_url ? (
+                <a
+                  href={activity.youtube_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute inset-0 block"
+                  aria-label={`Tonton video ${activity.title} di YouTube`}
                 >
-                  {activity.badge}
-                </div>
+                  {cardInner}
+                </a>
+              ) : (
+                cardInner
               )}
             </div>
           );
@@ -378,7 +503,9 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
           ========================= */}
       <div className="mt-12 rounded-3xl bg-linear-to-r from-emerald-500 to-teal-600 p-6 text-white sm:mt-14 sm:p-8 lg:mt-16 lg:p-12">
         <div className="mx-auto max-w-4xl text-center">
-          <h3 className="mb-8 text-2xl font-bold sm:text-3xl lg:mb-10">Prestasi Kami</h3>
+          <h3 className="mb-8 text-2xl font-bold sm:text-3xl lg:mb-10">
+            Prestasi Kami
+          </h3>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6 lg:gap-8">
             {/* Achievement 1 */}
@@ -387,7 +514,9 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
 
               <p className="mb-2 text-xl font-bold sm:text-2xl">1st Place</p>
 
-              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">Lomba Tahfidz Tingkat Kota Bekasi 2025</p>
+              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">
+                Lomba Tahfidz Tingkat Kota Bekasi 2025
+              </p>
             </div>
 
             {/* Achievement 2 */}
@@ -396,7 +525,9 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
 
               <p className="mb-2 text-xl font-bold sm:text-2xl">2nd Place</p>
 
-              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">Kompetisi Sains Madrasah Tingkat Provinsi</p>
+              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">
+                Kompetisi Sains Madrasah Tingkat Provinsi
+              </p>
             </div>
 
             {/* Achievement 3 */}
@@ -405,7 +536,9 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
 
               <p className="mb-2 text-xl font-bold sm:text-2xl">Best School</p>
 
-              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">Sekolah Berprestasi Kecamatan Jatiasih</p>
+              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">
+                Sekolah Berprestasi Kecamatan Jatiasih
+              </p>
             </div>
           </div>
         </div>

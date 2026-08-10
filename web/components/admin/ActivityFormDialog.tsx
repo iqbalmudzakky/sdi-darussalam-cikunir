@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { EMOJI_OPTIONS } from "@/lib/emojiOptions";
 import { useToast } from "@/hooks/useToast";
@@ -186,6 +187,24 @@ export function ActivityFormDialog({
             />
           </div>
           <div className="space-y-1.5">
+            <Label htmlFor="activity-youtube-url">
+              Link YouTube (opsional)
+            </Label>
+            <Input
+              id="activity-youtube-url"
+              value={draft.youtube_url ?? ""}
+              onChange={(e) =>
+                updateDraft({ youtube_url: e.target.value || null })
+              }
+              placeholder="https://youtube.com/watch?v=..."
+              className="rounded-xl"
+            />
+            <p className="text-xs text-gray-500">
+              Kalau diisi, kartu di halaman utama akan pakai thumbnail YouTube
+              ini menggantikan foto, dan diklik langsung buka videonya.
+            </p>
+          </div>
+          <div className="space-y-1.5">
             <Label htmlFor="activity-emoji">
               Emoji (ikon kalau belum ada foto)
             </Label>
@@ -228,28 +247,28 @@ export function ActivityFormDialog({
               className="rounded-xl"
             />
           </div>
-
-          <div className="flex gap-2 pt-1">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              disabled={isSaving}
-              className="flex-1"
-            >
-              Batal
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSaving || isUploading}
-              className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
-            >
-              <Check className="w-4 h-4" />
-              {isSaving ? "Menyimpan..." : "Simpan"}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            disabled={isSaving}
+            className="flex-1"
+          >
+            Batal
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSaving || isUploading}
+            className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
+          >
+            <Check className="w-4 h-4" />
+            {isSaving ? "Menyimpan..." : "Simpan"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
