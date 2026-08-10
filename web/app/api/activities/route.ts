@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import { listActivities, createActivity } from "@/lib/data/activities";
+import * as activityService from "@/modules/activity/service";
+import { SaveActivityRequestSchema } from "@/modules/activity/dto";
 
 export async function GET() {
   const user = await requireUser();
@@ -9,13 +10,13 @@ export async function GET() {
   }
 
   try {
-    const activities = await listActivities();
+    const activities = await activityService.listActivities();
     return NextResponse.json(activities);
   } catch (error) {
     console.error("GET /api/activities failed:", error);
     return NextResponse.json(
       { error: "Failed to list activities" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -27,18 +28,22 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  if (!body.title) {
-    return NextResponse.json({ error: "title is required" }, { status: 400 });
+  const parsed = SaveActivityRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
+      { status: 400 },
+    );
   }
 
   try {
-    const activity = await createActivity(body);
+    const activity = await activityService.createActivity(parsed.data);
     return NextResponse.json(activity, { status: 201 });
   } catch (error) {
     console.error("POST /api/activities failed:", error);
     return NextResponse.json(
       { error: "Failed to create activity" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

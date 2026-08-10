@@ -9,9 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { ActivityFormDialog } from "@/components/admin/ActivityFormDialog";
 import { useToast } from "@/hooks/useToast";
+import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/youtube";
 import type { ActivityItem } from "@/types/Activity";
 
 type ActivityEditCardProps = {
@@ -42,13 +44,20 @@ export function ActivityEditCard({
     }
   }
 
+  const videoId = item.youtube_url
+    ? extractYouTubeVideoId(item.youtube_url)
+    : null;
+  const previewImageUrl = videoId
+    ? getYouTubeThumbnailUrl(videoId)
+    : item.photo_url;
+
   return (
     <>
       <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg h-full flex flex-col">
         <div className="relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center overflow-hidden">
-          {item.photo_url ? (
+          {previewImageUrl ? (
             <img
-              src={item.photo_url}
+              src={previewImageUrl}
               alt={item.title}
               className="w-full h-full object-cover"
             />
@@ -109,7 +118,7 @@ export function ActivityEditCard({
               tidak bisa dibatalkan.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="ghost"
@@ -128,7 +137,7 @@ export function ActivityEditCard({
               <Trash2 className="w-4 h-4" />
               {isDeleting ? "Menghapus..." : "Ya, Hapus"}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

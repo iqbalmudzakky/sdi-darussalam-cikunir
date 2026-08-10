@@ -15,5 +15,13 @@ export async function removeStoragePhoto(
   if (!photoUrl) return;
   const path = extractStoragePath(bucket, photoUrl);
   if (!path) return;
-  await supabase.storage.from(bucket).remove([path]);
+
+  try {
+    await supabase.storage.from(bucket).remove([path]);
+  } catch (error) {
+    console.error(
+      `[storage] removeStoragePhoto failed for bucket "${bucket}" (non-fatal):`,
+      error,
+    );
+  }
 }

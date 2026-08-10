@@ -122,6 +122,23 @@ function DialogTitle({
   );
 }
 
+const dialogFooterVariants = cva([
+  "sticky bottom-0 -mx-6 -mb-6 mt-6",
+  "flex gap-2",
+  "border-t border-gray-100 bg-white",
+  "px-6 py-4",
+]);
+
+function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn(dialogFooterVariants(), className)}
+      {...props}
+    />
+  );
+}
+
 function DialogDescription({
   className,
   ...props
@@ -135,4 +152,11 @@ function DialogDescription({
   );
 }
 
-export { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription };
+export {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+};

@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { EMOJI_OPTIONS } from "@/lib/emojiOptions";
 import { useToast } from "@/hooks/useToast";
@@ -234,28 +235,28 @@ export function FacilityFormDialog({
               </SelectContent>
             </Select>
           </div>
-
-          <div className="flex gap-2 pt-1">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              disabled={isSaving}
-              className="flex-1"
-            >
-              Batal
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSaving || isUploading}
-              className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
-            >
-              <Check className="w-4 h-4" />
-              {isSaving ? "Menyimpan..." : "Simpan"}
-            </Button>
-          </div>
         </div>
+
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => onOpenChange(false)}
+            disabled={isSaving}
+            className="flex-1"
+          >
+            Batal
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSaving || isUploading}
+            className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
+          >
+            <Check className="w-4 h-4" />
+            {isSaving ? "Menyimpan..." : "Simpan"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

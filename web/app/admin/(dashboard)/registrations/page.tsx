@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   listRegistrations,
@@ -251,7 +252,7 @@ export default function AdminRegistrationsPage() {
               ? Tindakan ini tidak bisa dibatalkan.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="ghost"
@@ -270,7 +271,7 @@ export default function AdminRegistrationsPage() {
               <Trash2 className="w-4 h-4" />
               {isDeleting ? "Menghapus..." : "Ya, Hapus"}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
