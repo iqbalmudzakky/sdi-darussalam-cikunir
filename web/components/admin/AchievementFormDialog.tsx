@@ -16,25 +16,25 @@ import {
 } from "@/components/ui/dialog";
 import { EmojiPicker } from "@/components/admin/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
-import type { ProgramItem } from "@/types/Program";
+import type { AchievementItem } from "@/types/Achievement";
 
-type ProgramFormValue = Omit<ProgramItem, "id">;
+type AchievementFormValue = Omit<AchievementItem, "id">;
 
-type ProgramFormDialogProps = {
+type AchievementFormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  initialValue: ProgramFormValue;
-  onSubmit: (value: ProgramFormValue) => Promise<boolean>;
+  initialValue: AchievementFormValue;
+  onSubmit: (value: AchievementFormValue) => Promise<boolean>;
 };
 
-export function ProgramFormDialog({
+export function AchievementFormDialog({
   open,
   onOpenChange,
   title,
   initialValue,
   onSubmit,
-}: ProgramFormDialogProps) {
+}: AchievementFormDialogProps) {
   const toast = useToast();
   const [draft, setDraft] = useState(initialValue);
   const [titleError, setTitleError] = useState(false);
@@ -47,7 +47,7 @@ export function ProgramFormDialog({
     }
   }, [open]);
 
-  function updateDraft(patch: Partial<ProgramFormValue>) {
+  function updateDraft(patch: Partial<AchievementFormValue>) {
     setDraft((prev) => ({ ...prev, ...patch }));
     if (patch.title !== undefined) setTitleError(false);
   }
@@ -61,10 +61,10 @@ export function ProgramFormDialog({
     const success = await onSubmit(draft);
     setIsSaving(false);
     if (!success) {
-      toast.error("Gagal menyimpan program", "Coba lagi.");
+      toast.error("Gagal menyimpan prestasi", "Coba lagi.");
       return;
     }
-    toast.success("Program disimpan");
+    toast.success("Prestasi disimpan");
     onOpenChange(false);
   }
 
@@ -74,18 +74,18 @@ export function ProgramFormDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            Isi detail program di bawah ini.
+            Isi detail prestasi di bawah ini.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="program-title">Judul</Label>
+            <Label htmlFor="achievement-title">Judul</Label>
             <Input
-              id="program-title"
+              id="achievement-title"
               value={draft.title}
               onChange={(e) => updateDraft({ title: e.target.value })}
-              placeholder="mis. Tahfidz Al-Qur'an"
+              placeholder="mis. 1st Place"
               className="rounded-xl"
             />
             {titleError && (
@@ -93,18 +93,19 @@ export function ProgramFormDialog({
             )}
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="program-description">Deskripsi</Label>
+            <Label htmlFor="achievement-description">Deskripsi</Label>
             <Textarea
-              id="program-description"
+              id="achievement-description"
               value={draft.description}
               onChange={(e) => updateDraft({ description: e.target.value })}
+              placeholder="mis. Lomba Tahfidz Tingkat Kota Bekasi 2025"
               className="rounded-xl min-h-24"
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="program-emoji">Emoji</Label>
+            <Label htmlFor="achievement-emoji">Emoji</Label>
             <EmojiPicker
-              id="program-emoji"
+              id="achievement-emoji"
               value={draft.emoji}
               onValueChange={(emoji) => updateDraft({ emoji })}
             />

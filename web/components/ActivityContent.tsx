@@ -5,9 +5,11 @@ import { cva } from "class-variance-authority";
 import { Play } from "lucide-react";
 import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/youtube";
 import type { ActivityItem } from "@/types/Activity";
+import type { AchievementItem } from "@/types/Achievement";
 
 type ActivityContentProps = {
   activities: ActivityItem[];
+  achievements: AchievementItem[];
 };
 
 const activityCardVariants = cva(
@@ -124,7 +126,10 @@ const activityDescriptionVariants = cva(
   },
 );
 
-export default function ActivityContent({ activities }: ActivityContentProps) {
+export default function ActivityContent({
+  activities,
+  achievements,
+}: ActivityContentProps) {
   /*
    * Refs ini HANYA menyimpan card Activity.
    *
@@ -501,48 +506,33 @@ export default function ActivityContent({ activities }: ActivityContentProps) {
       {/* =========================
           Achievement Section
           ========================= */}
-      <div className="mt-12 rounded-3xl bg-linear-to-r from-emerald-500 to-teal-600 p-6 text-white sm:mt-14 sm:p-8 lg:mt-16 lg:p-12">
-        <div className="mx-auto max-w-4xl text-center">
-          <h3 className="mb-8 text-2xl font-bold sm:text-3xl lg:mb-10">
-            Prestasi Kami
-          </h3>
+      {achievements.length > 0 && (
+        <div className="mt-12 rounded-3xl bg-linear-to-r from-emerald-500 to-teal-600 p-6 text-white sm:mt-14 sm:p-8 lg:mt-16 lg:p-12">
+          <div className="mx-auto max-w-4xl text-center">
+            <h3 className="mb-8 text-2xl font-bold sm:text-3xl lg:mb-10">
+              Prestasi Kami
+            </h3>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6 lg:gap-8">
-            {/* Achievement 1 */}
-            <div className="px-4 py-3">
-              <div className="mb-3 text-4xl font-bold sm:text-5xl">🥇</div>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-6 lg:gap-8">
+              {achievements.map((achievement) => (
+                <div key={achievement.id} className="px-4 py-3">
+                  <div className="mb-3 text-4xl font-bold sm:text-5xl">
+                    {achievement.emoji}
+                  </div>
 
-              <p className="mb-2 text-xl font-bold sm:text-2xl">1st Place</p>
+                  <p className="mb-2 text-xl font-bold sm:text-2xl">
+                    {achievement.title}
+                  </p>
 
-              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">
-                Lomba Tahfidz Tingkat Kota Bekasi 2025
-              </p>
-            </div>
-
-            {/* Achievement 2 */}
-            <div className="px-4 py-3">
-              <div className="mb-3 text-4xl font-bold sm:text-5xl">🥈</div>
-
-              <p className="mb-2 text-xl font-bold sm:text-2xl">2nd Place</p>
-
-              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">
-                Kompetisi Sains Madrasah Tingkat Provinsi
-              </p>
-            </div>
-
-            {/* Achievement 3 */}
-            <div className="px-4 py-3">
-              <div className="mb-3 text-4xl font-bold sm:text-5xl">🏆</div>
-
-              <p className="mb-2 text-xl font-bold sm:text-2xl">Best School</p>
-
-              <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">
-                Sekolah Berprestasi Kecamatan Jatiasih
-              </p>
+                  <p className="text-sm leading-relaxed text-emerald-100 sm:text-base">
+                    {achievement.description}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
