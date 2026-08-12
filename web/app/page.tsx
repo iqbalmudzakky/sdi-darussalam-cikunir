@@ -18,6 +18,7 @@ const SITE_DESCRIPTION_FALLBACK =
 
 export async function generateMetadata(): Promise<Metadata> {
   const profile = await getSchoolProfile();
+  const siteUrl = getSiteUrl();
   const description = profile.description || SITE_DESCRIPTION_FALLBACK;
   const ogImage = profile.photo_url || "/logo.png";
 
@@ -40,6 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       title: SITE_TITLE,
       description,
+      url: siteUrl,
       siteName: "SDI Darussalam Cikunir",
       locale: "id_ID",
       images: [
