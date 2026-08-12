@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SDI Darussalam Cikunir",
   description: "Situs resmi SDI Darussalam Cikunir",
+  icons: {
+    icon: "/default-favicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -24,10 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="id">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ToastProvider>
           {children}
           <Toaster />
