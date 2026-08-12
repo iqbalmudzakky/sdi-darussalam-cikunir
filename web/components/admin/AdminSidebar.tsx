@@ -10,6 +10,7 @@ import {
   Building2,
   CalendarDays,
   Inbox,
+  Settings2,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { href: "/admin/facility", label: "Fasilitas", icon: Building2 },
   { href: "/admin/activity", label: "Kegiatan", icon: CalendarDays },
   { href: "/admin/registrations", label: "Pendaftar", icon: Inbox },
+  { href: "/admin/meta-setting", label: "Meta Setting", icon: Settings2 },
 ];
 
 export function AdminSidebar() {
