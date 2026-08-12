@@ -19,23 +19,17 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between sm:h-20">
           {/* Logo + School Identity */}
-          <a href="#" className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3" onClick={() => setIsMenuOpen(false)}>
+          <a
+            href="#"
+            className="flex min-w-0 flex-1 items-center gap-2.5 sm:gap-3"
+            onClick={() => setIsMenuOpen(false)}
+          >
             {/* Logo */}
-            <div
-              className="
-                flex h-10 w-10 shrink-0
-                items-center justify-center
-                rounded-full
-                bg-emerald-500
-                text-sm font-bold text-white
-
-                sm:h-12
-                sm:w-12
-                sm:text-base
-              "
-            >
-              SD
-            </div>
+            <img
+              src="/logo.png"
+              alt="Logo SDI Darussalam Cikunir"
+              className="h-10 w-10 shrink-0 rounded-full object-cover sm:h-12 sm:w-12"
+            />
 
             {/* School Name + Location */}
             <div className="min-w-0">
@@ -107,14 +101,21 @@ export default function Navbar() {
               md:hidden
             "
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div id="mobile-navigation" className="border-t border-gray-100 bg-white shadow-lg md:hidden">
+        <div
+          id="mobile-navigation"
+          className="border-t border-gray-100 bg-white shadow-lg md:hidden"
+        >
           <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3 sm:px-6">
             {NAV_LINKS.map((link) => (
               <a
