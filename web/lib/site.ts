@@ -1,5 +1,17 @@
+function isValidUrl(value: string): boolean {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function getSiteUrl(): string {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
+  if (
+    process.env.NEXT_PUBLIC_SITE_URL &&
+    isValidUrl(process.env.NEXT_PUBLIC_SITE_URL)
+  ) {
     return process.env.NEXT_PUBLIC_SITE_URL;
   }
 

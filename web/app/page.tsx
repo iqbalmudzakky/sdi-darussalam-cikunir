@@ -67,7 +67,7 @@ export default async function Home() {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "PrimarySchool",
+    "@type": "ElementarySchool",
     name: "SDI Darussalam Cikunir",
     description: profile.description || SITE_DESCRIPTION_FALLBACK,
     url: siteUrl,
