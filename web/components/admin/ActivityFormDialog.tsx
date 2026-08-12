@@ -29,6 +29,24 @@ type ActivityFormDialogProps = {
   onSubmit: (value: ActivityFormValue) => Promise<boolean>;
 };
 
+const SUPPORTED_PHOTO_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+const SUPPORTED_PHOTO_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+
+function isSupportedPhotoFile(file: File) {
+  if (file.type) {
+    return SUPPORTED_PHOTO_TYPES.has(file.type);
+  }
+
+  return SUPPORTED_PHOTO_EXTENSIONS.some((extension) =>
+    file.name.toLowerCase().endsWith(extension),
+  );
+}
+
 export function ActivityFormDialog({
   open,
   onOpenChange,
@@ -41,6 +59,7 @@ export function ActivityFormDialog({
   const [titleError, setTitleError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDraggingPhoto, setIsDraggingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingPhotoFileRef = useRef<File | null>(null);
 
@@ -57,12 +76,50 @@ export function ActivityFormDialog({
     if (patch.title !== undefined) setTitleError(false);
   }
 
+  function applyPhotoFile(file: File) {
+    if (!isSupportedPhotoFile(file)) {
+      toast.error(
+        "Format foto tidak didukung",
+        "Gunakan JPG, JPEG, PNG, atau WebP.",
+      );
+      return;
+    }
+
+    pendingPhotoFileRef.current = file;
+    updateDraft({ photo_url: URL.createObjectURL(file) });
+  }
+
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    pendingPhotoFileRef.current = file;
-    updateDraft({ photo_url: URL.createObjectURL(file) });
+    applyPhotoFile(file);
+    e.target.value = "";
+  }
+
+  function handlePhotoDragOver(e: React.DragEvent<HTMLButtonElement>) {
+    e.preventDefault();
+
+    if (isUploading) return;
+
+    e.dataTransfer.dropEffect = "copy";
+    setIsDraggingPhoto(true);
+  }
+
+  function handlePhotoDragLeave() {
+    setIsDraggingPhoto(false);
+  }
+
+  function handlePhotoDrop(e: React.DragEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    setIsDraggingPhoto(false);
+
+    if (isUploading) return;
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+
+    applyPhotoFile(file);
   }
 
   async function handleSubmit() {
@@ -122,8 +179,15 @@ export function ActivityFormDialog({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
+            onDragOver={handlePhotoDragOver}
+            onDragLeave={handlePhotoDragLeave}
+            onDrop={handlePhotoDrop}
             disabled={isUploading}
-            className="relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 rounded-2xl flex items-center justify-center overflow-hidden disabled:cursor-default"
+            className={`relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 rounded-2xl flex items-center justify-center overflow-hidden disabled:cursor-default ${
+              isDraggingPhoto
+                ? "ring-2 ring-emerald-500 ring-offset-2"
+                : ""
+            }`}
           >
             {draft.photo_url ? (
               <img
@@ -141,19 +205,35 @@ export function ActivityFormDialog({
                 <span className="text-sm font-medium">Mengunggah...</span>
               </div>
             ) : (
-              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1.5 text-white opacity-0 hover:opacity-100 transition-opacity">
+              <div
+                className={`absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-white transition-opacity ${
+                  isDraggingPhoto
+                    ? "bg-emerald-700/70 opacity-100"
+                    : "bg-black/40 opacity-0 hover:opacity-100"
+                }`}
+              >
                 <Upload className="w-6 h-6" />
-                <span className="text-sm font-medium">Ganti foto</span>
+                <span className="text-sm font-medium">
+                  {isDraggingPhoto ? "Lepaskan foto di sini" : "Ganti foto"}
+                </span>
+                <span className="text-xs text-white/80">
+                  {isDraggingPhoto
+                    ? "JPG, JPEG, PNG, atau WebP"
+                    : "Klik atau drag & drop"}
+                </span>
               </div>
             )}
           </button>
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
             onChange={handlePhotoChange}
             className="hidden"
           />
+          <p className="text-xs text-gray-500">
+            Format yang didukung: JPG, JPEG, PNG, dan WebP.
+          </p>
           <div className="space-y-1.5">
             <Label htmlFor="activity-title">Judul</Label>
             <Input
@@ -216,7 +296,7 @@ export function ActivityFormDialog({
           </div>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="static">
           <Button
             type="button"
             variant="ghost"
