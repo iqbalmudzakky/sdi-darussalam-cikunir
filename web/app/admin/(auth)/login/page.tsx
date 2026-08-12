@@ -20,12 +20,6 @@ const pageGradientVariants = cva([
   "bg-linear-to-br from-emerald-50 via-teal-50 to-green-50",
 ]);
 
-const logoBadgeVariants = cva([
-  "w-14 h-14 mb-4 rounded-full",
-  "flex items-center justify-center",
-  "bg-linear-to-br from-emerald-500 to-teal-600",
-]);
-
 const inputFieldVariants = cva([
   "h-11 rounded-xl px-4",
   "focus-visible:border-emerald-500 focus-visible:ring-emerald-500/50",
@@ -88,9 +82,11 @@ export default function LoginPage() {
           ) : (
             <>
               <div className="flex flex-col items-center text-center mb-8">
-                <div className={logoBadgeVariants()}>
-                  <span className="text-white font-bold text-xl">SD</span>
-                </div>
+                <img
+                  src="/logo.png"
+                  alt="Logo SDI Darussalam Cikunir"
+                  className="w-14 h-14 mb-4 rounded-full object-cover"
+                />
                 <h1 className="text-xl font-bold text-gray-900">
                   SDI Darussalam Cikunir
                 </h1>

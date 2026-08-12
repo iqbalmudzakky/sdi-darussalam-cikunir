@@ -9,13 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -23,7 +16,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { EMOJI_OPTIONS } from "@/lib/emojiOptions";
+import { EmojiPicker } from "@/components/admin/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
 import type { FacilityItem } from "@/types/Facility";
 
@@ -71,9 +64,6 @@ export function FacilityFormDialog({
       pendingPhotoFileRef.current = null;
     }
   }, [open]);
-
-  const hasCustomEmoji =
-    !!draft.emoji && !EMOJI_OPTIONS.some((opt) => opt.emoji === draft.emoji);
 
   function updateDraft(patch: Partial<FacilityFormValue>) {
     setDraft((prev) => ({ ...prev, ...patch }));
@@ -206,34 +196,11 @@ export function FacilityFormDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="facility-emoji">Emoji</Label>
-            <Select
-              value={draft.emoji || null}
-              onValueChange={(value) => updateDraft({ emoji: value ?? "" })}
-            >
-              <SelectTrigger id="facility-emoji" className="rounded-xl">
-                <SelectValue placeholder="Pilih emoji">
-                  {(value: string | null) => {
-                    if (!value) return "Pilih emoji";
-                    const opt = EMOJI_OPTIONS.find((o) => o.emoji === value);
-                    return opt
-                      ? `${opt.emoji} ${opt.label}`
-                      : `${value} (saat ini)`;
-                  }}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {hasCustomEmoji && (
-                  <SelectItem value={draft.emoji}>
-                    {draft.emoji} (saat ini)
-                  </SelectItem>
-                )}
-                {EMOJI_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.emoji} value={opt.emoji}>
-                    {opt.emoji} {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <EmojiPicker
+              id="facility-emoji"
+              value={draft.emoji}
+              onValueChange={(emoji) => updateDraft({ emoji })}
+            />
           </div>
         </div>
 

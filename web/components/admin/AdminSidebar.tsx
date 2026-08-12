@@ -3,19 +3,52 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { cva } from "class-variance-authority";
 import {
   LayoutDashboard,
   Info,
   BookOpen,
   Building2,
   CalendarDays,
+  Trophy,
   Inbox,
-  Settings2,
   LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { getPendingFollowUpCount } from "@/lib/api/registrations";
+
+const sidebarAsideVariants = cva([
+  "w-64 shrink-0 min-h-screen bg-white border-r border-gray-100 flex flex-col",
+]);
+
+const sidebarHeaderVariants = cva([
+  "flex items-center gap-3 px-6 py-6 border-b border-gray-100",
+]);
+
+const sidebarNavLinkVariants = cva(
+  [
+    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium",
+    "transition-colors",
+  ],
+  {
+    variants: {
+      active: {
+        true: "bg-emerald-50 text-emerald-700",
+        false: "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+      },
+    },
+  },
+);
+
+const sidebarPendingBadgeVariants = cva([
+  "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full",
+  "bg-red-500 px-1.5 text-xs font-semibold text-white",
+]);
+
+const sidebarLogoutButtonVariants = cva([
+  "flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium",
+  "text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors",
+]);
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -23,8 +56,8 @@ const NAV_ITEMS = [
   { href: "/admin/program", label: "Program", icon: BookOpen },
   { href: "/admin/facility", label: "Fasilitas", icon: Building2 },
   { href: "/admin/activity", label: "Kegiatan", icon: CalendarDays },
+  { href: "/admin/achievement", label: "Prestasi", icon: Trophy },
   { href: "/admin/registrations", label: "Pendaftar", icon: Inbox },
-  { href: "/admin/meta-setting", label: "Meta Setting", icon: Settings2 },
 ];
 
 export function AdminSidebar() {
@@ -56,11 +89,13 @@ export function AdminSidebar() {
   }
 
   return (
-    <aside className="w-64 shrink-0 min-h-screen bg-white border-r border-gray-100 flex flex-col">
-      <div className="flex items-center gap-3 px-6 py-6 border-b border-gray-100">
-        <div className="w-10 h-10 bg-linear-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
-          <span className="text-white font-bold">SD</span>
-        </div>
+    <aside className={sidebarAsideVariants()}>
+      <div className={sidebarHeaderVariants()}>
+        <img
+          src="/logo.png"
+          alt="Logo SDI Darussalam Cikunir"
+          className="h-10 w-10 shrink-0 rounded-full object-cover"
+        />
         <div>
           <p className="text-sm font-bold text-gray-900">Admin Panel</p>
           <p className="text-xs text-gray-500">SDI Darussalam Cikunir</p>
@@ -78,17 +113,12 @@ export function AdminSidebar() {
             <Link
               key={href}
               href={href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-              )}
+              className={sidebarNavLinkVariants({ active: isActive })}
             >
               <Icon className="w-4 h-4" />
               {label}
               {href === "/admin/registrations" && pendingCount > 0 && (
-                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-semibold text-white">
+                <span className={sidebarPendingBadgeVariants()}>
                   {pendingCount}
                 </span>
               )}
@@ -100,7 +130,7 @@ export function AdminSidebar() {
       <div className="px-3 py-4 border-t border-gray-100">
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"
+          className={sidebarLogoutButtonVariants()}
         >
           <LogOut className="w-4 h-4" />
           Keluar

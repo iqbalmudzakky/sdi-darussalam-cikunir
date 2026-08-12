@@ -8,86 +8,89 @@ import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import Navbar from "@/components/Navbar";
 import Program from "@/components/Program";
-import { getMetaSetting } from "@/modules/meta-setting/service";
+import { getSchoolProfile } from "@/lib/data/schoolProfile";
+import { getSiteUrl } from "@/lib/site";
 
-const FALLBACK_METADATA: Metadata = {
-  title: "SDI Darussalam Cikunir",
-  description: "Situs resmi SDI Darussalam Cikunir",
-  robots: {
-    index: true,
-    follow: true,
-  },
-
-  icons: {
-    icon: "/default-favicon.png",
-  },
-};
+const SITE_TITLE =
+  "SDI Darussalam Cikunir — Sekolah Dasar Islam Unggulan di Bekasi Selatan";
+const SITE_DESCRIPTION_FALLBACK =
+  "SDI Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jaka Setia, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlakulkarimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
 
 export async function generateMetadata(): Promise<Metadata> {
-  try {
-    const setting = await getMetaSetting();
+  const profile = await getSchoolProfile();
+  const description = profile.description || SITE_DESCRIPTION_FALLBACK;
+  const ogImage = profile.photo_url || "/logo.png";
 
-    const ogTitle = setting.og_title || setting.meta_title;
-    const ogDescription = setting.og_description || setting.meta_description;
-
-    const twitterTitle = setting.twitter_title || setting.og_title || setting.meta_title;
-
-    const twitterDescription = setting.twitter_description || setting.og_description || setting.meta_description;
-
-    const twitterImage = setting.twitter_image_url || setting.og_image_url;
-
-    return {
-      title: setting.meta_title,
-      description: setting.meta_description,
-
-      keywords: setting.meta_keywords.length > 0 ? setting.meta_keywords : undefined,
-
-      alternates: setting.canonical_url
-        ? {
-            canonical: setting.canonical_url,
-          }
-        : undefined,
-
-      robots: {
-        index: setting.robots_index,
-        follow: setting.robots_follow,
-      },
-
-      icons: {
-        icon: setting.favicon_url || "/default-favicon.png",
-      },
-
-      openGraph: {
-        type: "website",
-        title: ogTitle,
-        description: ogDescription,
-        url: setting.canonical_url || undefined,
-        images: setting.og_image_url
-          ? [
-              {
-                url: setting.og_image_url,
-              },
-            ]
-          : undefined,
-      },
-
-      twitter: {
-        card: twitterImage ? "summary_large_image" : "summary",
-        title: twitterTitle,
-        description: twitterDescription,
-        images: twitterImage ? [twitterImage] : undefined,
-      },
-    };
-  } catch (error) {
-    console.error("Failed to generate landing page metadata:", error);
-
-    return FALLBACK_METADATA;
-  }
+  return {
+    title: SITE_TITLE,
+    description,
+    keywords: [
+      "SDI Darussalam Cikunir",
+      "Sekolah Dasar Islam Bekasi",
+      "SD Islam Bekasi Selatan",
+      "SD Islam Jaka Setia",
+      "sekolah dasar islam unggulan",
+      "pendaftaran SD Islam Bekasi",
+    ],
+    robots: {
+      index: true,
+      follow: true,
+    },
+    openGraph: {
+      type: "website",
+      title: SITE_TITLE,
+      description,
+      siteName: "SDI Darussalam Cikunir",
+      locale: "id_ID",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: "SDI Darussalam Cikunir",
+        },
+      ],
+    },
+  };
 }
 
-export default function Home() {
+export default async function Home() {
+  const profile = await getSchoolProfile();
+  const siteUrl = getSiteUrl();
+
+  const sameAs = [
+    profile.facebook,
+    profile.instagram,
+    profile.tiktok,
+    profile.youtube,
+  ].filter(Boolean);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ElementarySchool",
+    name: "SDI Darussalam Cikunir",
+    description: profile.description || SITE_DESCRIPTION_FALLBACK,
+    url: siteUrl,
+    logo: `${siteUrl}/logo.png`,
+    image: profile.photo_url || `${siteUrl}/logo.png`,
+    telephone: profile.telepon || undefined,
+    email: profile.email || undefined,
+    address: profile.alamat
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: profile.alamat,
+        }
+      : undefined,
+    ...(sameAs.length > 0 ? { sameAs } : {}),
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Navigation */}
       <Navbar />
 
