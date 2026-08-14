@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, Upload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { prepareImageForUpload } from "@/lib/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,24 +30,6 @@ type ActivityFormDialogProps = {
   onSubmit: (value: ActivityFormValue) => Promise<boolean>;
 };
 
-const SUPPORTED_PHOTO_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
-
-const SUPPORTED_PHOTO_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
-
-function isSupportedPhotoFile(file: File) {
-  if (file.type) {
-    return SUPPORTED_PHOTO_TYPES.has(file.type);
-  }
-
-  return SUPPORTED_PHOTO_EXTENSIONS.some((extension) =>
-    file.name.toLowerCase().endsWith(extension),
-  );
-}
-
 export function ActivityFormDialog({
   open,
   onOpenChange,
@@ -59,6 +42,7 @@ export function ActivityFormDialog({
   const [titleError, setTitleError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isPreparingPhoto, setIsPreparingPhoto] = useState(false);
   const [isDraggingPhoto, setIsDraggingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingPhotoFileRef = useRef<File | null>(null);
@@ -76,31 +60,34 @@ export function ActivityFormDialog({
     if (patch.title !== undefined) setTitleError(false);
   }
 
-  function applyPhotoFile(file: File) {
-    if (!isSupportedPhotoFile(file)) {
-      toast.error(
-        "Format foto tidak didukung",
-        "Gunakan JPG, JPEG, PNG, atau WebP.",
-      );
-      return;
-    }
+  async function applyPhotoFile(file: File) {
+    setIsPreparingPhoto(true);
 
-    pendingPhotoFileRef.current = file;
-    updateDraft({ photo_url: URL.createObjectURL(file) });
+    try {
+      const preparedFile = await prepareImageForUpload(file);
+
+      pendingPhotoFileRef.current = preparedFile;
+      updateDraft({ photo_url: URL.createObjectURL(preparedFile) });
+    } catch (error) {
+      console.error("Failed to prepare activity photo:", error);
+      toast.error("Gagal memproses foto", "Coba pilih foto lain.");
+    } finally {
+      setIsPreparingPhoto(false);
+    }
   }
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    applyPhotoFile(file);
+    void applyPhotoFile(file);
     e.target.value = "";
   }
 
   function handlePhotoDragOver(e: React.DragEvent<HTMLButtonElement>) {
     e.preventDefault();
 
-    if (isUploading) return;
+    if (isUploading || isPreparingPhoto) return;
 
     e.dataTransfer.dropEffect = "copy";
     setIsDraggingPhoto(true);
@@ -114,12 +101,12 @@ export function ActivityFormDialog({
     e.preventDefault();
     setIsDraggingPhoto(false);
 
-    if (isUploading) return;
+    if (isUploading || isPreparingPhoto) return;
 
     const file = e.dataTransfer.files?.[0];
     if (!file) return;
 
-    applyPhotoFile(file);
+    void applyPhotoFile(file);
   }
 
   async function handleSubmit() {
@@ -182,7 +169,7 @@ export function ActivityFormDialog({
             onDragOver={handlePhotoDragOver}
             onDragLeave={handlePhotoDragLeave}
             onDrop={handlePhotoDrop}
-            disabled={isUploading}
+            disabled={isUploading || isPreparingPhoto}
             className={`relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 rounded-2xl flex items-center justify-center overflow-hidden disabled:cursor-default ${
               isDraggingPhoto
                 ? "ring-2 ring-emerald-500 ring-offset-2"
@@ -199,10 +186,12 @@ export function ActivityFormDialog({
               <span className="text-6xl">{draft.emoji}</span>
             )}
 
-            {isUploading ? (
+            {isUploading || isPreparingPhoto ? (
               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-1.5 text-white">
                 <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm font-medium">Mengunggah...</span>
+                <span className="text-sm font-medium">
+                  {isPreparingPhoto ? "Memproses foto..." : "Mengunggah..."}
+                </span>
               </div>
             ) : (
               <div
@@ -218,7 +207,7 @@ export function ActivityFormDialog({
                 </span>
                 <span className="text-xs text-white/80">
                   {isDraggingPhoto
-                    ? "JPG, JPEG, PNG, atau WebP"
+                    ? "Foto akan diproses otomatis"
                     : "Klik atau drag & drop"}
                 </span>
               </div>
@@ -227,13 +216,10 @@ export function ActivityFormDialog({
           <input
             ref={fileInputRef}
             type="file"
-            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            accept="image/*,.heic,.heif"
             onChange={handlePhotoChange}
             className="hidden"
           />
-          <p className="text-xs text-gray-500">
-            Format yang didukung: JPG, JPEG, PNG, dan WebP.
-          </p>
           <div className="space-y-1.5">
             <Label htmlFor="activity-title">Judul</Label>
             <Input
@@ -309,7 +295,7 @@ export function ActivityFormDialog({
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={isSaving || isUploading}
+            disabled={isSaving || isUploading || isPreparingPhoto}
             className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
           >
             <Check className="w-4 h-4" />
