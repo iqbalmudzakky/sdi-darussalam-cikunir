@@ -1,20 +1,28 @@
-import { getSchoolProfile } from "@/lib/data/schoolProfile";
-import { RegistrationForm } from "@/components/RegistrationForm";
-import ContactSocialLinks from "@/components/ContactSocialLinks";
+import { getSchoolProfile } from "@/lib/actions/schoolProfile";
+import { RegistrationForm } from "@/components/sections/RegistrationForm";
+import ContactSocialLinks from "@/components/sections/ContactSocialLinks";
 
 export default async function Contact() {
   const profile = await getSchoolProfile();
 
   return (
-    <section id="kontak" className="scroll-mt-20 bg-white py-14 sm:py-16 lg:py-20">
+    <section
+      id="kontak"
+      className="scroll-mt-20 bg-white py-14 sm:py-16 lg:py-20"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="mx-auto mb-10 max-w-4xl text-center sm:mb-14 lg:mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">Hubungi Kami</h2>
+          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Hubungi Kami
+          </h2>
 
           <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-emerald-500" />
 
-          <p className="mt-5 text-base leading-relaxed text-gray-600 sm:text-lg">Tertarik mendaftarkan putra-putri Anda? Hubungi kami untuk informasi lebih lanjut</p>
+          <p className="mt-5 text-base leading-relaxed text-gray-600 sm:text-lg">
+            Tertarik mendaftarkan putra-putri Anda? Hubungi kami untuk informasi
+            lebih lanjut
+          </p>
         </div>
 
         {/* Contact Content */}
@@ -34,10 +42,25 @@ export default async function Contact() {
                   sm:h-14 sm:w-14
                 "
               >
-                <svg className="h-6 w-6 text-white sm:h-7 sm:w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <svg
+                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
 
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
                 </svg>
               </div>
 
@@ -73,7 +96,12 @@ export default async function Contact() {
                   sm:h-14 sm:w-14
                 "
               >
-                <svg className="h-6 w-6 text-white sm:h-7 sm:w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -113,8 +141,18 @@ export default async function Contact() {
                   sm:h-14 sm:w-14
                 "
               >
-                <svg className="h-6 w-6 text-white sm:h-7 sm:w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                <svg
+                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
                 </svg>
               </div>
 
@@ -148,13 +186,25 @@ export default async function Contact() {
                   sm:h-14 sm:w-14
                 "
               >
-                <svg className="h-6 w-6 text-white sm:h-7 sm:w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
 
               <div className="min-w-0 flex-1">
-                <h3 className="mb-2 font-bold text-gray-900">Jam Operasional</h3>
+                <h3 className="mb-2 font-bold text-gray-900">
+                  Jam Operasional
+                </h3>
 
                 <p
                   className="
@@ -173,7 +223,14 @@ export default async function Contact() {
             </div>
 
             {/* Social Media */}
-            <ContactSocialLinks facebook={profile.facebook} instagram={profile.instagram} tiktok={profile.tiktok} youtube={profile.youtube} />
+            <ContactSocialLinks
+              whatsapp={profile.whatsapp}
+              whatsappMessage={profile.whatsapp_message}
+              facebook={profile.facebook}
+              instagram={profile.instagram}
+              tiktok={profile.tiktok}
+              youtube={profile.youtube}
+            />
           </div>
 
           {/* Registration Form */}
@@ -189,7 +246,9 @@ export default async function Contact() {
               lg:p-8
             "
           >
-            <h3 className="mb-6 text-xl font-bold text-gray-900 sm:text-2xl">Formulir Pendaftaran Online</h3>
+            <h3 className="mb-6 text-xl font-bold text-gray-900 sm:text-2xl">
+              Formulir Pendaftaran Online
+            </h3>
 
             <RegistrationForm />
           </div>

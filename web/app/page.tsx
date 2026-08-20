@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 
-import About from "@/components/About";
-import Activity from "@/components/Activity";
-import Contact from "@/components/Contact";
-import Facility from "@/components/Facility";
-import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
-import Navbar from "@/components/Navbar";
-import Program from "@/components/Program";
-import { getSchoolProfile } from "@/lib/data/schoolProfile";
+import About from "@/components/sections/About";
+import Activity from "@/components/sections/Activity";
+import Contact from "@/components/sections/Contact";
+import Facility from "@/components/sections/Facility";
+import Footer from "@/components/sections/Footer";
+import Hero from "@/components/sections/Hero";
+import Navbar from "@/components/sections/Navbar";
+import Program from "@/components/sections/Program";
+import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
 const SITE_TITLE =

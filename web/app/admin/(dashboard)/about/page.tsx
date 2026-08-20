@@ -42,6 +42,8 @@ const EMPTY_PROFILE: SchoolProfile = {
   misi: [],
   alamat: "",
   telepon: "",
+  whatsapp: "",
+  whatsapp_message: "",
   email: "",
   jam_operasional: "",
   facebook: "",
@@ -290,12 +292,22 @@ export default function AdminAboutPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="about-telepon">Telepon / WhatsApp</Label>
+              <Label htmlFor="about-telepon">Telepon</Label>
               <Input
                 id="about-telepon"
                 value={draft.telepon}
                 onChange={(e) => updateDraft({ telepon: e.target.value })}
                 placeholder="mis. (021) XXXX-XXXX"
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="about-whatsapp">Nomor WhatsApp</Label>
+              <Input
+                id="about-whatsapp"
+                value={draft.whatsapp}
+                onChange={(e) => updateDraft({ whatsapp: e.target.value })}
+                placeholder="08xx-xxxx-xxxx"
                 className="rounded-xl"
               />
             </div>
@@ -349,6 +361,25 @@ export default function AdminAboutPage() {
                 className="rounded-xl"
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="about-whatsapp-message">
+              Pesan Template WhatsApp
+            </Label>
+            <Textarea
+              id="about-whatsapp-message"
+              value={draft.whatsapp_message}
+              onChange={(e) =>
+                updateDraft({ whatsapp_message: e.target.value })
+              }
+              placeholder="mis. Assalamu'alaikum, saya ingin bertanya seputar pendaftaran di SDI Darussalam Cikunir."
+              className="rounded-xl min-h-24"
+            />
+            <p className="text-xs text-gray-500">
+              Pesan ini otomatis terisi di kolom chat WhatsApp saat pengunjung
+              website mengklik ikon WhatsApp di section Kontak.
+            </p>
           </div>
 
           <Button

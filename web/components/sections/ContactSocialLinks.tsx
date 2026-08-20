@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { buildWhatsAppLink } from "@/lib/social/whatsapp";
+import {
+  WhatsappIcon,
+  FacebookIcon,
+  InstagramIcon,
+  TiktokIcon,
+  YoutubeIcon,
+} from "@/components/icons/SocialIcons";
 
 type ContactSocialLinksProps = {
+  whatsapp?: string | null;
+  whatsappMessage?: string | null;
   facebook?: string | null;
   instagram?: string | null;
   tiktok?: string | null;
@@ -15,7 +25,14 @@ type SocialLink = {
   icon: ReactNode;
 };
 
-export default function ContactSocialLinks({ facebook, instagram, tiktok, youtube }: ContactSocialLinksProps) {
+export default function ContactSocialLinks({
+  whatsapp,
+  whatsappMessage,
+  facebook,
+  instagram,
+  tiktok,
+  youtube,
+}: ContactSocialLinksProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
@@ -30,15 +47,19 @@ export default function ContactSocialLinks({ facebook, instagram, tiktok, youtub
 
   const socialLinks: SocialLink[] = [];
 
+  if (whatsapp) {
+    socialLinks.push({
+      url: buildWhatsAppLink(whatsapp, whatsappMessage ?? undefined),
+      label: "WhatsApp",
+      icon: <WhatsappIcon className="h-6 w-6" />,
+    });
+  }
+
   if (facebook) {
     socialLinks.push({
       url: facebook,
       label: "Facebook",
-      icon: (
-        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M13.5 22v-9h3l.5-3.5h-3.5V7.25c0-1.01.28-1.7 1.75-1.7H17V2.4c-.3-.04-1.34-.13-2.55-.13-2.52 0-4.25 1.54-4.25 4.37V9.5H7.35V13h2.85v9h3.3z" />
-        </svg>
-      ),
+      icon: <FacebookIcon className="h-6 w-6" />,
     });
   }
 
@@ -46,15 +67,7 @@ export default function ContactSocialLinks({ facebook, instagram, tiktok, youtub
     socialLinks.push({
       url: instagram,
       label: "Instagram",
-      icon: (
-        <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="3" y="3" width="18" height="18" rx="5" ry="5" />
-
-          <circle cx="12" cy="12" r="4" />
-
-          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-        </svg>
-      ),
+      icon: <InstagramIcon className="h-6 w-6" />,
     });
   }
 
@@ -62,11 +75,7 @@ export default function ContactSocialLinks({ facebook, instagram, tiktok, youtub
     socialLinks.push({
       url: tiktok,
       label: "TikTok",
-      icon: (
-        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M15.6 2c.3 1.8 1.3 3.2 2.8 4.2 1 .7 2.1 1.1 3.6 1.2v3.3c-2.4.1-4.6-.7-6.4-2.1v7.1c0 4-3.2 7.3-7.2 7.3S1 19.8 1 15.8s3.3-7.3 7.3-7.3c.4 0 .9 0 1.3.1V12a4 4 0 0 0-1.3-.2 4 4 0 1 0 4 4V2h3.3z" />
-        </svg>
-      ),
+      icon: <TiktokIcon className="h-6 w-6" />,
     });
   }
 
@@ -74,11 +83,7 @@ export default function ContactSocialLinks({ facebook, instagram, tiktok, youtub
     socialLinks.push({
       url: youtube,
       label: "YouTube",
-      icon: (
-        <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4L15.8 12l-6.2 3.6z" />
-        </svg>
-      ),
+      icon: <YoutubeIcon className="h-6 w-6" />,
     });
   }
 
@@ -145,9 +150,14 @@ export default function ContactSocialLinks({ facebook, instagram, tiktok, youtub
        */
       const centerTolerance = Math.min(80, viewportHeight * 0.1);
 
-      const shouldBeActive = rect.bottom > 0 && rect.top < viewportHeight && distanceFromCenter <= centerTolerance;
+      const shouldBeActive =
+        rect.bottom > 0 &&
+        rect.top < viewportHeight &&
+        distanceFromCenter <= centerTolerance;
 
-      setIsCenterActive((current) => (current === shouldBeActive ? current : shouldBeActive));
+      setIsCenterActive((current) =>
+        current === shouldBeActive ? current : shouldBeActive,
+      );
 
       animationFrameRef.current = null;
     };
@@ -157,7 +167,8 @@ export default function ContactSocialLinks({ facebook, instagram, tiktok, youtub
         return;
       }
 
-      animationFrameRef.current = window.requestAnimationFrame(updateCenterState);
+      animationFrameRef.current =
+        window.requestAnimationFrame(updateCenterState);
     };
 
     window.addEventListener("scroll", requestUpdate, {

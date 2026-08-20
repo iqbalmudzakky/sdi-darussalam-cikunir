@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type TouchEvent } from "react";
 import { cva } from "class-variance-authority";
 import { Play } from "lucide-react";
-import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/youtube";
+import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/social/youtube";
 import type { ActivityItem } from "@/types/Activity";
 import type { AchievementItem } from "@/types/Achievement";
 
