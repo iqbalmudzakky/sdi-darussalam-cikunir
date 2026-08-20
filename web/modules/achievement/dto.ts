@@ -9,3 +9,10 @@ export const SaveAchievementRequestSchema = z.object({
 export type SaveAchievementRequest = z.infer<
   typeof SaveAchievementRequestSchema
 >;
+
+export type AchievementResponse = {
+  id: string;
+  emoji: string;
+  title: string;
+  description: string;
+};

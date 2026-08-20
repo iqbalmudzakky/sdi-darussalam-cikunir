@@ -2,25 +2,52 @@ import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
 import { createClient } from "@/lib/supabase/server";
 import { removeStoragePhoto } from "@/lib/storage";
-import type { Activity } from "./entity";
-import type { SaveActivityRequest } from "./dto";
+import type { SaveActivityRequest, ActivityResponse } from "./dto";
 
 const PHOTO_BUCKET = "activity-photos";
 
-export async function listActivities(): Promise<Activity[]> {
-  return withDbLogging("activity.list", () => repository.list());
+export async function listActivities(): Promise<ActivityResponse[]> {
+  const activities = await withDbLogging("activity.list", () =>
+    repository.list(),
+  );
+
+  const response: ActivityResponse[] = activities.map((activity) => ({
+    id: activity.id,
+    title: activity.title,
+    description: activity.description,
+    emoji: activity.emoji,
+    badge: activity.badge,
+    photo_url: activity.photo_url,
+    youtube_url: activity.youtube_url,
+  }));
+
+  return response;
 }
 
 export async function createActivity(
   input: SaveActivityRequest,
-): Promise<Activity> {
-  return withDbLogging("activity.insert", () => repository.insert(input));
+): Promise<ActivityResponse> {
+  const created = await withDbLogging("activity.insert", () =>
+    repository.insert(input),
+  );
+
+  const response: ActivityResponse = {
+    id: created.id,
+    title: created.title,
+    description: created.description,
+    emoji: created.emoji,
+    badge: created.badge,
+    photo_url: created.photo_url,
+    youtube_url: created.youtube_url,
+  };
+
+  return response;
 }
 
 export async function updateActivity(
   id: string,
   input: SaveActivityRequest,
-): Promise<Activity> {
+): Promise<ActivityResponse> {
   const existing = await withDbLogging("activity.findById", () =>
     repository.findById(id),
   );
@@ -34,7 +61,17 @@ export async function updateActivity(
     await removeStoragePhoto(supabase, PHOTO_BUCKET, existing.photo_url);
   }
 
-  return updated;
+  const response: ActivityResponse = {
+    id: updated.id,
+    title: updated.title,
+    description: updated.description,
+    emoji: updated.emoji,
+    badge: updated.badge,
+    photo_url: updated.photo_url,
+    youtube_url: updated.youtube_url,
+  };
+
+  return response;
 }
 
 export async function deleteActivity(id: string): Promise<void> {
