@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import { listFacilities, createFacility } from "@/lib/data/facilities";
+import * as facilityService from "@/modules/facility/service";
+import { SaveFacilityRequestSchema } from "@/modules/facility/dto";
 
 export async function GET() {
   const user = await requireUser();
@@ -9,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    const facilities = await listFacilities();
+    const facilities = await facilityService.listFacilities();
     return NextResponse.json(facilities);
   } catch (error) {
     console.error("GET /api/facilities failed:", error);
@@ -27,12 +28,16 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  if (!body.title) {
-    return NextResponse.json({ error: "title is required" }, { status: 400 });
+  const parsed = SaveFacilityRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
+      { status: 400 },
+    );
   }
 
   try {
-    const facility = await createFacility(body);
+    const facility = await facilityService.createFacility(parsed.data);
     return NextResponse.json(facility, { status: 201 });
   } catch (error) {
     console.error("POST /api/facilities failed:", error);

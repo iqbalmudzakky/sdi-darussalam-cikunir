@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import { listPrograms, createProgram } from "@/lib/data/programs";
+import * as programService from "@/modules/program/service";
+import { SaveProgramRequestSchema } from "@/modules/program/dto";
 
 export async function GET() {
   const user = await requireUser();
@@ -9,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    const programs = await listPrograms();
+    const programs = await programService.listPrograms();
     return NextResponse.json(programs);
   } catch (error) {
     console.error("GET /api/programs failed:", error);
@@ -27,12 +28,16 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  if (!body.title) {
-    return NextResponse.json({ error: "title is required" }, { status: 400 });
+  const parsed = SaveProgramRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
+      { status: 400 },
+    );
   }
 
   try {
-    const program = await createProgram(body);
+    const program = await programService.createProgram(parsed.data);
     return NextResponse.json(program, { status: 201 });
   } catch (error) {
     console.error("POST /api/programs failed:", error);

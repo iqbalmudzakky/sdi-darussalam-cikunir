@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import { updateProgram, deleteProgram } from "@/lib/data/programs";
+import * as programService from "@/modules/program/service";
+import { SaveProgramRequestSchema } from "@/modules/program/dto";
 
 export async function PUT(
   request: Request,
@@ -13,12 +14,16 @@ export async function PUT(
 
   const { id } = await params;
   const body = await request.json();
-  if (!body.title) {
-    return NextResponse.json({ error: "title is required" }, { status: 400 });
+  const parsed = SaveProgramRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
+      { status: 400 },
+    );
   }
 
   try {
-    const program = await updateProgram(id, body);
+    const program = await programService.updateProgram(id, parsed.data);
     return NextResponse.json(program);
   } catch (error) {
     console.error(`PUT /api/programs/${id} failed:`, error);
@@ -41,7 +46,7 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    await deleteProgram(id);
+    await programService.deleteProgram(id);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`DELETE /api/programs/${id} failed:`, error);

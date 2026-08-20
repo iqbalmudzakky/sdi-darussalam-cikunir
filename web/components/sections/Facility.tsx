@@ -1,4 +1,4 @@
-import { listFacilities } from "@/lib/data/facilities";
+import { listFacilities } from "@/lib/actions/facilities";
 import FacilityCards from "@/components/sections/FacilityCards";
 
 export default async function Facility() {
