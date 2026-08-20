@@ -1,9 +1,9 @@
 "use server";
 
 import * as achievementService from "@/modules/achievement/service";
-import type { Achievement } from "@/modules/achievement/entity";
+import type { AchievementItem } from "@/types/Achievement";
 
-export async function listAchievements(): Promise<Achievement[]> {
+export async function listAchievements(): Promise<AchievementItem[]> {
   try {
     return await achievementService.listAchievements();
   } catch (error) {

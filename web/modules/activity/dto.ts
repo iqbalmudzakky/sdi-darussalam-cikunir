@@ -20,3 +20,13 @@ export const SaveActivityRequestSchema = z.object({
 });
 
 export type SaveActivityRequest = z.infer<typeof SaveActivityRequestSchema>;
+
+export type ActivityResponse = {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  badge: string;
+  photo_url: string | null;
+  youtube_url: string | null;
+};

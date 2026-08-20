@@ -1,9 +1,9 @@
 "use server";
 
 import * as activityService from "@/modules/activity/service";
-import type { Activity } from "@/modules/activity/entity";
+import type { ActivityItem } from "@/types/Activity";
 
-export async function listActivities(): Promise<Activity[]> {
+export async function listActivities(): Promise<ActivityItem[]> {
   try {
     return await activityService.listActivities();
   } catch (error) {

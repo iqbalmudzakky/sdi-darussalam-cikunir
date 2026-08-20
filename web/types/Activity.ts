@@ -1,3 +1,9 @@
-import type { Activity } from "@/modules/activity/entity";
-
-export type ActivityItem = Omit<Activity, "created_at" | "updated_at">;
+export type ActivityItem = {
+  id: string;
+  title: string;
+  description: string;
+  emoji: string;
+  badge: string;
+  photo_url: string | null;
+  youtube_url: string | null;
+};

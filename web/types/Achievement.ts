@@ -1,3 +1,6 @@
-import type { Achievement } from "@/modules/achievement/entity";
-
-export type AchievementItem = Omit<Achievement, "created_at" | "updated_at">;
+export type AchievementItem = {
+  id: string;
+  emoji: string;
+  title: string;
+  description: string;
+};
