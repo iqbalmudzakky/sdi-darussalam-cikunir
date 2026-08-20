@@ -1,4 +1,4 @@
-import { listPrograms } from "@/lib/data/programs";
+import { listPrograms } from "@/lib/actions/programs";
 import ProgramCards from "@/components/sections/ProgramCards";
 
 export default async function Program() {
