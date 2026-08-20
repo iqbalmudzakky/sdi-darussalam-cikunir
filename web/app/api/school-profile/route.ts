@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/supabase/server";
-import {
-  getSchoolProfile,
-  updateSchoolProfile,
-} from "@/lib/data/schoolProfile";
+import * as schoolProfileService from "@/modules/school-profile/service";
+import { SaveSchoolProfileRequestSchema } from "@/modules/school-profile/dto";
 
 export async function GET() {
   const user = await requireUser();
@@ -12,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    const profile = await getSchoolProfile();
+    const profile = await schoolProfileService.getSchoolProfile();
     return NextResponse.json(profile);
   } catch (error) {
     console.error("GET /api/school-profile failed:", error);
@@ -30,9 +28,16 @@ export async function PUT(request: Request) {
   }
 
   const body = await request.json();
+  const parsed = SaveSchoolProfileRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
+      { status: 400 },
+    );
+  }
 
   try {
-    const profile = await updateSchoolProfile(body);
+    const profile = await schoolProfileService.saveSchoolProfile(parsed.data);
     return NextResponse.json(profile);
   } catch (error) {
     console.error("PUT /api/school-profile failed:", error);

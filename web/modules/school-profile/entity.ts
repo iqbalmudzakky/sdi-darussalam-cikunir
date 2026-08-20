@@ -1,4 +1,5 @@
 export type SchoolProfile = {
+  id: string;
   photo_url: string | null;
   description: string;
   visi: string;
@@ -13,4 +14,11 @@ export type SchoolProfile = {
   instagram: string;
   tiktok: string;
   youtube: string;
+  created_at: string;
+  updated_at: string;
 };
+
+export type NewSchoolProfile = Omit<
+  SchoolProfile,
+  "id" | "created_at" | "updated_at"
+>;

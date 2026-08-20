@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { ActivityFormDialog } from "@/components/admin/ActivityFormDialog";
 import { useToast } from "@/hooks/useToast";
-import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/youtube";
+import { extractYouTubeVideoId, getYouTubeThumbnailUrl } from "@/lib/social/youtube";
 import type { ActivityItem } from "@/types/Activity";
 
 type ActivityEditCardProps = {

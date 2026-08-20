@@ -1,6 +1,6 @@
 import { listActivities } from "@/lib/actions/activities";
 import { listAchievements } from "@/lib/actions/achievements";
-import ActivityContent from "@/components/ActivityContent";
+import ActivityContent from "@/components/sections/ActivityContent";
 
 export default async function Activity() {
   const [activities, achievements] = await Promise.all([
