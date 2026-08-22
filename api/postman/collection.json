@@ -1,0 +1,128 @@
+{
+  "info": {
+    "name": "SDI Darussalam Cikunir API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8080" },
+    { "key": "supabase_url", "value": "https://huvfvfxxjoecpbkjdcli.supabase.co" },
+    { "key": "supabase_anon_key", "value": "" },
+    { "key": "test_email", "value": "" },
+    { "key": "test_password", "value": "" },
+    { "key": "token", "value": "" },
+    { "key": "activity_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login (Supabase Auth)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.access_token) {",
+              "  pm.collectionVariables.set('token', json.access_token);",
+              "  console.log('token saved to collection variable');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "apikey", "value": "{{supabase_anon_key}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\"\n}"
+        },
+        "url": "{{supabase_url}}/auth/v1/token?grant_type=password"
+      }
+    },
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/health"
+      }
+    },
+    {
+      "name": "Me",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": "{{base_url}}/me"
+      }
+    },
+    {
+      "name": "Activities",
+      "item": [
+        {
+          "name": "List Activities",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/activities"
+          }
+        },
+        {
+          "name": "Create Activity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) {",
+                  "  pm.collectionVariables.set('activity_id', json.id);",
+                  "  console.log('activity_id saved to collection variable');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Pramuka\",\n  \"description\": \"Kegiatan pramuka mingguan\",\n  \"emoji\": \"🏕️\",\n  \"badge\": \"\",\n  \"photo_url\": null\n}"
+            },
+            "url": "{{base_url}}/activities"
+          }
+        },
+        {
+          "name": "Update Activity",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Pramuka Siaga\",\n  \"description\": \"Update deskripsi\",\n  \"emoji\": \"🏕️\",\n  \"badge\": \"Populer\",\n  \"photo_url\": null\n}"
+            },
+            "url": "{{base_url}}/activities/{{activity_id}}"
+          }
+        },
+        {
+          "name": "Delete Activity",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/activities/{{activity_id}}"
+          }
+        }
+      ]
+    }
+  ]
+}
