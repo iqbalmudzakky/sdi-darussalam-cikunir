@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/session";
 import * as facilityService from "@/modules/facility/service";
 import { SaveFacilityRequestSchema } from "@/modules/facility/dto";
 

@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { cva } from "class-variance-authority";
 import { Check, Loader2, Plus, Trash2, Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { uploadPhoto } from "@/lib/api/storage";
+import { prepareImageForUpload } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ export default function AdminAboutPage() {
   const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isPreparingPhoto, setIsPreparingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingPhotoFileRef = useRef<File | null>(null);
 
@@ -82,11 +84,21 @@ export default function AdminAboutPage() {
     setDraft((prev) => ({ ...prev, ...patch }));
   }
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    pendingPhotoFileRef.current = file;
-    updateDraft({ photo_url: URL.createObjectURL(file) });
+
+    setIsPreparingPhoto(true);
+    try {
+      const preparedFile = await prepareImageForUpload(file);
+      pendingPhotoFileRef.current = preparedFile;
+      updateDraft({ photo_url: URL.createObjectURL(preparedFile) });
+    } catch (error) {
+      console.error("Failed to prepare school profile photo:", error);
+      toast.error("Gagal memproses foto", "Coba lagi.");
+    } finally {
+      setIsPreparingPhoto(false);
+    }
   }
 
   function handleMisiChange(index: number, value: string) {
@@ -110,23 +122,16 @@ export default function AdminAboutPage() {
     if (pendingFile) {
       setIsUploading(true);
 
-      const supabase = createClient();
-      const filePath = `${crypto.randomUUID()}-${pendingFile.name}`;
-      const { error } = await supabase.storage
-        .from("school-profile-photos")
-        .upload(filePath, pendingFile);
-
-      setIsUploading(false);
-
-      if (error) {
+      try {
+        photoUrl = await uploadPhoto("school-profile-photos", pendingFile);
+      } catch (error) {
+        console.error("Failed to upload school profile photo:", error);
         toast.error("Gagal unggah foto", "Coba lagi.");
+        setIsUploading(false);
         return;
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("school-profile-photos").getPublicUrl(filePath);
-      photoUrl = publicUrl;
+      setIsUploading(false);
     }
 
     setIsSaving(true);
@@ -173,7 +178,7 @@ export default function AdminAboutPage() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
+            disabled={isUploading || isPreparingPhoto}
             className={photoButtonVariants()}
           >
             {draft.photo_url ? (
@@ -188,10 +193,12 @@ export default function AdminAboutPage() {
               </span>
             )}
 
-            {isUploading ? (
+            {isUploading || isPreparingPhoto ? (
               <div className={photoOverlayVariants()}>
                 <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm font-medium">Mengunggah...</span>
+                <span className="text-sm font-medium">
+                  {isPreparingPhoto ? "Memproses foto..." : "Mengunggah..."}
+                </span>
               </div>
             ) : (
               <div
@@ -385,7 +392,7 @@ export default function AdminAboutPage() {
           <Button
             type="button"
             onClick={handleSave}
-            disabled={isSaving || isUploading}
+            disabled={isSaving || isUploading || isPreparingPhoto}
             className="bg-emerald-600 text-white hover:bg-emerald-700"
           >
             <Check className="w-4 h-4" />

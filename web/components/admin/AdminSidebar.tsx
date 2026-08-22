@@ -14,7 +14,7 @@ import {
   Inbox,
   LogOut,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { logout } from "@/lib/api/auth";
 import { getPendingFollowUpCount } from "@/lib/api/registrations";
 
 const sidebarAsideVariants = cva([
@@ -82,8 +82,7 @@ export function AdminSidebar() {
   }
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await logout();
     router.replace("/admin/login");
     router.refresh();
   }

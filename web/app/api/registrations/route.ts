@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/session";
 import * as registrationService from "@/modules/registration/service";
 import { CreateRegistrationRequestSchema } from "@/modules/registration/dto";
 import type { CreateRegistrationRequest } from "@/modules/registration/dto";

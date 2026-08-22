@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { uploadPhoto } from "@/lib/api/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -121,23 +121,16 @@ export function ActivityFormDialog({
     if (pendingFile) {
       setIsUploading(true);
 
-      const supabase = createClient();
-      const filePath = `${crypto.randomUUID()}-${pendingFile.name}`;
-      const { error } = await supabase.storage
-        .from("activity-photos")
-        .upload(filePath, pendingFile);
-
-      setIsUploading(false);
-
-      if (error) {
+      try {
+        photoUrl = await uploadPhoto("activity-photos", pendingFile);
+      } catch (error) {
+        console.error("Failed to upload activity photo:", error);
         toast.error("Gagal unggah foto", "Coba lagi.");
+        setIsUploading(false);
         return;
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("activity-photos").getPublicUrl(filePath);
-      photoUrl = publicUrl;
+      setIsUploading(false);
     }
 
     setIsSaving(true);
@@ -171,9 +164,7 @@ export function ActivityFormDialog({
             onDrop={handlePhotoDrop}
             disabled={isUploading || isPreparingPhoto}
             className={`relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 rounded-2xl flex items-center justify-center overflow-hidden disabled:cursor-default ${
-              isDraggingPhoto
-                ? "ring-2 ring-emerald-500 ring-offset-2"
-                : ""
+              isDraggingPhoto ? "ring-2 ring-emerald-500 ring-offset-2" : ""
             }`}
           >
             {draft.photo_url ? (

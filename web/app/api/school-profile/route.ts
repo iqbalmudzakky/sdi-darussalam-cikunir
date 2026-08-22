@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/session";
 import * as schoolProfileService from "@/modules/school-profile/service";
 import { SaveSchoolProfileRequestSchema } from "@/modules/school-profile/dto";
 
