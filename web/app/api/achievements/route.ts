@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/session";
 import * as achievementService from "@/modules/achievement/service";
 import { SaveAchievementRequestSchema } from "@/modules/achievement/dto";
 

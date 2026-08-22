@@ -1,7 +1,6 @@
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
-import { createClient } from "@/lib/supabase/server";
-import { removeStoragePhoto } from "@/lib/storage";
+import { removeStoragePhoto } from "@/modules/storage/storage";
 import type { SaveSchoolProfileRequest, SchoolProfileResponse } from "./dto";
 
 const PHOTO_BUCKET = "school-profile-photos";
@@ -62,8 +61,7 @@ export async function saveSchoolProfile(
   );
 
   if (existing?.photo_url && existing.photo_url !== input.photo_url) {
-    const supabase = await createClient();
-    await removeStoragePhoto(supabase, PHOTO_BUCKET, existing.photo_url);
+    await removeStoragePhoto(PHOTO_BUCKET, existing.photo_url);
   }
 
   const response: SchoolProfileResponse = {

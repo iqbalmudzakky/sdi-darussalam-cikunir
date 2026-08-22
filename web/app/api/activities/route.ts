@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/session";
 import * as activityService from "@/modules/activity/service";
 import { SaveActivityRequestSchema } from "@/modules/activity/dto";
 

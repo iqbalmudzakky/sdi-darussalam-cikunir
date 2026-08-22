@@ -7,7 +7,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { login } from "@/lib/api/auth";
 import { cn } from "@/lib/utils";
 
 const pageBackgroundVariants = cva([
@@ -48,13 +48,9 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
+    try {
+      await login(email, password);
+    } catch {
       setIsLoading(false);
       setError("Email atau password salah.");
       return;

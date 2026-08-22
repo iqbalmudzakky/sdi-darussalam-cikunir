@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth/session";
 import * as programService from "@/modules/program/service";
 import { SaveProgramRequestSchema } from "@/modules/program/dto";
 

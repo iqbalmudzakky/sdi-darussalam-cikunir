@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { cva } from "class-variance-authority";
 import { Check, Loader2, Upload } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { uploadPhoto } from "@/lib/api/storage";
+import { prepareImageForUpload } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ export function FacilityFormDialog({
   const [titleError, setTitleError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isPreparingPhoto, setIsPreparingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingPhotoFileRef = useRef<File | null>(null);
 
@@ -70,11 +72,21 @@ export function FacilityFormDialog({
     if (patch.title !== undefined) setTitleError(false);
   }
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    pendingPhotoFileRef.current = file;
-    updateDraft({ photo_url: URL.createObjectURL(file) });
+
+    setIsPreparingPhoto(true);
+    try {
+      const preparedFile = await prepareImageForUpload(file);
+      pendingPhotoFileRef.current = preparedFile;
+      updateDraft({ photo_url: URL.createObjectURL(preparedFile) });
+    } catch (error) {
+      console.error("Failed to prepare facility photo:", error);
+      toast.error("Gagal memproses foto", "Coba lagi.");
+    } finally {
+      setIsPreparingPhoto(false);
+    }
   }
 
   async function handleSubmit() {
@@ -89,23 +101,16 @@ export function FacilityFormDialog({
     if (pendingFile) {
       setIsUploading(true);
 
-      const supabase = createClient();
-      const filePath = `${crypto.randomUUID()}-${pendingFile.name}`;
-      const { error } = await supabase.storage
-        .from("facility-photos")
-        .upload(filePath, pendingFile);
-
-      setIsUploading(false);
-
-      if (error) {
+      try {
+        photoUrl = await uploadPhoto("facility-photos", pendingFile);
+      } catch (error) {
+        console.error("Failed to upload facility photo:", error);
         toast.error("Gagal unggah foto", "Coba lagi.");
+        setIsUploading(false);
         return;
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("facility-photos").getPublicUrl(filePath);
-      photoUrl = publicUrl;
+      setIsUploading(false);
     }
 
     setIsSaving(true);
@@ -133,7 +138,7 @@ export function FacilityFormDialog({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
+            disabled={isUploading || isPreparingPhoto}
             className={photoButtonVariants()}
           >
             {draft.photo_url ? (
@@ -146,10 +151,12 @@ export function FacilityFormDialog({
               <span className="text-gray-500 font-medium">Belum ada foto</span>
             )}
 
-            {isUploading ? (
+            {isUploading || isPreparingPhoto ? (
               <div className={photoOverlayVariants()}>
                 <Loader2 className="w-6 h-6 animate-spin" />
-                <span className="text-sm font-medium">Mengunggah...</span>
+                <span className="text-sm font-medium">
+                  {isPreparingPhoto ? "Memproses foto..." : "Mengunggah..."}
+                </span>
               </div>
             ) : (
               <div
@@ -217,7 +224,7 @@ export function FacilityFormDialog({
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={isSaving || isUploading}
+            disabled={isSaving || isUploading || isPreparingPhoto}
             className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
           >
             <Check className="w-4 h-4" />
