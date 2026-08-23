@@ -11,21 +11,21 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { FacilityFormDialog } from "@/components/admin/FacilityFormDialog";
+import { ProgramFormDialog } from "./ProgramFormDialog";
 import { useToast } from "@/hooks/useToast";
-import type { FacilityItem } from "@/types/Facility";
+import type { ProgramItem } from "@/types/Program";
 
-type FacilityEditCardProps = {
-  item: FacilityItem;
-  onSave: (updated: FacilityItem) => Promise<boolean>;
+type ProgramEditCardProps = {
+  item: ProgramItem;
+  onSave: (updated: ProgramItem) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
 };
 
-export function FacilityEditCard({
+export function ProgramEditCard({
   item,
   onSave,
   onDelete,
-}: FacilityEditCardProps) {
+}: ProgramEditCardProps) {
   const toast = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -37,56 +37,53 @@ export function FacilityEditCard({
     setIsDeleting(false);
     if (success) {
       setIsConfirmingDelete(false);
-      toast.success("Fasilitas dihapus");
+      toast.success("Program dihapus");
     } else {
-      toast.error("Gagal menghapus fasilitas", "Coba lagi.");
+      toast.error("Gagal menghapus program", "Coba lagi.");
     }
   }
 
   return (
     <>
-      <div className="relative bg-linear-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 text-center h-full flex flex-col">
-        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shrink-0 overflow-hidden">
-          {item.photo_url ? (
-            <img
-              src={item.photo_url}
-              alt={item.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="text-4xl">{item.emoji}</span>
-          )}
+      <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg h-full flex flex-col p-8">
+        <div className="w-16 h-16 bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shrink-0">
+          <span className="text-3xl">{item.emoji}</span>
         </div>
-        <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-        <p className="text-gray-600 text-sm flex-1">{item.subtitle}</p>
-        <div className="flex gap-2 mt-4">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setIsEditOpen(true)}
-            className="flex-1 rounded-xl"
-          >
-            <Pencil className="w-4 h-4" />
-            Edit
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            onClick={() => setIsConfirmingDelete(true)}
-            aria-label="Hapus fasilitas"
-            className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+
+        <div className="space-y-4 flex-1 flex flex-col">
+          <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
+          <p className="text-gray-600 leading-relaxed flex-1">
+            {item.description}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setIsEditOpen(true)}
+              className="flex-1 rounded-xl"
+            >
+              <Pencil className="w-4 h-4" />
+              Edit
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              onClick={() => setIsConfirmingDelete(true)}
+              aria-label="Hapus program"
+              className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      <FacilityFormDialog
+      <ProgramFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        title="Edit Fasilitas"
+        title="Edit Program"
         initialValue={item}
         onSubmit={(value) => onSave({ ...value, id: item.id })}
       />
@@ -94,7 +91,7 @@ export function FacilityEditCard({
       <Dialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
         <DialogContent size="sm">
           <DialogHeader>
-            <DialogTitle>Hapus Fasilitas</DialogTitle>
+            <DialogTitle>Hapus Program</DialogTitle>
             <DialogDescription>
               Yakin mau hapus{" "}
               <span className="font-semibold">{item.title}</span>? Tindakan ini

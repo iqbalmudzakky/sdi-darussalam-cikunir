@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProgramEditCard } from "@/components/admin/ProgramEditCard";
-import { ProgramFormDialog } from "@/components/admin/ProgramFormDialog";
+import { ProgramEditCard } from "@/components/admin/program/ProgramEditCard";
+import { ProgramFormDialog } from "@/components/admin/program/ProgramFormDialog";
 import {
   listPrograms,
   createProgram,

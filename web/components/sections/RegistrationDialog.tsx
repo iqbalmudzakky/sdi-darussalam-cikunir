@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { RegistrationForm } from "@/components/sections/RegistrationForm";
+import { RegistrationForm } from "@/components/sections/RegistrationForm/RegistrationForm";
 import { cn } from "@/lib/utils";
 
 const triggerVariants = cva(

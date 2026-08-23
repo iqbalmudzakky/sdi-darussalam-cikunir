@@ -11,21 +11,25 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { AchievementFormDialog } from "@/components/admin/AchievementFormDialog";
+import { ActivityFormDialog } from "./ActivityFormDialog";
 import { useToast } from "@/hooks/useToast";
-import type { AchievementItem } from "@/types/Achievement";
+import {
+  extractYouTubeVideoId,
+  getYouTubeThumbnailUrl,
+} from "@/lib/social/youtube";
+import type { ActivityItem } from "@/types/Activity";
 
-type AchievementEditCardProps = {
-  item: AchievementItem;
-  onSave: (updated: AchievementItem) => Promise<boolean>;
+type ActivityEditCardProps = {
+  item: ActivityItem;
+  onSave: (updated: ActivityItem) => Promise<boolean>;
   onDelete: (id: string) => Promise<boolean>;
 };
 
-export function AchievementEditCard({
+export function ActivityEditCard({
   item,
   onSave,
   onDelete,
-}: AchievementEditCardProps) {
+}: ActivityEditCardProps) {
   const toast = useToast();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
@@ -37,24 +41,37 @@ export function AchievementEditCard({
     setIsDeleting(false);
     if (success) {
       setIsConfirmingDelete(false);
-      toast.success("Prestasi dihapus");
+      toast.success("Kegiatan dihapus");
     } else {
-      toast.error("Gagal menghapus prestasi", "Coba lagi.");
+      toast.error("Gagal menghapus kegiatan", "Coba lagi.");
     }
   }
 
+  const videoId = item.youtube_url
+    ? extractYouTubeVideoId(item.youtube_url)
+    : null;
+  const previewImageUrl = videoId
+    ? getYouTubeThumbnailUrl(videoId)
+    : item.photo_url;
+
   return (
     <>
-      <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg h-full flex flex-col p-8">
-        <div className="w-16 h-16 bg-linear-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 shrink-0">
-          <span className="text-3xl">{item.emoji}</span>
+      <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg h-full flex flex-col">
+        <div className="relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center overflow-hidden">
+          {previewImageUrl ? (
+            <img
+              src={previewImageUrl}
+              alt={item.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-6xl">{item.emoji}</span>
+          )}
         </div>
 
-        <div className="space-y-4 flex-1 flex flex-col">
+        <div className="p-6 space-y-4 flex-1 flex flex-col">
           <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-          <p className="text-gray-600 leading-relaxed flex-1">
-            {item.description}
-          </p>
+          <p className="text-gray-600 flex-1">{item.description}</p>
           <div className="flex gap-2">
             <Button
               type="button"
@@ -71,19 +88,25 @@ export function AchievementEditCard({
               size="icon"
               variant="outline"
               onClick={() => setIsConfirmingDelete(true)}
-              aria-label="Hapus prestasi"
+              aria-label="Hapus kegiatan"
               className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
         </div>
+
+        {item.badge && (
+          <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+            {item.badge}
+          </div>
+        )}
       </div>
 
-      <AchievementFormDialog
+      <ActivityFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        title="Edit Prestasi"
+        title="Edit Kegiatan"
         initialValue={item}
         onSubmit={(value) => onSave({ ...value, id: item.id })}
       />
@@ -91,7 +114,7 @@ export function AchievementEditCard({
       <Dialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
         <DialogContent size="sm">
           <DialogHeader>
-            <DialogTitle>Hapus Prestasi</DialogTitle>
+            <DialogTitle>Hapus Kegiatan</DialogTitle>
             <DialogDescription>
               Yakin mau hapus{" "}
               <span className="font-semibold">{item.title}</span>? Tindakan ini

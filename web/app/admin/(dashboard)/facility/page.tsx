@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FacilityEditCard } from "@/components/admin/FacilityEditCard";
-import { FacilityFormDialog } from "@/components/admin/FacilityFormDialog";
+import { FacilityEditCard } from "@/components/admin/facility/FacilityEditCard";
+import { FacilityFormDialog } from "@/components/admin/facility/FacilityFormDialog";
 import {
   listFacilities,
   createFacility,

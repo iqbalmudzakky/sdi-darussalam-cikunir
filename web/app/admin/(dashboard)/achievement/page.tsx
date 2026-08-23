@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AchievementEditCard } from "@/components/admin/AchievementEditCard";
-import { AchievementFormDialog } from "@/components/admin/AchievementFormDialog";
+import { AchievementEditCard } from "@/components/admin/achievement/AchievementEditCard";
+import { AchievementFormDialog } from "@/components/admin/achievement/AchievementFormDialog";
 import {
   listAchievements,
   createAchievement,
