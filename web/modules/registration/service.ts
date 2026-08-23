@@ -25,8 +25,8 @@ export async function createRegistration(
   }
 
   const duplicateCheckInput = {
-    student_name: input.student_name,
-    whatsapp: input.whatsapp,
+    full_name: input.full_name,
+    date_of_birth: input.date_of_birth,
   };
   const isDuplicate = await withDbLogging(
     "registration.existsRecentDuplicate",

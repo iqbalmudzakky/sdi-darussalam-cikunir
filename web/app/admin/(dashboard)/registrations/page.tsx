@@ -5,16 +5,16 @@ import { cva } from "class-variance-authority";
 import {
   CheckCircle2,
   Clock,
+  Eye,
+  Inbox,
   Loader2,
-  Mail,
   MessageCircle,
   PhoneCall,
   Trash2,
-  Phone,
-  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import {
   Dialog,
   DialogContent,
@@ -29,8 +29,13 @@ import {
   updateRegistrationStatus,
 } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
+import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import {
+  REGISTRATION_TYPE_OPTIONS,
+  getOptionLabel,
+} from "@/lib/registrationOptions";
 import type { Registration, RegistrationStatus } from "@/types/Registration";
 
 const STATUS_OPTIONS: {
@@ -63,12 +68,6 @@ const statusButtonVariants = cva([
   "flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60",
 ]);
 
-function toWhatsAppLink(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  const normalized = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
-  return `https://wa.me/${normalized}`;
-}
-
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("id-ID", {
     day: "numeric",
@@ -87,6 +86,7 @@ export default function AdminRegistrationsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
+  const [detailItem, setDetailItem] = useState<Registration | null>(null);
 
   useEffect(() => {
     loadRegistrations();
@@ -172,37 +172,41 @@ export default function AdminRegistrationsPage() {
               className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
             >
               <div>
-                <h3 className="font-bold text-gray-900">{item.student_name}</h3>
+                <h3 className="font-bold text-gray-900">{item.full_name}</h3>
                 <p className="text-sm text-gray-500">
-                  Orang tua: {item.parent_name}
+                  {getOptionLabel(
+                    REGISTRATION_TYPE_OPTIONS,
+                    item.registration_type,
+                  )}
+                  {" · "}
+                  {item.previous_school}
                 </p>
               </div>
 
-              <a
-                href={toWhatsAppLink(item.whatsapp)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-brand-700 hover:underline"
-              >
-                <Phone className="w-4 h-4 shrink-0" />
-                {item.whatsapp}
-              </a>
-
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Mail className="w-4 h-4 shrink-0" />
-                {item.email}
-              </div>
-
-              {item.message && (
-                <div className="flex gap-2 text-sm text-gray-600">
-                  <MessageCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <p className="line-clamp-3">{item.message}</p>
-                </div>
-              )}
-
-              <p className="text-xs text-gray-400 mt-auto pt-2">
+              <p className="text-xs text-gray-400">
                 {formatDate(item.created_at)}
               </p>
+
+              <div className="flex gap-2">
+                <a
+                  href={buildWhatsAppLink(item.father_phone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  WA Ayah
+                </a>
+                <a
+                  href={buildWhatsAppLink(item.mother_phone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  WA Ibu
+                </a>
+              </div>
 
               <div className="flex gap-1.5 bg-gray-50 rounded-xl p-1">
                 {STATUS_OPTIONS.map((option) => {
@@ -227,20 +231,37 @@ export default function AdminRegistrationsPage() {
                 })}
               </div>
 
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => setConfirmDeleteId(item.id)}
-                className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
-              >
-                <Trash2 className="w-4 h-4" />
-                Hapus
-              </Button>
+              <div className="flex gap-2 mt-auto pt-1">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDetailItem(item)}
+                  className="flex-1 rounded-xl"
+                >
+                  <Eye className="w-4 h-4" />
+                  Lihat Detail
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setConfirmDeleteId(item.id)}
+                  className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      <RegistrationDetailDialog
+        registration={detailItem}
+        onOpenChange={(open) => !open && setDetailItem(null)}
+      />
 
       <Dialog
         open={confirmDeleteId !== null}
@@ -251,10 +272,8 @@ export default function AdminRegistrationsPage() {
             <DialogTitle>Hapus Data Pendaftar</DialogTitle>
             <DialogDescription>
               Yakin mau hapus data pendaftaran{" "}
-              <span className="font-semibold">
-                {deletingItem?.student_name}
-              </span>
-              ? Tindakan ini tidak bisa dibatalkan.
+              <span className="font-semibold">{deletingItem?.full_name}</span>?
+              Tindakan ini tidak bisa dibatalkan.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

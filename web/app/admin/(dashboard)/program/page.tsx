@@ -5,8 +5,8 @@ import { Loader2, Plus, BookOpen } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Button } from "@/components/ui/button";
-import { ProgramEditCard } from "@/components/admin/ProgramEditCard";
-import { ProgramFormDialog } from "@/components/admin/ProgramFormDialog";
+import { ProgramEditCard } from "@/components/admin/program/ProgramEditCard";
+import { ProgramFormDialog } from "@/components/admin/program/ProgramFormDialog";
 import {
   listPrograms,
   createProgram,

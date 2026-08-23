@@ -220,10 +220,10 @@ export default async function AdminDashboardPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-gray-900">
-                      {item.student_name}
+                      {item.full_name}
                     </p>
                     <p className="mt-0.5 truncate text-xs text-gray-500">
-                      Orang tua: {item.parent_name}
+                      Ayah: {item.father_name}
                     </p>
                   </div>
 

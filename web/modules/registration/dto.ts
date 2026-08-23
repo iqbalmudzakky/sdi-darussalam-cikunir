@@ -1,66 +1,51 @@
 import { z } from "zod";
+import { personName, phoneNumber, birthPlace, birthDate } from "@/modules/validation/validators";
 import type { Registration, RegistrationStatus } from "./entity";
 
-/*
- * Nama orang: huruf, spasi, apostrof, titik, dan tanda hubung.
- * Angka dan simbol lain ditolak.
- */
-const PERSON_NAME_PATTERN = /^[\p{L}][\p{L}\s'.-]*$/u;
-
-/*
- * Nomor WhatsApp Indonesia.
- *
- * Yang disimpan hanya digit. Pemisah seperti spasi,
- * tanda hubung, dan tanda kurung dibuang lebih dulu,
- * dan awalan +62 / 62 dinormalkan menjadi 0.
- */
-export function normalizeWhatsappNumber(value: string): string {
-  const digitsOnly = value.replace(/\D/g, "");
-
-  if (digitsOnly.startsWith("62")) {
-    return `0${digitsOnly.slice(2)}`;
-  }
-
-  if (digitsOnly.startsWith("8")) {
-    return `0${digitsOnly}`;
-  }
-
-  return digitsOnly;
-}
+const REGISTRATION_TYPE_VALUES = ["siswa_baru", "pindahan"] as const;
+const GENDER_VALUES = ["laki_laki", "perempuan"] as const;
+const PHYSICAL_DISABILITY_VALUES = ["tidak_ada", "ada"] as const;
+const PARENT_RELATIONSHIP_VALUES = ["kandung", "tiri", "angkat", "wali"] as const;
 
 export const CreateRegistrationRequestSchema = z.object({
-  parent_name: z
+  registration_type: z.enum(REGISTRATION_TYPE_VALUES),
+  full_name: personName("Nama lengkap siswa"),
+  gender: z.enum(GENDER_VALUES),
+  place_of_birth: birthPlace("Tempat lahir"),
+  date_of_birth: birthDate("Tanggal lahir"),
+  current_address: z
     .string()
     .trim()
-    .min(3, "Nama orang tua minimal 3 karakter.")
-    .max(80, "Nama orang tua maksimal 80 karakter.")
-    .regex(PERSON_NAME_PATTERN, "Nama orang tua hanya boleh berisi huruf."),
-  student_name: z
+    .min(1, "Alamat sekarang wajib diisi.")
+    .max(200, "Alamat sekarang maksimal 200 karakter."),
+  physical_disability: z.enum(PHYSICAL_DISABILITY_VALUES),
+  previous_school: z
     .string()
     .trim()
-    .min(3, "Nama calon siswa minimal 3 karakter.")
-    .max(80, "Nama calon siswa maksimal 80 karakter.")
-    .regex(PERSON_NAME_PATTERN, "Nama calon siswa hanya boleh berisi huruf."),
-  whatsapp: z
+    .min(1, "Asal sekolah wajib diisi.")
+    .max(120, "Asal sekolah maksimal 120 karakter."),
+  nisn: z
     .string()
     .trim()
-    .min(1, "Nomor WhatsApp wajib diisi.")
-    .transform(normalizeWhatsappNumber)
-    .refine(
-      (value) => /^0\d{9,13}$/.test(value),
-      "Nomor WhatsApp tidak valid. Contoh: 081234567890.",
-    ),
-  email: z
+    .nullable()
+    .optional()
+    .transform((value) => value || null),
+  father_status: z.enum(PARENT_RELATIONSHIP_VALUES),
+  father_name: personName("Nama ayah"),
+  father_place_of_birth: birthPlace("Tempat lahir ayah"),
+  father_date_of_birth: birthDate("Tanggal lahir ayah"),
+  father_phone: phoneNumber("Nomor HP ayah"),
+  mother_status: z.enum(PARENT_RELATIONSHIP_VALUES),
+  mother_name: personName("Nama ibu"),
+  mother_place_of_birth: birthPlace("Tempat lahir ibu"),
+  mother_date_of_birth: birthDate("Tanggal lahir ibu"),
+  mother_phone: phoneNumber("Nomor HP ibu"),
+  parent_email: z
     .string()
     .trim()
     .min(1, "Email wajib diisi.")
     .max(120, "Email maksimal 120 karakter.")
     .email("Format email tidak valid."),
-  message: z
-    .string()
-    .trim()
-    .max(1000, "Pesan maksimal 1000 karakter.")
-    .default(""),
 });
 
 export type CreateRegistrationRequest = z.infer<
