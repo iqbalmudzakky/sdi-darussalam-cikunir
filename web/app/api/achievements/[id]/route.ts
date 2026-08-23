@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as achievementService from "@/modules/achievement/service";
 import { SaveAchievementRequestSchema } from "@/modules/achievement/dto";
@@ -27,6 +28,7 @@ export async function PUT(
       id,
       parsed.data,
     );
+    revalidatePath("/");
     return NextResponse.json(achievement);
   } catch (error) {
     console.error(`PUT /api/achievements/${id} failed:`, error);
@@ -50,6 +52,7 @@ export async function DELETE(
 
   try {
     await achievementService.deleteAchievement(id);
+    revalidatePath("/");
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`DELETE /api/achievements/${id} failed:`, error);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as schoolProfileService from "@/modules/school-profile/service";
 import { SaveSchoolProfileRequestSchema } from "@/modules/school-profile/dto";
@@ -38,6 +39,7 @@ export async function PUT(request: Request) {
 
   try {
     const profile = await schoolProfileService.saveSchoolProfile(parsed.data);
+    revalidatePath("/");
     return NextResponse.json(profile);
   } catch (error) {
     console.error("PUT /api/school-profile failed:", error);

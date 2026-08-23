@@ -29,7 +29,7 @@ export default async function Hero() {
             </h1>
 
             <p className="mt-6 max-w-lg text-[17px] leading-relaxed text-ink-700">
-              Sejak 2009 kami mendampingi anak-anak di Jaka Setia tumbuh dengan
+              Sejak 2009 kami mendampingi anak-anak di Jaka Mulya tumbuh dengan
               dasar akademik yang kuat, hafalan Al-Qur&rsquo;an, dan kebiasaan
               baik yang terbawa sampai dewasa.
             </p>

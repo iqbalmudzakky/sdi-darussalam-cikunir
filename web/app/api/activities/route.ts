@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as activityService from "@/modules/activity/service";
 import { SaveActivityRequestSchema } from "@/modules/activity/dto";
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
 
   try {
     const activity = await activityService.createActivity(parsed.data);
+    revalidatePath("/");
     return NextResponse.json(activity, { status: 201 });
   } catch (error) {
     console.error("POST /api/activities failed:", error);
