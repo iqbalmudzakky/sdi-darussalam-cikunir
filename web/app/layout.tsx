@@ -19,7 +19,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
-  title: "SDI Darussalam Cikunir",
+  title: "Yayasan Pembangunan Umat Islam Darussalam",
   description: "Situs resmi SDI Darussalam Cikunir",
   icons: {
     icon: "/logo.png",
