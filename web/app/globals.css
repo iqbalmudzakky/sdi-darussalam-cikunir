@@ -154,24 +154,73 @@ body {
   supaya judul besar terasa tegas, bukan dekoratif.
 */
 /*
-  Penanda pada frasa kunci di judul hero.
+  Latar diam saat halaman digulir.
 
-  Garis tebal rendah di belakang teks, bukan
-  gradient-clip, supaya tetap terbaca saat
-  teks membungkus ke baris berikutnya.
+  Tidak memakai background-attachment: fixed karena
+  properti itu tidak bekerja di iOS Safari: latarnya
+  ikut diam total atau melompat.
+
+  Sebagai gantinya lapisan gambar dipasang position:
+  fixed seukuran layar, lalu dipotong oleh bingkainya
+  memakai clip-path. Hasilnya sama, tetapi berjalan
+  di semua peramban.
 */
-.marker-underline {
-  background-image: linear-gradient(
-    to top,
-    var(--accent-300) 0,
-    var(--accent-300) 0.22em,
-    transparent 0.22em
-  );
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-  padding-inline: 0.06em;
+.fixed-bg-frame {
+  position: relative;
+  isolation: isolate;
+
+  /*
+    clip-path memotong lapisan fixed di dalamnya,
+    sesuatu yang tidak bisa dilakukan overflow:hidden
+    terhadap elemen berposisi fixed.
+  */
+  clip-path: inset(0);
+}
+
+.fixed-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+/*
+  Sebagian peramban lama tidak mendukung clip-path pada
+  elemen blok. Di sana lapisan dikembalikan menjadi
+  absolut supaya tetap tampil, meski tanpa efek diam.
+*/
+@supports not (clip-path: inset(0)) {
+  .fixed-bg-frame {
+    overflow: hidden;
+  }
+
+  .fixed-bg-layer {
+    position: absolute;
+  }
+}
+
+/*
+  Lebar isi halaman.
+
+  Didefinisikan sekali di sini supaya penyesuaian
+  berikutnya tidak perlu menyentuh setiap section.
+*/
+.page-container {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (width >= 40rem) {
+  .page-container {
+    padding-inline: 2rem;
+  }
+}
+
+@media (width >= 64rem) {
+  .page-container {
+    padding-inline: 3.5rem;
+  }
 }
 
 .font-display {
@@ -274,6 +323,50 @@ body {
   efek seperti itu justru menarik perhatian
   ke animasinya, bukan ke isinya.
 */
+/*
+  Animasi masuk untuk isi yang sudah terlihat sejak
+  halaman dimuat, seperti hero.
+
+  Tidak menunggu scroll, jadi dijalankan sebagai
+  animation, bukan transition yang dipicu observer.
+*/
+@keyframes introRise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.intro {
+  animation: introRise 760ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/*
+  Foto hero muncul lebih dulu di layar kecil karena di sana
+  ia berada paling atas, lalu menyusul teks setelah kolom
+  kembali berdampingan.
+*/
+.intro-hero-photo {
+  animation-delay: 0ms;
+}
+
+@media (width >= 64rem) {
+  .intro-hero-photo {
+    animation-delay: 200ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro {
+    animation: none;
+  }
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(18px);
@@ -293,6 +386,45 @@ body {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+}
+
+/* =========================
+   Laci Admin
+   ========================= */
+
+@keyframes adminDrawerIn {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: none;
+  }
+}
+
+@keyframes adminDrawerBackdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.admin-drawer {
+  animation: adminDrawerIn 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.admin-drawer-backdrop {
+  animation: adminDrawerBackdropIn 200ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-drawer,
+  .admin-drawer-backdrop {
+    animation: none;
   }
 }
 

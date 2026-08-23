@@ -8,6 +8,7 @@ import Footer from "@/components/sections/Footer";
 import Hero from "@/components/sections/Hero";
 import Navbar from "@/components/sections/Navbar";
 import Program from "@/components/sections/Program";
+import Vision from "@/components/sections/Vision";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
@@ -29,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
       "SDI Darussalam Cikunir",
       "Sekolah Dasar Islam Bekasi",
       "SD Islam Bekasi Selatan",
-      "SD Islam Jaka Setia",
+      "SD Islam Jaka Mulya",
       "sekolah dasar islam unggulan",
       "pendaftaran SD Islam Bekasi",
     ],
@@ -101,6 +102,9 @@ export default async function Home() {
 
       {/* About Section */}
       <About />
+
+      {/* Vision & Mission Section */}
+      <Vision />
 
       {/* Program Section */}
       <Program />

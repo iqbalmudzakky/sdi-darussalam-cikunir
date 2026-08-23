@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import RegistrationDialog from "@/components/sections/RegistrationDialog";
+import Reveal from "@/components/sections/Reveal";
 import { WhatsappIcon } from "@/components/icons/SocialIcons";
 
 export default async function Contact() {
@@ -13,8 +14,8 @@ export default async function Contact() {
 
   return (
     <section id="kontak" className="scroll-mt-20 bg-white py-20 sm:py-24">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <div className="border border-brand-100 bg-brand-50/60 px-6 py-14 text-center sm:px-12 sm:py-16">
+      <div className="page-container">
+        <Reveal className="border border-brand-100 bg-brand-50/60 px-6 py-14 text-center sm:px-12 sm:py-16">
           <p className="text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
             Penerimaan siswa baru
           </p>
@@ -63,7 +64,7 @@ export default async function Contact() {
               {profile.jam_operasional}
             </p>
           )}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

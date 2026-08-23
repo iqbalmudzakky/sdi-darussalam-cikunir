@@ -7,6 +7,7 @@ const PHOTO_BUCKET = "school-profile-photos";
 
 const DEFAULT_SCHOOL_PROFILE_RESPONSE: SchoolProfileResponse = {
   photo_url: null,
+  vision_photo_url: null,
   description: "",
   visi: "",
   misi: [],
@@ -31,6 +32,7 @@ export async function getSchoolProfile(): Promise<SchoolProfileResponse> {
 
   const response: SchoolProfileResponse = {
     photo_url: profile.photo_url,
+    vision_photo_url: profile.vision_photo_url,
     description: profile.description,
     visi: profile.visi,
     misi: profile.misi,
@@ -60,12 +62,27 @@ export async function saveSchoolProfile(
     repository.upsert(input),
   );
 
-  if (existing?.photo_url && existing.photo_url !== input.photo_url) {
+  /*
+   * Foto lama dihapus hanya kalau benar-benar tidak lagi
+   * dirujuk kolom mana pun. Foto hero dan foto visi berbagi
+   * satu bucket, jadi gambar yang sama bisa dipakai keduanya.
+   */
+  const stillReferenced = [input.photo_url, input.vision_photo_url];
+
+  if (existing?.photo_url && !stillReferenced.includes(existing.photo_url)) {
     await removeStoragePhoto(PHOTO_BUCKET, existing.photo_url);
+  }
+
+  if (
+    existing?.vision_photo_url &&
+    !stillReferenced.includes(existing.vision_photo_url)
+  ) {
+    await removeStoragePhoto(PHOTO_BUCKET, existing.vision_photo_url);
   }
 
   const response: SchoolProfileResponse = {
     photo_url: saved.photo_url,
+    vision_photo_url: saved.vision_photo_url,
     description: saved.description,
     visi: saved.visi,
     misi: saved.misi,

@@ -19,7 +19,7 @@ const buttonVariants = cva(
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
         gradient:
-          "h-auto rounded-full bg-linear-to-r from-emerald-600 to-teal-600 px-8 py-3.5 text-white hover:shadow-lg hover:scale-[1.02] disabled:hover:scale-100 disabled:hover:shadow-none",
+          "h-auto rounded-lg bg-brand-600 px-6 py-2.5 text-white hover:bg-brand-700",
       },
       size: {
         default:

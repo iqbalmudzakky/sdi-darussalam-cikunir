@@ -81,7 +81,7 @@ function SelectContent({
 
 const selectItemVariants = cva([
   "relative flex cursor-default select-none items-center gap-2 rounded-lg py-1.5 pl-8 pr-2 text-sm outline-none",
-  "data-highlighted:bg-emerald-50 data-highlighted:text-emerald-900",
+  "data-highlighted:bg-brand-50 data-highlighted:text-emerald-900",
   "data-disabled:pointer-events-none data-disabled:opacity-50",
 ])
 
@@ -98,7 +98,7 @@ function SelectItem({
     >
       <span className="absolute left-2 flex h-4 w-4 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <Check className="w-4 h-4 text-emerald-600" />
+          <Check className="w-4 h-4 text-brand-600" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

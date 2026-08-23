@@ -45,41 +45,64 @@ export function FacilityEditCard({
 
   return (
     <>
-      <div className="relative bg-linear-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 text-center h-full flex flex-col">
-        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shrink-0 overflow-hidden">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors hover:border-gray-300">
+        {/*
+          Pratinjau memakai rasio yang sama dengan kartu di
+          halaman utama, supaya admin melihat bagian foto
+          yang benar-benar akan tampil.
+        */}
+        <div className="relative flex aspect-4/3 w-full items-center justify-center overflow-hidden bg-gray-100">
           {item.photo_url ? (
             <img
               src={item.photo_url}
               alt={item.title}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
             <span className="text-4xl">{item.emoji}</span>
           )}
+
+          {!item.photo_url && (
+            <span className="absolute right-2 bottom-2 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700">
+              Belum ada foto
+            </span>
+          )}
         </div>
-        <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-        <p className="text-gray-600 text-sm flex-1">{item.subtitle}</p>
-        <div className="flex gap-2 mt-4">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setIsEditOpen(true)}
-            className="flex-1 rounded-xl"
-          >
-            <Pencil className="w-4 h-4" />
-            Edit
-          </Button>
-          <Button
-            type="button"
-            size="icon"
-            variant="outline"
-            onClick={() => setIsConfirmingDelete(true)}
-            aria-label="Hapus fasilitas"
-            className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="text-[15px] leading-snug font-semibold wrap-break-word text-gray-900">
+            {item.title}
+          </h3>
+
+          {item.subtitle && (
+            <p className="mt-1.5 line-clamp-3 flex-1 text-sm leading-relaxed wrap-break-word text-gray-500">
+              {item.subtitle}
+            </p>
+          )}
+
+          <div className="mt-4 flex gap-2 border-t border-gray-100 pt-4">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setIsEditOpen(true)}
+              className="flex-1"
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </Button>
+
+            <Button
+              type="button"
+              size="icon-sm"
+              variant="outline"
+              onClick={() => setIsConfirmingDelete(true)}
+              aria-label={`Hapus fasilitas ${item.title}`}
+              className="h-7 w-7 text-gray-400 hover:bg-red-50 hover:text-red-600"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
