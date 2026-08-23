@@ -14,7 +14,7 @@ import { getSiteUrl } from "@/lib/site";
 const SITE_TITLE =
   "SDI Darussalam Cikunir — Sekolah Dasar Islam Unggulan di Bekasi Selatan";
 const SITE_DESCRIPTION_FALLBACK =
-  "SDI Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jaka Setia, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlakulkarimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
+  "SDI Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jakamulya, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlakulkarimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const profile = await getSchoolProfile();
