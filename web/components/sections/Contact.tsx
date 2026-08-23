@@ -1,257 +1,68 @@
+import { ArrowRight } from "lucide-react";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
-import { RegistrationForm } from "@/components/sections/RegistrationForm";
-import ContactSocialLinks from "@/components/sections/ContactSocialLinks";
+import { buildWhatsAppLink } from "@/lib/social/whatsapp";
+import RegistrationDialog from "@/components/sections/RegistrationDialog";
+import { WhatsappIcon } from "@/components/icons/SocialIcons";
 
 export default async function Contact() {
   const profile = await getSchoolProfile();
 
+  const whatsappLink = profile.whatsapp
+    ? buildWhatsAppLink(profile.whatsapp, profile.whatsapp_message ?? undefined)
+    : null;
+
   return (
-    <section
-      id="kontak"
-      className="scroll-mt-20 bg-white py-14 sm:py-16 lg:py-20"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="mx-auto mb-10 max-w-4xl text-center sm:mb-14 lg:mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            Hubungi Kami
+    <section id="kontak" className="scroll-mt-20 bg-white py-20 sm:py-24">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <div className="border border-brand-100 bg-brand-50/60 px-6 py-14 text-center sm:px-12 sm:py-16">
+          <p className="text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
+            Penerimaan siswa baru
+          </p>
+
+          <h2 className="font-display mx-auto mt-4 max-w-2xl text-3xl leading-tight font-semibold text-balance text-ink-900 sm:text-[2.5rem]">
+            Ingin mendaftarkan putra-putri Anda?
           </h2>
 
-          <div className="mx-auto mt-4 h-1 w-24 rounded-full bg-emerald-500" />
-
-          <p className="mt-5 text-base leading-relaxed text-gray-600 sm:text-lg">
-            Tertarik mendaftarkan putra-putri Anda? Hubungi kami untuk informasi
-            lebih lanjut
+          <p className="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-ink-700">
+            Isi formulir pendaftaran atau hubungi kami langsung lewat WhatsApp.
+            Tim kami akan menghubungi Anda kembali.
           </p>
-        </div>
 
-        {/* Contact Content */}
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
-          {/* Contact Information */}
-          <div className="min-w-0 space-y-7 sm:space-y-8">
-            {/* Address */}
-            <div className="flex min-w-0 gap-3 sm:gap-4">
-              <div
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <RegistrationDialog
+              variant="primary"
+              className="w-full px-7 sm:w-auto"
+            >
+              Isi formulir pendaftaran
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </RegistrationDialog>
+
+            {whatsappLink && (
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="
-                  flex h-12 w-12 shrink-0
-                  items-center justify-center
-                  rounded-2xl
-                  bg-linear-to-br
-                  from-emerald-500 to-teal-600
-
-                  sm:h-14 sm:w-14
+                  inline-flex w-full cursor-pointer items-center
+                  justify-center gap-2
+                  border border-brand-300 px-7 py-3.5
+                  font-medium text-brand-700
+                  transition-colors
+                  hover:border-brand-500 hover:bg-white
+                  sm:w-auto
                 "
               >
-                <svg
-                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h3 className="mb-2 font-bold text-gray-900">Alamat</h3>
-
-                <p
-                  className="
-                    whitespace-pre-line
-                    break-words
-                    text-sm leading-relaxed
-                    text-gray-600
-                    [overflow-wrap:anywhere]
-
-                    sm:text-base
-                  "
-                >
-                  {profile.alamat}
-                </p>
-              </div>
-            </div>
-
-            {/* Phone */}
-            <div className="flex min-w-0 gap-3 sm:gap-4">
-              <div
-                className="
-                  flex h-12 w-12 shrink-0
-                  items-center justify-center
-                  rounded-2xl
-                  bg-linear-to-br
-                  from-emerald-500 to-teal-600
-
-                  sm:h-14 sm:w-14
-                "
-              >
-                <svg
-                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                  />
-                </svg>
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h3 className="mb-2 font-bold text-gray-900">Telepon</h3>
-
-                <p
-                  className="
-                    break-words
-                    text-sm text-gray-600
-                    [overflow-wrap:anywhere]
-
-                    sm:text-base
-                  "
-                >
-                  {profile.telepon}
-                </p>
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="flex min-w-0 gap-3 sm:gap-4">
-              <div
-                className="
-                  flex h-12 w-12 shrink-0
-                  items-center justify-center
-                  rounded-2xl
-                  bg-linear-to-br
-                  from-emerald-500 to-teal-600
-
-                  sm:h-14 sm:w-14
-                "
-              >
-                <svg
-                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h3 className="mb-2 font-bold text-gray-900">Email</h3>
-
-                <p
-                  className="
-                    break-words
-                    text-sm text-gray-600
-                    [overflow-wrap:anywhere]
-
-                    sm:text-base
-                  "
-                >
-                  {profile.email}
-                </p>
-              </div>
-            </div>
-
-            {/* Operational Hours */}
-            <div className="flex min-w-0 gap-3 sm:gap-4">
-              <div
-                className="
-                  flex h-12 w-12 shrink-0
-                  items-center justify-center
-                  rounded-2xl
-                  bg-linear-to-br
-                  from-emerald-500 to-teal-600
-
-                  sm:h-14 sm:w-14
-                "
-              >
-                <svg
-                  className="h-6 w-6 text-white sm:h-7 sm:w-7"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <h3 className="mb-2 font-bold text-gray-900">
-                  Jam Operasional
-                </h3>
-
-                <p
-                  className="
-                    whitespace-pre-line
-                    break-words
-                    text-sm leading-relaxed
-                    text-gray-600
-                    [overflow-wrap:anywhere]
-
-                    sm:text-base
-                  "
-                >
-                  {profile.jam_operasional}
-                </p>
-              </div>
-            </div>
-
-            {/* Social Media */}
-            <ContactSocialLinks
-              whatsapp={profile.whatsapp}
-              whatsappMessage={profile.whatsapp_message}
-              facebook={profile.facebook}
-              instagram={profile.instagram}
-              tiktok={profile.tiktok}
-              youtube={profile.youtube}
-            />
+                <WhatsappIcon className="h-4 w-4" />
+                Tanya lewat WhatsApp
+              </a>
+            )}
           </div>
 
-          {/* Registration Form */}
-          <div
-            className="
-              min-w-0
-              rounded-3xl
-              bg-linear-to-br
-              from-emerald-50 to-teal-50
-              p-5
-
-              sm:p-6
-              lg:p-8
-            "
-          >
-            <h3 className="mb-6 text-xl font-bold text-gray-900 sm:text-2xl">
-              Formulir Pendaftaran Online
-            </h3>
-
-            <RegistrationForm />
-          </div>
+          {profile.jam_operasional && (
+            <p className="mt-8 text-sm whitespace-pre-line text-ink-500">
+              {profile.jam_operasional}
+            </p>
+          )}
         </div>
       </div>
     </section>

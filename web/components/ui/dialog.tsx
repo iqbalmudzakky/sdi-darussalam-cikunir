@@ -40,7 +40,7 @@ function DialogBackdrop({
 const dialogContentVariants = cva(
   [
     "fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
-    "w-full rounded-3xl border border-gray-100 bg-white shadow-lg outline-none",
+    "w-[calc(100%-2rem)] rounded-xl border border-gray-100 bg-white shadow-lg outline-none",
     "overflow-hidden",
     "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
     "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
@@ -50,6 +50,7 @@ const dialogContentVariants = cva(
       size: {
         default: "max-w-lg",
         sm: "max-w-sm",
+        lg: "max-w-2xl",
       },
     },
     defaultVariants: {
@@ -89,7 +90,7 @@ function DialogContent({
           {children}
         </div>
         {showCloseButton && (
-          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 outline-none">
+          <DialogPrimitive.Close className="absolute top-4 right-4 cursor-pointer rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 outline-none">
             <X className="w-4 h-4" />
             <span className="sr-only">Tutup</span>
           </DialogPrimitive.Close>

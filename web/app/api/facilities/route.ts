@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as facilityService from "@/modules/facility/service";
 import { SaveFacilityRequestSchema } from "@/modules/facility/dto";
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
 
   try {
     const facility = await facilityService.createFacility(parsed.data);
+    revalidatePath("/");
     return NextResponse.json(facility, { status: 201 });
   } catch (error) {
     console.error("POST /api/facilities failed:", error);

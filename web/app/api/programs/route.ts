@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as programService from "@/modules/program/service";
 import { SaveProgramRequestSchema } from "@/modules/program/dto";
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
 
   try {
     const program = await programService.createProgram(parsed.data);
+    revalidatePath("/");
     return NextResponse.json(program, { status: 201 });
   } catch (error) {
     console.error("POST /api/programs failed:", error);

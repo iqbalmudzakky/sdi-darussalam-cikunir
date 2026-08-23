@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as facilityService from "@/modules/facility/service";
 import { SaveFacilityRequestSchema } from "@/modules/facility/dto";
@@ -24,6 +25,7 @@ export async function PUT(
 
   try {
     const facility = await facilityService.updateFacility(id, parsed.data);
+    revalidatePath("/");
     return NextResponse.json(facility);
   } catch (error) {
     console.error(`PUT /api/facilities/${id} failed:`, error);
@@ -47,6 +49,7 @@ export async function DELETE(
 
   try {
     await facilityService.deleteFacility(id);
+    revalidatePath("/");
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`DELETE /api/facilities/${id} failed:`, error);

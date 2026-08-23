@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as achievementService from "@/modules/achievement/service";
 import { SaveAchievementRequestSchema } from "@/modules/achievement/dto";
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
 
   try {
     const achievement = await achievementService.createAchievement(parsed.data);
+    revalidatePath("/");
     return NextResponse.json(achievement, { status: 201 });
   } catch (error) {
     console.error("POST /api/achievements failed:", error);

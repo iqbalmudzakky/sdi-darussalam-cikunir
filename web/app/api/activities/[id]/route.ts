@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth/session";
 import * as activityService from "@/modules/activity/service";
 import { SaveActivityRequestSchema } from "@/modules/activity/dto";
@@ -24,6 +25,7 @@ export async function PUT(
 
   try {
     const activity = await activityService.updateActivity(id, parsed.data);
+    revalidatePath("/");
     return NextResponse.json(activity);
   } catch (error) {
     console.error(`PUT /api/activities/${id} failed:`, error);
@@ -47,6 +49,7 @@ export async function DELETE(
 
   try {
     await activityService.deleteActivity(id);
+    revalidatePath("/");
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`DELETE /api/activities/${id} failed:`, error);
