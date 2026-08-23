@@ -70,10 +70,13 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   function handleBlur(field: FieldName) {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
-    setErrors((prev) => ({
-      ...prev,
-      [field]: validateField(field, form[field]),
-    }));
+    setForm((currentForm) => {
+      setErrors((prev) => ({
+        ...prev,
+        [field]: validateField(field, currentForm[field]),
+      }));
+      return currentForm;
+    });
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
