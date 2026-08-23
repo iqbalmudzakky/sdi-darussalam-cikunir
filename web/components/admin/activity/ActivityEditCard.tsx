@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -56,51 +56,71 @@ export function ActivityEditCard({
 
   return (
     <>
-      <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg h-full flex flex-col">
-        <div className="relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 flex items-center justify-center overflow-hidden">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors hover:border-gray-300">
+        <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden bg-gray-100">
           {previewImageUrl ? (
             <img
               src={previewImageUrl}
               alt={item.title}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <span className="text-6xl">{item.emoji}</span>
+            <span className="text-5xl">{item.emoji}</span>
+          )}
+
+          {/*
+            Penanda bahwa isi kartu ini video, bukan foto.
+            Membantu membedakan sekilas di daftar campuran.
+          */}
+          {videoId && (
+            <span className="absolute bottom-2 left-2 flex items-center gap-1 rounded-md bg-gray-900/75 px-2 py-1 text-[11px] font-medium text-white">
+              <Play className="h-3 w-3 fill-current" />
+              Video
+            </span>
+          )}
+
+          {item.badge && (
+            <span className="absolute top-2 right-2 rounded-md bg-brand-600 px-2 py-1 text-[11px] font-semibold text-white">
+              {item.badge}
+            </span>
           )}
         </div>
 
-        <div className="p-6 space-y-4 flex-1 flex flex-col">
-          <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-          <p className="text-gray-600 flex-1">{item.description}</p>
-          <div className="flex gap-2">
+        <div className="flex flex-1 flex-col p-5">
+          <h3 className="text-[15px] leading-snug font-semibold wrap-break-word text-gray-900">
+            {item.title}
+          </h3>
+
+          {item.description && (
+            <p className="mt-1.5 line-clamp-3 flex-1 text-sm leading-relaxed wrap-break-word text-gray-500">
+              {item.description}
+            </p>
+          )}
+
+          <div className="mt-4 flex gap-2 border-t border-gray-100 pt-4">
             <Button
               type="button"
               size="sm"
               variant="outline"
               onClick={() => setIsEditOpen(true)}
-              className="flex-1 rounded-xl"
+              className="flex-1"
             >
-              <Pencil className="w-4 h-4" />
+              <Pencil className="h-4 w-4" />
               Edit
             </Button>
+
             <Button
               type="button"
-              size="icon"
+              size="icon-sm"
               variant="outline"
               onClick={() => setIsConfirmingDelete(true)}
-              aria-label="Hapus kegiatan"
-              className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+              aria-label={`Hapus kegiatan ${item.title}`}
+              className="h-7 w-7 text-gray-400 hover:bg-red-50 hover:text-red-600"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
-
-        {item.badge && (
-          <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-            {item.badge}
-          </div>
-        )}
       </div>
 
       <ActivityFormDialog

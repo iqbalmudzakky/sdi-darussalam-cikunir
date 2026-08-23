@@ -126,7 +126,7 @@ export function AchievementFormDialog({
             type="button"
             onClick={handleSubmit}
             disabled={isSaving}
-            className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
+            className="flex-1 bg-brand-600 text-white hover:bg-brand-700"
           >
             <Check className="w-4 h-4" />
             {isSaving ? "Menyimpan..." : "Simpan"}

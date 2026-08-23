@@ -8,11 +8,12 @@ import Footer from "@/components/sections/Footer";
 import Hero from "@/components/sections/Hero";
 import Navbar from "@/components/sections/Navbar";
 import Program from "@/components/sections/Program";
+import Vision from "@/components/sections/Vision";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
 const SITE_TITLE =
-  "SDI Darussalam Cikunir — Sekolah Dasar Islam Unggulan di Bekasi Selatan";
+  "Yayasan Pembangunan Umat Islam Darussalam - Perguruan Islam Darussalam";
 const SITE_DESCRIPTION_FALLBACK =
   "SDI Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jakamulya, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlakulkarimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
 
@@ -26,10 +27,12 @@ export async function generateMetadata(): Promise<Metadata> {
     title: SITE_TITLE,
     description,
     keywords: [
+      "Yayasan Pembangunan Umat Islam Darussalam",
+      "Perguruan Islam Darussalam",
       "SDI Darussalam Cikunir",
       "Sekolah Dasar Islam Bekasi",
       "SD Islam Bekasi Selatan",
-      "SD Islam Jaka Setia",
+      "SD Islam Jaka Mulya",
       "sekolah dasar islam unggulan",
       "pendaftaran SD Islam Bekasi",
     ],
@@ -42,7 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: SITE_TITLE,
       description,
       url: siteUrl,
-      siteName: "SDI Darussalam Cikunir",
+      siteName: "Yayasan Pembangunan Umat Islam Darussalam",
       locale: "id_ID",
       images: [
         {
@@ -101,6 +104,9 @@ export default async function Home() {
 
       {/* About Section */}
       <About />
+
+      {/* Vision & Mission Section */}
+      <Vision />
 
       {/* Program Section */}
       <Program />

@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Clock,
   Eye,
+  Inbox,
   Loader2,
   MessageCircle,
   PhoneCall,
@@ -29,6 +30,8 @@ import {
 } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
 import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import {
   REGISTRATION_TYPE_OPTIONS,
   getOptionLabel,
@@ -57,7 +60,7 @@ const STATUS_OPTIONS: {
     value: "completed",
     label: "Selesai",
     icon: CheckCircle2,
-    activeClassName: "bg-emerald-100 text-emerald-700",
+    activeClassName: "bg-brand-100 text-brand-700",
   },
 ];
 
@@ -139,32 +142,34 @@ export default function AdminRegistrationsPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Pendaftar</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Daftar calon siswa yang mengisi Formulir Pendaftaran Online di halaman
-          utama.
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Pendaftar"
+        description="Calon siswa yang mengisi formulir pendaftaran di halaman utama."
+        count={isLoading || loadError ? undefined : items.length}
+      />
 
       {isLoading ? (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <p className="text-sm text-red-600">
-          Gagal memuat data. Coba refresh halaman.
-        </p>
-      ) : items.length === 0 ? (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 text-center text-gray-500">
-          Belum ada pendaftar masuk.
+        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data pendaftar. Coba refresh halaman.
+          </p>
         </div>
+      ) : items.length === 0 ? (
+        <AdminEmptyState
+          icon={Inbox}
+          title="Belum ada pendaftar"
+          description="Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama."
+        />
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col gap-3"
+              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
             >
               <div>
                 <h3 className="font-bold text-gray-900">{item.full_name}</h3>
@@ -187,7 +192,7 @@ export default function AdminRegistrationsPage() {
                   href={buildWhatsAppLink(item.father_phone)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   WA Ayah
@@ -196,7 +201,7 @@ export default function AdminRegistrationsPage() {
                   href={buildWhatsAppLink(item.mother_phone)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   WA Ibu

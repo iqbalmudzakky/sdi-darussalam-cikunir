@@ -51,6 +51,7 @@ const dialogContentVariants = cva(
         default: "max-w-lg",
         sm: "max-w-sm",
         lg: "max-w-2xl",
+        video: "max-w-3xl",
       },
     },
     defaultVariants: {
@@ -67,6 +68,7 @@ const dialogScrollAreaVariants = cva([
 
 function DialogContent({
   className,
+  contentClassName,
   children,
   size,
   showCloseButton = true,
@@ -74,6 +76,14 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Popup> &
   VariantProps<typeof dialogContentVariants> & {
     showCloseButton?: boolean;
+
+    /*
+     * Kelas untuk area gulir di dalam panel.
+     *
+     * Dipakai isi yang mengatur paddingnya sendiri,
+     * seperti pemutar video yang harus menempel ke tepi.
+     */
+    contentClassName?: string;
   }) {
   return (
     <DialogPortal>
@@ -85,13 +95,13 @@ function DialogContent({
       >
         <div
           data-slot="dialog-scroll-area"
-          className={dialogScrollAreaVariants()}
+          className={cn(dialogScrollAreaVariants(), contentClassName)}
         >
           {children}
         </div>
         {showCloseButton && (
-          <DialogPrimitive.Close className="absolute top-4 right-4 cursor-pointer rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 outline-none">
-            <X className="w-4 h-4" />
+          <DialogPrimitive.Close className="absolute top-3 right-3 z-10 cursor-pointer rounded-full bg-white/85 p-1.5 text-gray-600 shadow-sm outline-none backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-900">
+            <X className="h-4 w-4" />
             <span className="sr-only">Tutup</span>
           </DialogPrimitive.Close>
         )}

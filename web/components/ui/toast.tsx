@@ -111,7 +111,7 @@ function ToastProgressBar({ timeout, type }: { timeout: number; type: string | u
 
   return (
     <div
-      className={cn("absolute inset-x-0 bottom-0 h-1", type === "error" ? "bg-red-500" : "bg-emerald-600")}
+      className={cn("absolute inset-x-0 bottom-0 h-1", type === "error" ? "bg-red-500" : "bg-brand-600")}
       style={{
         width: `${percent}%`,
         transition: "width 80ms linear",
@@ -130,7 +130,7 @@ function Toaster() {
           <ToastPrimitive.Root key={toast.id} toast={toast} swipeDirection={["right", "down"]} className={toastRootVariants()}>
             {/* Toast Icon */}
             <div className="flex min-w-0 gap-3">
-              <div className="shrink-0 pt-0.5">{toast.type === "error" ? <XCircle className="h-5 w-5 text-red-500" /> : <CheckCircle2 className="h-5 w-5 text-emerald-600" />}</div>
+              <div className="shrink-0 pt-0.5">{toast.type === "error" ? <XCircle className="h-5 w-5 text-red-500" /> : <CheckCircle2 className="h-5 w-5 text-brand-600" />}</div>
 
               {/* Toast Content */}
               <div className="min-w-0 flex-1">

@@ -44,7 +44,7 @@ function ProgramCard({
 
 export default function ProgramCards({ programs }: ProgramCardsProps) {
   return (
-    <div className="mt-14 grid gap-x-10 gap-y-11 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-12">
+    <div className="mt-14 grid gap-x-10 gap-y-11 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-14 xl:gap-x-16">
       {programs.map((program, index) => (
         <ProgramCard key={program.id} program={program} index={index} />
       ))}

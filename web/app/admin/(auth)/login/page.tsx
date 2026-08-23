@@ -11,18 +11,13 @@ import { login } from "@/lib/api/auth";
 import { cn } from "@/lib/utils";
 
 const pageBackgroundVariants = cva([
-  "relative min-h-screen overflow-hidden",
+  "relative min-h-screen bg-paper",
   "flex items-center justify-center",
 ]);
 
-const pageGradientVariants = cva([
-  "absolute inset-0",
-  "bg-linear-to-br from-emerald-50 via-teal-50 to-green-50",
-]);
-
 const inputFieldVariants = cva([
-  "h-11 rounded-xl px-4",
-  "focus-visible:border-emerald-500 focus-visible:ring-emerald-500/50",
+  "h-11 rounded-lg px-4",
+  "focus-visible:border-brand-500 focus-visible:ring-brand-500/50",
 ]);
 
 const togglePasswordVariants = cva([
@@ -62,17 +57,11 @@ export default function LoginPage() {
 
   return (
     <div className={pageBackgroundVariants()}>
-      <div className={pageGradientVariants()}></div>
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-400 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-teal-400 rounded-full blur-3xl"></div>
-      </div>
-
       <div className="relative w-full max-w-md mx-4">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-10">
+        <div className="rounded-xl border border-gray-100 bg-white p-8 shadow-sm sm:p-10">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center gap-4 py-16">
-              <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
+              <Loader2 className="w-12 h-12 text-brand-600 animate-spin" />
               <p className="text-sm text-gray-500">Memproses login...</p>
             </div>
           ) : (

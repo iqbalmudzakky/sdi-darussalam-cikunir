@@ -23,7 +23,7 @@ import type { FacilityItem } from "@/types/Facility";
 
 const photoButtonVariants = cva([
   "relative aspect-video w-full overflow-hidden rounded-2xl",
-  "bg-linear-to-br from-emerald-200 to-teal-200",
+  "bg-gray-100",
   "flex items-center justify-center",
   "disabled:cursor-default",
 ]);
@@ -225,7 +225,7 @@ export function FacilityFormDialog({
             type="button"
             onClick={handleSubmit}
             disabled={isSaving || isUploading || isPreparingPhoto}
-            className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
+            className="flex-1 bg-brand-600 text-white hover:bg-brand-700"
           >
             <Check className="w-4 h-4" />
             {isSaving ? "Menyimpan..." : "Simpan"}
