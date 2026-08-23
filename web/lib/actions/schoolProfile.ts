@@ -5,6 +5,7 @@ import type { SchoolProfile } from "@/types/SchoolProfile";
 
 const DEFAULT_SCHOOL_PROFILE: SchoolProfile = {
   photo_url: null,
+  vision_photo_url: null,
   description: "",
   visi: "",
   misi: [],

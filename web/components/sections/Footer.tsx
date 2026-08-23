@@ -1,10 +1,12 @@
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import ContactSocialLinks from "@/components/sections/ContactSocialLinks";
+import Reveal from "@/components/sections/Reveal";
 
 const NAV_LINKS = [
   { href: "#tentang", label: "Tentang" },
   { href: "#program", label: "Program" },
   { href: "#fasilitas", label: "Fasilitas" },
+  { href: "#visi-misi", label: "Visi & Misi" },
   { href: "#kegiatan", label: "Kegiatan" },
   { href: "#kontak", label: "Pendaftaran" },
 ];
@@ -63,8 +65,8 @@ export default async function Footer() {
 
   return (
     <footer className="bg-brand-900 text-brand-100">
-      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
-        <div className="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1.2fr] lg:gap-16">
+      <div className="page-container py-16 sm:py-20">
+        <Reveal className="grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1.2fr] lg:gap-16">
           {/* Identitas sekolah */}
           <div className="min-w-0 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3">
@@ -81,7 +83,7 @@ export default async function Footer() {
             </div>
 
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-brand-200">
-              Sekolah dasar Islam di Jaka Setia, Bekasi Selatan. Terakreditasi
+              Sekolah dasar Islam di Jaka Mulya, Bekasi Selatan. Terakreditasi
               A.
             </p>
 
@@ -145,7 +147,7 @@ export default async function Footer() {
               preserveLineBreaks
             />
           </dl>
-        </div>
+        </Reveal>
 
         <div className="mt-14 border-t border-brand-800 pt-6">
           <p className="text-xs text-brand-300">

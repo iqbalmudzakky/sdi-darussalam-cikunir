@@ -1,11 +1,13 @@
 import { ArrowRight } from "lucide-react";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import RegistrationDialog from "@/components/sections/RegistrationDialog";
+import HeroStats, { type HeroStat } from "@/components/sections/HeroStats";
 
-const STATS = [
-  { value: "683", label: "Siswa aktif" },
-  { value: "65", label: "Guru & staf" },
-  { value: "A", label: "Akreditasi" },
+const STATS: HeroStat[] = [
+  { value: 683, display: "683", label: "Siswa aktif" },
+  { value: 65, display: "65", label: "Guru & staf" },
+  { value: 16, display: "16", suffix: "+", label: "Tahun berdiri" },
+  { value: null, display: "A", label: "Akreditasi" },
 ];
 
 export default async function Hero() {
@@ -13,28 +15,44 @@ export default async function Hero() {
 
   return (
     <section className="relative bg-paper pt-16 sm:pt-[72px]">
-      <div className="mx-auto max-w-6xl px-5 pt-14 pb-16 sm:px-8 sm:pt-20 sm:pb-20 lg:pt-28 lg:pb-24">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
-          {/* Teks utama */}
-          <div className="min-w-0">
-            <p className="text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
+      <div className="page-container pt-14 pb-16 sm:pt-20 sm:pb-20 lg:pt-28 lg:pb-24">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr] lg:items-stretch lg:gap-16">
+          {/*
+            Teks utama.
+
+            Urutan DOM sengaja tetap teks lebih dulu supaya
+            pembaca layar dan mesin pencari membaca judul
+            sebelum foto. Yang dibalik hanya tampilannya
+            di layar kecil.
+          */}
+          <div className="order-2 min-w-0 lg:order-1">
+            <p className="intro text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
               Sekolah Dasar Islam &middot; Terakreditasi A
             </p>
 
-            <h1 className="font-display mt-5 text-[2.1rem] leading-[1.2] font-semibold text-balance text-ink-900 sm:text-5xl lg:text-[3.4rem]">
+            <h1
+              className="font-display intro mt-5 text-[2.1rem] leading-[1.2] font-semibold text-balance text-ink-900 sm:text-5xl lg:text-[3.4rem]"
+              style={{ animationDelay: "80ms" }}
+            >
               Membentuk generasi yang{" "}
               <span className="text-brand-700">
                 cerdas dan berakhlakulkarimah
               </span>
             </h1>
 
-            <p className="mt-6 max-w-lg text-[17px] leading-relaxed text-ink-700">
+            <p
+              className="intro mt-6 max-w-lg text-[17px] leading-relaxed text-ink-700"
+              style={{ animationDelay: "160ms" }}
+            >
               Sejak 2009 kami mendampingi anak-anak di Jaka Mulya tumbuh dengan
               dasar akademik yang kuat, hafalan Al-Qur&rsquo;an, dan kebiasaan
               baik yang terbawa sampai dewasa.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+            <div
+              className="intro mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5"
+              style={{ animationDelay: "240ms" }}
+            >
               <RegistrationDialog variant="primary">
                 Daftar tahun ajaran 2026/2027
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -55,22 +73,18 @@ export default async function Hero() {
             </div>
 
             {/* Angka ringkas */}
-            <dl className="mt-12 flex flex-wrap gap-x-10 gap-y-6 border-t border-brand-100 pt-8">
-              {STATS.map((stat) => (
-                <div key={stat.label}>
-                  <dt className="sr-only">{stat.label}</dt>
-                  <dd className="font-display text-3xl font-semibold text-ink-900">
-                    {stat.value}
-                  </dd>
-                  <p className="mt-1 text-sm text-ink-500">{stat.label}</p>
-                </div>
-              ))}
-            </dl>
+            <HeroStats stats={STATS} />
           </div>
 
-          {/* Foto sekolah */}
-          <div className="relative">
-            <div className="aspect-4/5 overflow-hidden rounded-sm bg-brand-100 sm:aspect-4/3 lg:aspect-4/5">
+          {/*
+            Foto sekolah.
+
+            Di desktop tingginya mengikuti kolom teks di
+            sebelahnya, sehingga kedua kolom berakhir pada
+            garis yang sama.
+          */}
+          <div className="intro intro-hero-photo relative order-1 lg:order-2 lg:h-full lg:min-h-[30rem]">
+            <div className="aspect-4/3 overflow-hidden rounded-sm bg-brand-100 lg:absolute lg:inset-0 lg:aspect-auto">
               {profile.photo_url ? (
                 <img
                   src={profile.photo_url}
@@ -85,9 +99,6 @@ export default async function Hero() {
                 </div>
               )}
             </div>
-
-            {/* Garis aksen tipis, bukan bayangan blok */}
-            <div className="absolute -bottom-3 -left-3 -z-10 h-24 w-24 border-b border-l border-brand-300" />
           </div>
         </div>
       </div>

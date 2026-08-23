@@ -105,7 +105,7 @@ export default function Navbar() {
         }
       `}
     >
-      <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8">
+      <div className="page-container relative z-10">
         <div className="flex h-16 items-center justify-between sm:h-[72px]">
           {/* Logo + identitas sekolah */}
           <a
@@ -125,7 +125,7 @@ export default function Navbar() {
               </p>
 
               <p className="mt-0.5 truncate text-[11px] leading-tight tracking-wide text-ink-500 uppercase">
-                Jaka Setia, Bekasi Selatan
+                Jaka Mulya, Bekasi Selatan
               </p>
             </div>
           </a>
@@ -233,7 +233,7 @@ export default function Navbar() {
             id="mobile-navigation"
             className="mobile-menu-panel relative z-10 border-t border-brand-100 bg-paper shadow-sm md:hidden"
           >
-            <div className="mx-auto max-w-6xl px-5 pt-2 pb-6 sm:px-8">
+            <div className="page-container pt-2 pb-6">
               <ul>
                 {NAV_LINKS.map((link, index) => (
                   <li

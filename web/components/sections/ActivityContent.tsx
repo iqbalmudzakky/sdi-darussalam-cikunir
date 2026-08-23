@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Play } from "lucide-react";
 import {
   extractYouTubeVideoId,
@@ -8,10 +9,17 @@ import {
 import type { ActivityItem } from "@/types/Activity";
 import type { AchievementItem } from "@/types/Achievement";
 import { useReveal } from "@/hooks/useReveal";
+import VideoDialog from "@/components/sections/VideoDialog";
 
 type ActivityContentProps = {
   activities: ActivityItem[];
   achievements: AchievementItem[];
+};
+
+type PlayingVideo = {
+  videoId: string;
+  title: string;
+  description?: string | null;
 };
 
 /*
@@ -43,9 +51,11 @@ function badgeToneClass(badge: string): string {
 function ActivityCard({
   activity,
   index,
+  onPlay,
 }: {
   activity: ActivityItem;
   index: number;
+  onPlay: (video: PlayingVideo) => void;
 }) {
   const { ref, isVisible } = useReveal<HTMLElement>();
 
@@ -66,7 +76,7 @@ function ActivityCard({
           className="
             absolute inset-0 h-full w-full object-cover
             transition-transform duration-700 ease-out
-            group-hover:scale-105
+            md:group-hover:scale-105
           "
         />
       ) : (
@@ -78,27 +88,31 @@ function ActivityCard({
       )}
 
       {/*
-        Gelap di bagian bawah supaya judul selalu terbaca,
-        lalu menguat saat hover agar deskripsi ikut jelas.
+        Di layar sentuh keterangan selalu tampil, jadi
+        lapisan gelapnya langsung dibuat pekat.
+
+        Mulai md barulah ia mengikuti hover.
       */}
       <div
         className="
           absolute inset-0
-          bg-gradient-to-t from-ink-900/80 via-ink-900/10 to-transparent
-          transition-opacity duration-300 ease-out
-          group-hover:from-ink-900/90 group-hover:via-ink-900/45
+          bg-gradient-to-t from-ink-900/90 via-ink-900/45 to-transparent
+          transition-[background-color,opacity] duration-300 ease-out
+
+          md:from-ink-900/80 md:via-ink-900/10
+          md:group-hover:from-ink-900/90 md:group-hover:via-ink-900/45
         "
       />
 
       {/* Tanda video, hanya kalau memang ada tautan YouTube */}
       {videoId && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <span
             className="
               flex h-14 w-14 items-center justify-center
               rounded-full bg-white/95
               transition-transform duration-300 ease-out
-              group-hover:scale-110
+              md:group-hover:scale-110
             "
           >
             <Play className="h-5 w-5 translate-x-px fill-brand-700 text-brand-700" />
@@ -132,13 +146,13 @@ function ActivityCard({
               mt-1.5 line-clamp-3 overflow-hidden wrap-break-word
               text-sm leading-relaxed text-white/90
 
-              max-h-0 translate-y-2 opacity-0
-              transition-[max-height,opacity,transform]
-              duration-300 ease-out
+              md:max-h-0 md:translate-y-2 md:opacity-0
+              md:transition-[max-height,opacity,transform]
+              md:duration-300 md:ease-out
 
-              group-hover:max-h-28
-              group-hover:translate-y-0
-              group-hover:opacity-100
+              md:group-hover:max-h-28
+              md:group-hover:translate-y-0
+              md:group-hover:opacity-100
             "
           >
             {activity.description}
@@ -154,16 +168,21 @@ function ActivityCard({
       className={`min-w-0 reveal ${isVisible ? "reveal-visible" : ""}`}
       style={{ transitionDelay: `${Math.min(index, 5) * 70}ms` }}
     >
-      {videoId && activity.youtube_url ? (
-        <a
-          href={activity.youtube_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block cursor-pointer"
-          aria-label={`Tonton video ${activity.title} di YouTube`}
+      {videoId ? (
+        <button
+          type="button"
+          onClick={() =>
+            onPlay({
+              videoId,
+              title: activity.title,
+              description: activity.description,
+            })
+          }
+          aria-label={`Putar video ${activity.title}`}
+          className="block w-full cursor-pointer text-left"
         >
           {media}
-        </a>
+        </button>
       ) : (
         media
       )}
@@ -175,13 +194,31 @@ export default function ActivityContent({
   activities,
   achievements,
 }: ActivityContentProps) {
+  const [playingVideo, setPlayingVideo] = useState<PlayingVideo | null>(null);
+
   return (
     <>
-      <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:gap-7">
         {activities.map((activity, index) => (
-          <ActivityCard key={activity.id} activity={activity} index={index} />
+          <ActivityCard
+            key={activity.id}
+            activity={activity}
+            index={index}
+            onPlay={setPlayingVideo}
+          />
         ))}
       </div>
+
+      {/*
+        Satu dialog dipakai bersama semua kartu, supaya
+        halaman tidak menyiapkan satu iframe per kegiatan.
+      */}
+      <VideoDialog
+        videoId={playingVideo?.videoId ?? null}
+        title={playingVideo?.title ?? ""}
+        description={playingVideo?.description}
+        onClose={() => setPlayingVideo(null)}
+      />
 
       {/* Prestasi */}
       {achievements.length > 0 && (

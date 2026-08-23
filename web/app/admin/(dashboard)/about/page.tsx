@@ -11,17 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { getSchoolProfile, updateSchoolProfile } from "@/lib/api/schoolProfile";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminFormSection } from "@/components/admin/AdminFormSection";
 import { useToast } from "@/hooks/useToast";
 import type { SchoolProfile } from "@/types/SchoolProfile";
 
-const cardContainerVariants = cva([
-  "bg-white rounded-3xl shadow-sm border border-gray-100 p-8 space-y-8",
-  "[&_input]:bg-gray-50 [&_textarea]:bg-gray-50",
-]);
-
 const photoButtonVariants = cva([
   "relative aspect-4/3 w-full max-w-sm mx-auto overflow-hidden rounded-2xl",
-  "bg-linear-to-br from-emerald-100 to-teal-100",
+  "bg-linear-to-br bg-brand-100",
   "flex items-center justify-center",
   "disabled:cursor-default",
 ]);
@@ -31,6 +28,18 @@ const photoOverlayVariants = cva([
   "bg-black/40 text-white",
 ]);
 
+/*
+ * Pratinjau foto latar dibuat melebar mengikuti bentuk
+ * section-nya di halaman utama, bukan 4:3 seperti foto
+ * profil.
+ */
+const visionPhotoButtonVariants = cva([
+  "relative aspect-video w-full max-w-xl overflow-hidden rounded-lg",
+  "bg-gray-100",
+  "flex items-center justify-center",
+  "disabled:cursor-default",
+]);
+
 const removeMisiButtonVariants = cva([
   "rounded-xl shrink-0",
   "text-red-500 hover:bg-red-50 hover:text-red-600",
@@ -38,6 +47,7 @@ const removeMisiButtonVariants = cva([
 
 const EMPTY_PROFILE: SchoolProfile = {
   photo_url: null,
+  vision_photo_url: null,
   description: "",
   visi: "",
   misi: [],
@@ -63,6 +73,10 @@ export default function AdminAboutPage() {
   const [isPreparingPhoto, setIsPreparingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingPhotoFileRef = useRef<File | null>(null);
+
+  const [isPreparingVisionPhoto, setIsPreparingVisionPhoto] = useState(false);
+  const visionFileInputRef = useRef<HTMLInputElement>(null);
+  const pendingVisionPhotoFileRef = useRef<File | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -101,6 +115,34 @@ export default function AdminAboutPage() {
     }
   }
 
+  async function handleVisionPhotoChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsPreparingVisionPhoto(true);
+    try {
+      const preparedFile = await prepareImageForUpload(file);
+      pendingVisionPhotoFileRef.current = preparedFile;
+      updateDraft({ vision_photo_url: URL.createObjectURL(preparedFile) });
+    } catch (error) {
+      console.error("Failed to prepare vision photo:", error);
+      toast.error("Gagal memproses foto", "Coba lagi.");
+    } finally {
+      setIsPreparingVisionPhoto(false);
+    }
+  }
+
+  function handleRemoveVisionPhoto() {
+    pendingVisionPhotoFileRef.current = null;
+    updateDraft({ vision_photo_url: null });
+
+    if (visionFileInputRef.current) {
+      visionFileInputRef.current.value = "";
+    }
+  }
+
   function handleMisiChange(index: number, value: string) {
     const misi = [...draft.misi];
     misi[index] = value;
@@ -117,13 +159,25 @@ export default function AdminAboutPage() {
 
   async function handleSave() {
     let photoUrl = draft.photo_url;
-    const pendingFile = pendingPhotoFileRef.current;
+    let visionPhotoUrl = draft.vision_photo_url;
 
-    if (pendingFile) {
+    const pendingFile = pendingPhotoFileRef.current;
+    const pendingVisionFile = pendingVisionPhotoFileRef.current;
+
+    if (pendingFile || pendingVisionFile) {
       setIsUploading(true);
 
       try {
-        photoUrl = await uploadPhoto("school-profile-photos", pendingFile);
+        if (pendingFile) {
+          photoUrl = await uploadPhoto("school-profile-photos", pendingFile);
+        }
+
+        if (pendingVisionFile) {
+          visionPhotoUrl = await uploadPhoto(
+            "school-profile-photos",
+            pendingVisionFile,
+          );
+        }
       } catch (error) {
         console.error("Failed to upload school profile photo:", error);
         toast.error("Gagal unggah foto", "Coba lagi.");
@@ -143,9 +197,11 @@ export default function AdminAboutPage() {
         ...draft,
         misi,
         photo_url: photoUrl,
+        vision_photo_url: visionPhotoUrl,
       });
       setDraft(saved);
       pendingPhotoFileRef.current = null;
+      pendingVisionPhotoFileRef.current = null;
       toast.success("Profil sekolah disimpan");
     } catch (error) {
       console.error("Failed to save school profile:", error);
@@ -156,25 +212,28 @@ export default function AdminAboutPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Profil Sekolah</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Edit deskripsi, visi, misi, foto, dan info kontak sekolah. Data ini
-          dipakai di section Tentang dan Kontak pada halaman utama.
-        </p>
-      </div>
+    <div className="mx-auto max-w-4xl">
+      <AdminPageHeader
+        title="Profil Sekolah"
+        description="Deskripsi, visi, misi, foto, dan info kontak yang dipakai di section Tentang, Visi & Misi, Kontak, dan Footer."
+      />
 
       {isLoading ? (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <p className="text-sm text-red-600">
-          Gagal memuat data. Coba refresh halaman.
-        </p>
+        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data profil sekolah. Coba refresh halaman.
+          </p>
+        </div>
       ) : (
-        <div className={cardContainerVariants()}>
+        <div className="space-y-6 pb-24">
+          <AdminFormSection
+            title="Identitas sekolah"
+            description="Foto gedung dan deskripsi yang tampil di section Hero dan Tentang."
+          >
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -227,17 +286,23 @@ export default function AdminAboutPage() {
               id="about-description"
               value={draft.description}
               onChange={(e) => updateDraft({ description: e.target.value })}
-              className="rounded-xl min-h-32"
+              className="min-h-32 rounded-lg"
             />
           </div>
 
+          </AdminFormSection>
+
+          <AdminFormSection
+            title="Visi &amp; Misi"
+            description="Tampil pada section Visi &amp; Misi dengan foto latar di halaman utama."
+          >
           <div className="space-y-1.5">
             <Label htmlFor="about-visi">Visi</Label>
             <Textarea
               id="about-visi"
               value={draft.visi}
               onChange={(e) => updateDraft({ visi: e.target.value })}
-              className="rounded-xl min-h-20"
+              className="min-h-20 rounded-lg"
             />
           </div>
 
@@ -250,7 +315,7 @@ export default function AdminAboutPage() {
                     value={item}
                     onChange={(e) => handleMisiChange(index, e.target.value)}
                     placeholder="mis. Membentuk karakter siswa yang Islami"
-                    className="rounded-xl"
+                    className="rounded-lg"
                   />
                   <Button
                     type="button"
@@ -270,21 +335,102 @@ export default function AdminAboutPage() {
               size="sm"
               variant="outline"
               onClick={handleAddMisi}
-              className="rounded-xl"
+              className="rounded-lg"
             >
               <Plus className="w-4 h-4" />
               Tambah Poin Misi
             </Button>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          {/* Foto latar section Visi & Misi */}
+          <div className="space-y-1.5">
+            <Label>Foto Latar Visi &amp; Misi</Label>
+
+            <p className="text-xs text-gray-500">
+              Dipakai sebagai latar section Visi &amp; Misi di halaman utama.
+              Foto akan ditutup lapisan gelap agar teks tetap terbaca. Pilih
+              foto melebar (landscape). Kalau dikosongkan, latarnya memakai
+              warna polos.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => visionFileInputRef.current?.click()}
+              disabled={isUploading || isPreparingVisionPhoto}
+              className={visionPhotoButtonVariants()}
+            >
+              {draft.vision_photo_url ? (
+                <img
+                  src={draft.vision_photo_url}
+                  alt="Foto latar visi dan misi"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-gray-500 font-medium px-4 text-center">
+                  Belum ada foto latar
+                </span>
+              )}
+
+              {isUploading || isPreparingVisionPhoto ? (
+                <div className={photoOverlayVariants()}>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span className="text-sm font-medium">
+                    {isPreparingVisionPhoto
+                      ? "Memproses foto..."
+                      : "Mengunggah..."}
+                  </span>
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    photoOverlayVariants(),
+                    "opacity-0 hover:opacity-100 transition-opacity",
+                  )}
+                >
+                  <Upload className="w-6 h-6" />
+                  <span className="text-sm font-medium">
+                    {draft.vision_photo_url ? "Ganti foto" : "Pilih foto"}
+                  </span>
+                </div>
+              )}
+            </button>
+
+            <input
+              ref={visionFileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleVisionPhotoChange}
+              className="hidden"
+            />
+
+            {draft.vision_photo_url && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleRemoveVisionPhoto}
+                className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+              >
+                <Trash2 className="w-4 h-4" />
+                Hapus foto latar
+              </Button>
+            )}
+          </div>
+
+          </AdminFormSection>
+
+          <AdminFormSection
+            title="Kontak &amp; media sosial"
+            description="Dipakai di section Pendaftaran dan di footer halaman utama."
+          >
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="about-alamat">Alamat</Label>
               <Textarea
                 id="about-alamat"
                 value={draft.alamat}
                 onChange={(e) => updateDraft({ alamat: e.target.value })}
-                className="rounded-xl min-h-20"
+                className="min-h-20 rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -295,7 +441,7 @@ export default function AdminAboutPage() {
                 onChange={(e) =>
                   updateDraft({ jam_operasional: e.target.value })
                 }
-                className="rounded-xl min-h-20"
+                className="min-h-20 rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -305,7 +451,7 @@ export default function AdminAboutPage() {
                 value={draft.telepon}
                 onChange={(e) => updateDraft({ telepon: e.target.value })}
                 placeholder="mis. (021) XXXX-XXXX"
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -315,7 +461,7 @@ export default function AdminAboutPage() {
                 value={draft.whatsapp}
                 onChange={(e) => updateDraft({ whatsapp: e.target.value })}
                 placeholder="08xx-xxxx-xxxx"
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -325,7 +471,7 @@ export default function AdminAboutPage() {
                 value={draft.email}
                 onChange={(e) => updateDraft({ email: e.target.value })}
                 placeholder="mis. info@sdidarussalam.sch.id"
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -335,7 +481,7 @@ export default function AdminAboutPage() {
                 value={draft.facebook}
                 onChange={(e) => updateDraft({ facebook: e.target.value })}
                 placeholder="URL profil Facebook"
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -345,7 +491,7 @@ export default function AdminAboutPage() {
                 value={draft.instagram}
                 onChange={(e) => updateDraft({ instagram: e.target.value })}
                 placeholder="URL profil Instagram"
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -355,7 +501,7 @@ export default function AdminAboutPage() {
                 value={draft.tiktok}
                 onChange={(e) => updateDraft({ tiktok: e.target.value })}
                 placeholder="URL profil TikTok"
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
             <div className="space-y-1.5">
@@ -365,7 +511,7 @@ export default function AdminAboutPage() {
                 value={draft.youtube}
                 onChange={(e) => updateDraft({ youtube: e.target.value })}
                 placeholder="URL channel YouTube"
-                className="rounded-xl"
+                className="rounded-lg"
               />
             </div>
           </div>
@@ -381,7 +527,7 @@ export default function AdminAboutPage() {
                 updateDraft({ whatsapp_message: e.target.value })
               }
               placeholder="mis. Assalamu'alaikum, saya ingin bertanya seputar pendaftaran di SDI Darussalam Cikunir."
-              className="rounded-xl min-h-24"
+              className="min-h-24 rounded-lg"
             />
             <p className="text-xs text-gray-500">
               Pesan ini otomatis terisi di kolom chat WhatsApp saat pengunjung
@@ -389,15 +535,31 @@ export default function AdminAboutPage() {
             </p>
           </div>
 
-          <Button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving || isUploading || isPreparingPhoto}
-            className="bg-emerald-600 text-white hover:bg-emerald-700"
-          >
-            <Check className="w-4 h-4" />
-            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
-          </Button>
+          </AdminFormSection>
+
+          {/*
+            Bilah simpan menempel di bawah layar. Form ini
+            panjang, jadi tombolnya harus tetap terjangkau
+            tanpa menggulir sampai ujung.
+          */}
+          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur-sm lg:left-64">
+            <div className="mx-auto flex max-w-4xl items-center justify-end gap-3">
+              <p className="mr-auto hidden text-xs text-gray-500 sm:block">
+                Perubahan baru tersimpan setelah tombol ini ditekan.
+              </p>
+
+              <Button
+                type="button"
+                variant="gradient"
+                onClick={handleSave}
+                disabled={isSaving || isUploading || isPreparingPhoto}
+                className="w-full sm:w-auto"
+              >
+                <Check className="h-4 w-4" />
+                {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

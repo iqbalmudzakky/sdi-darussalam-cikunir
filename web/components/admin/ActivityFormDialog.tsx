@@ -163,8 +163,8 @@ export function ActivityFormDialog({
             onDragLeave={handlePhotoDragLeave}
             onDrop={handlePhotoDrop}
             disabled={isUploading || isPreparingPhoto}
-            className={`relative aspect-video w-full bg-linear-to-br from-emerald-200 to-teal-200 rounded-2xl flex items-center justify-center overflow-hidden disabled:cursor-default ${
-              isDraggingPhoto ? "ring-2 ring-emerald-500 ring-offset-2" : ""
+            className={`relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg bg-gray-100 disabled:cursor-default ${
+              isDraggingPhoto ? "ring-2 ring-brand-500 ring-offset-2" : ""
             }`}
           >
             {draft.photo_url ? (
@@ -188,7 +188,7 @@ export function ActivityFormDialog({
               <div
                 className={`absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-white transition-opacity ${
                   isDraggingPhoto
-                    ? "bg-emerald-700/70 opacity-100"
+                    ? "bg-brand-700/70 opacity-100"
                     : "bg-black/40 opacity-0 hover:opacity-100"
                 }`}
               >
@@ -287,7 +287,7 @@ export function ActivityFormDialog({
             type="button"
             onClick={handleSubmit}
             disabled={isSaving || isUploading || isPreparingPhoto}
-            className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700"
+            className="flex-1 bg-brand-600 text-white hover:bg-brand-700"
           >
             <Check className="w-4 h-4" />
             {isSaving ? "Menyimpan..." : "Simpan"}

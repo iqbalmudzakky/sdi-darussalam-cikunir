@@ -18,7 +18,7 @@ export default function SectionHeading({
   description,
 }: SectionHeadingProps) {
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <p className="text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
         {eyebrow}
       </p>

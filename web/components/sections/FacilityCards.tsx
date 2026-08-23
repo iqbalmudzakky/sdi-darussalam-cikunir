@@ -30,7 +30,7 @@ function FacilityCard({
             className="
               absolute inset-0 h-full w-full object-cover
               transition-transform duration-700 ease-out
-              group-hover:scale-105
+              md:group-hover:scale-105
             "
           />
         ) : (
@@ -42,15 +42,19 @@ function FacilityCard({
         )}
 
         {/*
-          Gelap di bagian bawah supaya judul selalu terbaca,
-          lalu menguat saat hover agar keterangan ikut jelas.
+          Di layar sentuh keterangan selalu tampil, jadi
+          lapisan gelapnya langsung dibuat pekat.
+
+          Mulai md barulah ia mengikuti hover.
         */}
         <div
           className="
             absolute inset-0
-            bg-gradient-to-t from-ink-900/80 via-ink-900/10 to-transparent
-            transition-opacity duration-300 ease-out
-            group-hover:from-ink-900/90 group-hover:via-ink-900/45
+            bg-gradient-to-t from-ink-900/90 via-ink-900/45 to-transparent
+            transition-[background-color,opacity] duration-300 ease-out
+
+            md:from-ink-900/80 md:via-ink-900/10
+            md:group-hover:from-ink-900/90 md:group-hover:via-ink-900/45
           "
         />
 
@@ -65,13 +69,13 @@ function FacilityCard({
                 mt-1.5 line-clamp-3 overflow-hidden wrap-break-word
                 text-sm leading-relaxed text-white/90
 
-                max-h-0 translate-y-2 opacity-0
-                transition-[max-height,opacity,transform]
-                duration-300 ease-out
+                md:max-h-0 md:translate-y-2 md:opacity-0
+                md:transition-[max-height,opacity,transform]
+                md:duration-300 md:ease-out
 
-                group-hover:max-h-28
-                group-hover:translate-y-0
-                group-hover:opacity-100
+                md:group-hover:max-h-28
+                md:group-hover:translate-y-0
+                md:group-hover:opacity-100
               "
             >
               {facility.subtitle}
@@ -85,7 +89,7 @@ function FacilityCard({
 
 export default function FacilityCards({ facilities }: FacilityCardsProps) {
   return (
-    <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:gap-7">
       {facilities.map((facility, index) => (
         <FacilityCard key={facility.id} facility={facility} index={index} />
       ))}

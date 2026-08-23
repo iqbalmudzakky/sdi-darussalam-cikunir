@@ -11,6 +11,7 @@ import {
   PhoneCall,
   Trash2,
   Phone,
+  Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,8 @@ import {
   updateRegistrationStatus,
 } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import type { Registration, RegistrationStatus } from "@/types/Registration";
 
 const STATUS_OPTIONS: {
@@ -52,7 +55,7 @@ const STATUS_OPTIONS: {
     value: "completed",
     label: "Selesai",
     icon: CheckCircle2,
-    activeClassName: "bg-emerald-100 text-emerald-700",
+    activeClassName: "bg-brand-100 text-brand-700",
   },
 ];
 
@@ -139,32 +142,34 @@ export default function AdminRegistrationsPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Pendaftar</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Daftar calon siswa yang mengisi Formulir Pendaftaran Online di halaman
-          utama.
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Pendaftar"
+        description="Calon siswa yang mengisi formulir pendaftaran di halaman utama."
+        count={isLoading || loadError ? undefined : items.length}
+      />
 
       {isLoading ? (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+        <div className="flex min-h-[40vh] items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <p className="text-sm text-red-600">
-          Gagal memuat data. Coba refresh halaman.
-        </p>
-      ) : items.length === 0 ? (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 text-center text-gray-500">
-          Belum ada pendaftar masuk.
+        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data pendaftar. Coba refresh halaman.
+          </p>
         </div>
+      ) : items.length === 0 ? (
+        <AdminEmptyState
+          icon={Inbox}
+          title="Belum ada pendaftar"
+          description="Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama."
+        />
       ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col gap-3"
+              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
             >
               <div>
                 <h3 className="font-bold text-gray-900">{item.student_name}</h3>
@@ -177,7 +182,7 @@ export default function AdminRegistrationsPage() {
                 href={toWhatsAppLink(item.whatsapp)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-emerald-700 hover:underline"
+                className="flex items-center gap-2 text-sm text-brand-700 hover:underline"
               >
                 <Phone className="w-4 h-4 shrink-0" />
                 {item.whatsapp}
