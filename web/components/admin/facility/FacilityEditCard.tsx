@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { FacilityFormDialog } from "@/components/admin/FacilityFormDialog";
+import { FacilityFormDialog } from "./FacilityFormDialog";
 import { useToast } from "@/hooks/useToast";
 import type { FacilityItem } from "@/types/Facility";
 

@@ -5,8 +5,8 @@ import { Loader2, Plus, Trophy } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Button } from "@/components/ui/button";
-import { AchievementEditCard } from "@/components/admin/AchievementEditCard";
-import { AchievementFormDialog } from "@/components/admin/AchievementFormDialog";
+import { AchievementEditCard } from "@/components/admin/achievement/AchievementEditCard";
+import { AchievementFormDialog } from "@/components/admin/achievement/AchievementFormDialog";
 import {
   listAchievements,
   createAchievement,

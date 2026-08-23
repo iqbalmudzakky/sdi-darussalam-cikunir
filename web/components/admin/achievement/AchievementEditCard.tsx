@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { AchievementFormDialog } from "@/components/admin/AchievementFormDialog";
+import { AchievementFormDialog } from "./AchievementFormDialog";
 import { useToast } from "@/hooks/useToast";
 import type { AchievementItem } from "@/types/Achievement";
 

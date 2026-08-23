@@ -5,8 +5,8 @@ import { Loader2, Plus, CalendarDays } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Button } from "@/components/ui/button";
-import { ActivityEditCard } from "@/components/admin/ActivityEditCard";
-import { ActivityFormDialog } from "@/components/admin/ActivityFormDialog";
+import { ActivityEditCard } from "@/components/admin/activity/ActivityEditCard";
+import { ActivityFormDialog } from "@/components/admin/activity/ActivityFormDialog";
 import {
   listActivities,
   createActivity,

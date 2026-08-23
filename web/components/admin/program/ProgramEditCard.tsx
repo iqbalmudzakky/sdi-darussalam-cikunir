@@ -11,7 +11,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { ProgramFormDialog } from "@/components/admin/ProgramFormDialog";
+import { ProgramFormDialog } from "./ProgramFormDialog";
 import { useToast } from "@/hooks/useToast";
 import type { ProgramItem } from "@/types/Program";
 
