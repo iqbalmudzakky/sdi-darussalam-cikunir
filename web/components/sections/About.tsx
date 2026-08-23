@@ -1,4 +1,5 @@
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
+import SectionHeading from "@/components/sections/SectionHeading";
 
 export default async function About() {
   const profile = await getSchoolProfile();
@@ -8,100 +9,74 @@ export default async function About() {
     .filter((paragraph) => paragraph.trim().length > 0);
 
   return (
-    <section
-      id="tentang"
-      className="scroll-mt-20 bg-white py-14 sm:py-16 lg:py-20"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="mb-10 text-center sm:mb-14 lg:mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-            Tentang Kami
-          </h2>
-        </div>
+    <section id="tentang" className="scroll-mt-20 bg-white py-20 sm:py-24">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <SectionHeading eyebrow="Tentang kami" title="Sekilas tentang sekolah" />
 
-        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-12">
-          {/* School Description */}
-          <div className="min-w-0 space-y-5 sm:space-y-6">
-            {paragraphs.map((paragraph, index) => (
-              <p
-                key={index}
-                className="break-words text-justify text-base leading-relaxed text-gray-700 sm:text-lg"
-              >
-                {paragraph}
-              </p>
-            ))}
-
-            {/* Highlights */}
-            <div className="grid grid-cols-1 gap-4 pt-4 sm:grid-cols-2 sm:gap-6 sm:pt-6">
-              <div className="rounded-2xl bg-linear-to-br from-emerald-50 to-teal-50 p-5 sm:p-6">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 sm:h-12 sm:w-12">
-                  <span className="text-xl sm:text-2xl">🎯</span>
-                </div>
-
-                <h3 className="mb-2 font-bold text-gray-900">Akreditasi A</h3>
-
-                <p className="text-sm leading-relaxed text-gray-600">
-                  Terakreditasi dengan nilai sangat baik
+        <div className="mt-12 grid gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+          {/* Profil sekolah */}
+          <div className="min-w-0">
+            <div className="space-y-5">
+              {paragraphs.map((paragraph, index) => (
+                <p
+                  key={index}
+                  className="text-[17px] leading-[1.75] wrap-break-word text-ink-700"
+                >
+                  {paragraph}
                 </p>
-              </div>
-
-              <div className="rounded-2xl bg-linear-to-br from-emerald-50 to-teal-50 p-5 sm:p-6">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 sm:h-12 sm:w-12">
-                  <span className="text-xl sm:text-2xl">🏆</span>
-                </div>
-
-                <h3 className="mb-2 font-bold text-gray-900">Berprestasi</h3>
-
-                <p className="text-sm leading-relaxed text-gray-600">
-                  Berbagai penghargaan tingkat regional
-                </p>
-              </div>
+              ))}
             </div>
+
+            {/*
+              Visi.
+
+              Ditampilkan sebagai kutipan dengan tanda kutip
+              serif besar sebagai jangkar visual, bukan garis
+              tepi berwarna.
+            */}
+            <figure className="relative mt-12">
+              <span
+                aria-hidden="true"
+                className="font-display pointer-events-none absolute -top-6 -left-1 text-[5rem] leading-none text-brand-200 select-none"
+              >
+                &ldquo;
+              </span>
+
+              <blockquote className="relative pt-4">
+                <p className="font-display text-[1.35rem] leading-[1.45] wrap-break-word text-ink-900 sm:text-2xl">
+                  {profile.visi}
+                </p>
+              </blockquote>
+
+              <figcaption className="mt-5 flex items-center gap-3">
+                <span className="h-px w-8 bg-brand-300" />
+                <span className="text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
+                  Visi sekolah
+                </span>
+              </figcaption>
+            </figure>
           </div>
 
-          {/* Vision & Mission */}
-          <div className="min-w-0 space-y-6 sm:space-y-8">
-            {/* Vision */}
-            <div className="rounded-3xl bg-linear-to-br from-emerald-500 to-teal-600 p-6 text-white sm:p-8">
-              <h3 className="mb-4 text-xl font-bold sm:mb-6 sm:text-2xl">
-                Visi Kami
+          {/* Misi */}
+          <div className="min-w-0">
+            <div className="border border-brand-100 bg-brand-50/60 p-7 sm:p-9">
+              <h3 className="font-display text-xl font-semibold text-ink-900">
+                Misi kami
               </h3>
 
-              <p className="break-words leading-relaxed text-emerald-50">
-                {profile.visi}
-              </p>
-            </div>
-
-            {/* Mission */}
-            <div className="rounded-3xl border-2 border-emerald-200 bg-white p-6 sm:p-8">
-              <h3 className="mb-4 text-xl font-bold text-gray-900 sm:mb-6 sm:text-2xl">
-                Misi Kami
-              </h3>
-
-              <ul className="space-y-3">
+              <ol className="mt-6 space-y-5">
                 {profile.misi.map((item, index) => (
-                  <li key={index} className="flex min-w-0 items-start gap-3">
-                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 sm:mt-1">
-                      <svg
-                        className="h-4 w-4 text-emerald-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
+                  <li key={index} className="flex min-w-0 gap-4">
+                    <span className="font-display shrink-0 text-sm text-brand-500 tabular-nums">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
 
-                    <span className="min-w-0 break-words text-sm leading-relaxed text-gray-700 sm:text-base">
+                    <span className="min-w-0 text-[15px] leading-relaxed wrap-break-word text-ink-700">
                       {item}
                     </span>
                   </li>
                 ))}
-              </ul>
+              </ol>
             </div>
           </div>
         </div>

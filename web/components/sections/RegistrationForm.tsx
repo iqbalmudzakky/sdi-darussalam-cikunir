@@ -1,56 +1,47 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { cva } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { submitRegistration } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
 
-const fieldLabelVariants = cva(["mb-2 block text-sm font-medium text-gray-700"]);
+const fieldLabelVariants = cva(["mb-2 block text-sm font-medium text-ink-700"]);
 
-const honeypotVariants = cva(["absolute -left-2499.75 top-auto h-px w-px overflow-hidden"]);
-
-const fieldInputVariants = cva([
-  "w-full rounded-xl border border-gray-300",
-  "px-3.5 py-3 sm:px-4",
-  "text-base text-gray-900",
-  "outline-none",
-  "transition-[border-color,box-shadow] duration-300",
-  "focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200",
+const honeypotVariants = cva([
+  "absolute -left-2499.75 top-auto h-px w-px overflow-hidden",
 ]);
 
+const fieldInputVariants = cva(
+  [
+    "w-full border bg-white",
+    "px-3.5 py-3",
+    "text-[15px] text-ink-900",
+    "placeholder:text-ink-500/70",
+    "outline-none",
+    "transition-colors duration-200",
+  ],
+  {
+    variants: {
+      invalid: {
+        true: "border-red-400 focus:border-red-500",
+        false: "border-brand-200 focus:border-brand-500",
+      },
+    },
+    defaultVariants: {
+      invalid: false,
+    },
+  },
+);
+
 const submitButtonVariants = cva([
-  "flex w-full items-center justify-center gap-2",
-  "rounded-xl px-5 py-3.5 sm:px-8 sm:py-4",
-  "font-semibold text-white",
-  "bg-linear-to-r from-emerald-600 to-teal-600",
-
-  /*
-   * Desktop hover.
-   *
-   * Scale dibuat 1.02, bukan 1.05,
-   * karena tombol memiliki w-full.
-   * Ini mengurangi risiko tombol terlalu
-   * melebar keluar dari container.
-   */
-  "md:hover:scale-[1.02] md:hover:shadow-lg",
-
-  /*
-   * Touch feedback mobile.
-   */
-  "active:scale-[0.985]",
-  "active:shadow-md",
-
-  /*
-   * Disabled state tetap aman.
-   */
-  "disabled:cursor-not-allowed",
-  "disabled:opacity-70",
-  "disabled:hover:scale-100",
-  "disabled:hover:shadow-none",
-
-  "transition-[transform,box-shadow,opacity] duration-300 ease-out",
+  "flex w-full cursor-pointer items-center justify-center gap-2",
+  "bg-brand-600 px-5 py-3.5",
+  "font-medium text-white",
+  "transition-colors duration-200",
+  "hover:bg-brand-700",
+  "disabled:cursor-not-allowed disabled:opacity-60",
 ]);
 
 const EMPTY_FORM = {
@@ -62,170 +53,198 @@ const EMPTY_FORM = {
   website: "",
 };
 
-export function RegistrationForm() {
+type FormFields = typeof EMPTY_FORM;
+type FieldName = keyof Omit<FormFields, "website">;
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+/*
+ * Nama orang: huruf, spasi, apostrof, titik, tanda hubung.
+ * Angka dan simbol lain tidak diterima.
+ */
+const PERSON_NAME_PATTERN = /^[\p{L}][\p{L}\s'.-]*$/u;
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+/*
+ * Nomor telepon hanya menyimpan digit.
+ *
+ * Pemisah seperti spasi dan tanda hubung dibuang,
+ * awalan +62 atau 62 dinormalkan menjadi 0.
+ */
+function normalizeWhatsapp(value: string): string {
+  const digitsOnly = value.replace(/\D/g, "");
+
+  if (digitsOnly.startsWith("62")) {
+    return `0${digitsOnly.slice(2)}`;
+  }
+
+  if (digitsOnly.startsWith("8")) {
+    return `0${digitsOnly}`;
+  }
+
+  return digitsOnly;
+}
+
+function validateField(field: FieldName, value: string): string | undefined {
+  const trimmed = value.trim();
+
+  switch (field) {
+    case "parent_name":
+    case "student_name": {
+      const label =
+        field === "parent_name" ? "Nama orang tua" : "Nama calon siswa";
+
+      if (!trimmed) return `${label} wajib diisi.`;
+      if (trimmed.length < 3) return `${label} minimal 3 karakter.`;
+      if (trimmed.length > 80) return `${label} maksimal 80 karakter.`;
+      if (!PERSON_NAME_PATTERN.test(trimmed)) {
+        return `${label} hanya boleh berisi huruf.`;
+      }
+      return undefined;
+    }
+
+    case "whatsapp": {
+      if (!trimmed) return "Nomor WhatsApp wajib diisi.";
+
+      const normalized = normalizeWhatsapp(trimmed);
+
+      if (!/^0\d{9,13}$/.test(normalized)) {
+        return "Nomor WhatsApp tidak valid. Contoh: 081234567890.";
+      }
+      return undefined;
+    }
+
+    case "email": {
+      if (!trimmed) return "Email wajib diisi.";
+      if (!EMAIL_PATTERN.test(trimmed)) return "Format email tidak valid.";
+      return undefined;
+    }
+
+    case "message": {
+      if (trimmed.length > 1000) return "Pesan maksimal 1000 karakter.";
+      return undefined;
+    }
+  }
+}
+
+const REQUIRED_FIELDS: FieldName[] = [
+  "parent_name",
+  "student_name",
+  "whatsapp",
+  "email",
+  "message",
+];
+
+type RegistrationFormProps = {
+  onSuccess?: () => void;
+};
+
+export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   const toast = useToast();
 
   const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>(
+    {},
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /*
-   * Khusus UI mobile.
-   *
-   * Tidak berhubungan dengan logic submit/form.
-   */
-  const submitButtonRef = useRef<HTMLButtonElement | null>(null);
+  function updateField(field: FieldName, rawValue: string) {
+    /*
+     * Kolom nomor menolak karakter non-digit saat diketik,
+     * kecuali pemisah dan awalan + yang lazim ikut tersalin
+     * dari daftar kontak.
+     */
+    const value =
+      field === "whatsapp" ? rawValue.replace(/[^\d+\s()-]/g, "") : rawValue;
 
-  const animationFrameRef = useRef<number | null>(null);
+    setForm((prev) => ({ ...prev, [field]: value }));
 
-  const [isMobile, setIsMobile] = useState(false);
+    /*
+     * Pesan error hanya diperbarui kalau kolom sudah pernah
+     * ditinggalkan, supaya user tidak disalahkan di tengah
+     * pengetikan.
+     */
+    if (touched[field]) {
+      setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }));
+    }
+  }
 
-  const [isSubmitButtonCenterActive, setIsSubmitButtonCenterActive] = useState(false);
+  function handleBlur(field: FieldName) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
 
-  function updateForm(patch: Partial<typeof EMPTY_FORM>) {
-    setForm((prev) => ({
+    setErrors((prev) => ({
       ...prev,
-      ...patch,
+      [field]: validateField(field, form[field]),
     }));
   }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    const nextErrors: FieldErrors = {};
+
+    for (const field of REQUIRED_FIELDS) {
+      const error = validateField(field, form[field]);
+      if (error) nextErrors[field] = error;
+    }
+
+    setTouched(
+      REQUIRED_FIELDS.reduce(
+        (acc, field) => ({ ...acc, [field]: true }),
+        {} as Partial<Record<FieldName, boolean>>,
+      ),
+    );
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error(
+        "Periksa kembali isian Anda",
+        "Beberapa kolom belum terisi dengan benar.",
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
-    const response = await submitRegistration(form);
+    const response = await submitRegistration({
+      ...form,
+      whatsapp: normalizeWhatsapp(form.whatsapp),
+    });
 
     setIsSubmitting(false);
 
     if (!response.ok) {
       toast.error("Gagal mengirim pendaftaran", response.error);
-
       return;
     }
 
-    toast.success("Pendaftaran terkirim!", "Tim kami akan segera menghubungi Anda.");
+    toast.success(
+      "Pendaftaran terkirim!",
+      "Tim kami akan segera menghubungi Anda.",
+    );
 
     setForm(EMPTY_FORM);
+    setErrors({});
+    setTouched({});
+
+    onSuccess?.();
   }
 
-  /*
-   * Detect mode mobile.
-   *
-   * Mengikuti breakpoint md Tailwind:
-   * mobile < 768px.
-   */
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 767px)");
-
-    const updateViewportMode = () => {
-      const mobile = mediaQuery.matches;
-
-      setIsMobile(mobile);
-
-      if (!mobile) {
-        setIsSubmitButtonCenterActive(false);
-      }
-    };
-
-    updateViewportMode();
-
-    mediaQuery.addEventListener("change", updateViewportMode);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updateViewportMode);
-    };
-  }, []);
-
-  /*
-   * Mobile center-hover untuk tombol submit.
-   *
-   * Ketika tombol berada dekat titik tengah
-   * viewport, efek hover desktop diterapkan.
-   *
-   * Begitu menjauh dari center, efek menutup.
-   */
-  useEffect(() => {
-    if (!isMobile) {
-      return;
-    }
-
-    const updateSubmitButtonState = () => {
-      const button = submitButtonRef.current;
-
-      if (!button) {
-        animationFrameRef.current = null;
-        return;
-      }
-
-      const rect = button.getBoundingClientRect();
-
-      const viewportHeight = window.innerHeight;
-      const viewportCenterY = viewportHeight / 2;
-
-      const buttonCenterY = rect.top + rect.height / 2;
-
-      const distanceFromCenter = Math.abs(buttonCenterY - viewportCenterY);
-
-      /*
-       * Zona center dibuat cukup ketat.
-       *
-       * Tombol harus benar-benar berada dekat
-       * bagian tengah layar agar hover aktif.
-       */
-      const centerTolerance = Math.min(72, viewportHeight * 0.09);
-
-      const isVisible = rect.bottom > 0 && rect.top < viewportHeight;
-
-      const shouldBeActive = isVisible && distanceFromCenter <= centerTolerance;
-
-      setIsSubmitButtonCenterActive((current) => (current === shouldBeActive ? current : shouldBeActive));
-
-      animationFrameRef.current = null;
-    };
-
-    const requestUpdate = () => {
-      if (animationFrameRef.current !== null) {
-        return;
-      }
-
-      animationFrameRef.current = window.requestAnimationFrame(updateSubmitButtonState);
-    };
-
-    window.addEventListener("scroll", requestUpdate, {
-      passive: true,
-    });
-
-    window.addEventListener("resize", requestUpdate);
-
-    requestUpdate();
-
-    return () => {
-      window.removeEventListener("scroll", requestUpdate);
-
-      window.removeEventListener("resize", requestUpdate);
-
-      if (animationFrameRef.current !== null) {
-        window.cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [isMobile]);
-
-  /*
-   * Selama proses submit, jangan tampilkan
-   * efek hover otomatis.
-   */
-  const isMobileButtonActive = isMobile && isSubmitButtonCenterActive && !isSubmitting;
+  function fieldError(field: FieldName) {
+    return touched[field] ? errors[field] : undefined;
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="min-w-0 space-y-5 sm:space-y-6">
-      {/* Anti-spam Honeypot */}
+    <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-5">
+      {/* Anti-spam honeypot */}
       <input
         type="text"
         name="website"
         value={form.website}
         onChange={(e) =>
-          updateForm({
-            website: e.target.value,
-          })
+          setForm((prev) => ({ ...prev, website: e.target.value }))
         }
         tabIndex={-1}
         autoComplete="off"
@@ -233,100 +252,173 @@ export function RegistrationForm() {
         aria-hidden="true"
       />
 
-      {/* Parent Name */}
-      <div className="min-w-0">
-        <label className={fieldLabelVariants()}>Nama Orang Tua</label>
+      <div className="grid gap-5 sm:grid-cols-2">
+        {/* Nama orang tua */}
+        <div className="min-w-0">
+          <label htmlFor="reg-parent-name" className={fieldLabelVariants()}>
+            Nama orang tua
+          </label>
 
-        <input
-          type="text"
-          required
-          value={form.parent_name}
-          onChange={(e) =>
-            updateForm({
-              parent_name: e.target.value,
-            })
-          }
-          className={fieldInputVariants()}
-          placeholder="Masukkan nama lengkap"
-        />
+          <input
+            id="reg-parent-name"
+            type="text"
+            autoComplete="name"
+            maxLength={80}
+            value={form.parent_name}
+            onChange={(e) => updateField("parent_name", e.target.value)}
+            onBlur={() => handleBlur("parent_name")}
+            aria-invalid={Boolean(fieldError("parent_name"))}
+            aria-describedby={
+              fieldError("parent_name") ? "reg-parent-name-error" : undefined
+            }
+            className={fieldInputVariants({
+              invalid: Boolean(fieldError("parent_name")),
+            })}
+            placeholder="Nama lengkap"
+          />
+
+          {fieldError("parent_name") && (
+            <p
+              id="reg-parent-name-error"
+              className="mt-1.5 text-xs text-red-600"
+            >
+              {fieldError("parent_name")}
+            </p>
+          )}
+        </div>
+
+        {/* Nama calon siswa */}
+        <div className="min-w-0">
+          <label htmlFor="reg-student-name" className={fieldLabelVariants()}>
+            Nama calon siswa
+          </label>
+
+          <input
+            id="reg-student-name"
+            type="text"
+            maxLength={80}
+            value={form.student_name}
+            onChange={(e) => updateField("student_name", e.target.value)}
+            onBlur={() => handleBlur("student_name")}
+            aria-invalid={Boolean(fieldError("student_name"))}
+            aria-describedby={
+              fieldError("student_name") ? "reg-student-name-error" : undefined
+            }
+            className={fieldInputVariants({
+              invalid: Boolean(fieldError("student_name")),
+            })}
+            placeholder="Nama lengkap anak"
+          />
+
+          {fieldError("student_name") && (
+            <p
+              id="reg-student-name-error"
+              className="mt-1.5 text-xs text-red-600"
+            >
+              {fieldError("student_name")}
+            </p>
+          )}
+        </div>
+
+        {/* WhatsApp */}
+        <div className="min-w-0">
+          <label htmlFor="reg-whatsapp" className={fieldLabelVariants()}>
+            Nomor WhatsApp
+          </label>
+
+          <input
+            id="reg-whatsapp"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel"
+            maxLength={20}
+            value={form.whatsapp}
+            onChange={(e) => updateField("whatsapp", e.target.value)}
+            onBlur={() => handleBlur("whatsapp")}
+            aria-invalid={Boolean(fieldError("whatsapp"))}
+            aria-describedby={
+              fieldError("whatsapp") ? "reg-whatsapp-error" : undefined
+            }
+            className={fieldInputVariants({
+              invalid: Boolean(fieldError("whatsapp")),
+            })}
+            placeholder="081234567890"
+          />
+
+          {fieldError("whatsapp") && (
+            <p id="reg-whatsapp-error" className="mt-1.5 text-xs text-red-600">
+              {fieldError("whatsapp")}
+            </p>
+          )}
+        </div>
+
+        {/* Email */}
+        <div className="min-w-0">
+          <label htmlFor="reg-email" className={fieldLabelVariants()}>
+            Email
+          </label>
+
+          <input
+            id="reg-email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            maxLength={120}
+            value={form.email}
+            onChange={(e) => updateField("email", e.target.value)}
+            onBlur={() => handleBlur("email")}
+            aria-invalid={Boolean(fieldError("email"))}
+            aria-describedby={
+              fieldError("email") ? "reg-email-error" : undefined
+            }
+            className={fieldInputVariants({
+              invalid: Boolean(fieldError("email")),
+            })}
+            placeholder="nama@email.com"
+          />
+
+          {fieldError("email") && (
+            <p id="reg-email-error" className="mt-1.5 text-xs text-red-600">
+              {fieldError("email")}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* Student Name */}
+      {/* Pesan */}
       <div className="min-w-0">
-        <label className={fieldLabelVariants()}>Nama Calon Siswa</label>
-
-        <input
-          type="text"
-          required
-          value={form.student_name}
-          onChange={(e) =>
-            updateForm({
-              student_name: e.target.value,
-            })
-          }
-          className={fieldInputVariants()}
-          placeholder="Masukkan nama calon siswa"
-        />
-      </div>
-
-      {/* WhatsApp */}
-      <div className="min-w-0">
-        <label className={fieldLabelVariants()}>Nomor WhatsApp</label>
-
-        <input
-          type="tel"
-          required
-          value={form.whatsapp}
-          onChange={(e) =>
-            updateForm({
-              whatsapp: e.target.value,
-            })
-          }
-          className={fieldInputVariants()}
-          placeholder="08XX-XXXX-XXXX"
-        />
-      </div>
-
-      {/* Email */}
-      <div className="min-w-0">
-        <label className={fieldLabelVariants()}>Email</label>
-
-        <input
-          type="email"
-          required
-          value={form.email}
-          onChange={(e) =>
-            updateForm({
-              email: e.target.value,
-            })
-          }
-          className={fieldInputVariants()}
-          placeholder="email@example.com"
-        />
-      </div>
-
-      {/* Message */}
-      <div className="min-w-0">
-        <label className={fieldLabelVariants()}>Pesan</label>
+        <label htmlFor="reg-message" className={fieldLabelVariants()}>
+          Pesan <span className="font-normal text-ink-500">(opsional)</span>
+        </label>
 
         <textarea
+          id="reg-message"
           rows={4}
+          maxLength={1000}
           value={form.message}
-          onChange={(e) =>
-            updateForm({
-              message: e.target.value,
-            })
-          }
-          className={cn(fieldInputVariants(), "resize-none")}
-          placeholder="Tulis pesan atau pertanyaan Anda..."
+          onChange={(e) => updateField("message", e.target.value)}
+          onBlur={() => handleBlur("message")}
+          aria-invalid={Boolean(fieldError("message"))}
+          className={cn(
+            fieldInputVariants({ invalid: Boolean(fieldError("message")) }),
+            "resize-none",
+          )}
+          placeholder="Pertanyaan seputar pendaftaran, biaya, atau jadwal kunjungan"
         />
+
+        {fieldError("message") && (
+          <p className="mt-1.5 text-xs text-red-600">{fieldError("message")}</p>
+        )}
       </div>
 
-      {/* Submit Button */}
-      <button ref={submitButtonRef} type="submit" disabled={isSubmitting} className={cn(submitButtonVariants(), isMobileButtonActive && "scale-[1.02] shadow-lg")}>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className={submitButtonVariants()}
+      >
         {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
 
-        {isSubmitting ? "Mengirim..." : "Kirim Pendaftaran"}
+        {isSubmitting ? "Mengirim..." : "Kirim pendaftaran"}
       </button>
     </form>
   );
