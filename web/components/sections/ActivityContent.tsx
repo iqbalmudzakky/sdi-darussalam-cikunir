@@ -76,7 +76,7 @@ function ActivityCard({
           className="
             absolute inset-0 h-full w-full object-cover
             transition-transform duration-700 ease-out
-            md:group-hover:scale-105
+            lg:group-hover:scale-105
           "
         />
       ) : (
@@ -88,10 +88,11 @@ function ActivityCard({
       )}
 
       {/*
-        Di layar sentuh keterangan selalu tampil, jadi
-        lapisan gelapnya langsung dibuat pekat.
+        Di layar sentuh, tablet ikut di dalamnya, keterangan
+        selalu tampil, jadi lapisan gelapnya langsung
+        dibuat pekat.
 
-        Mulai md barulah ia mengikuti hover.
+        Mulai lg barulah ia mengikuti hover.
       */}
       <div
         className="
@@ -99,8 +100,8 @@ function ActivityCard({
           bg-gradient-to-t from-ink-900/90 via-ink-900/45 to-transparent
           transition-[background-color,opacity] duration-300 ease-out
 
-          md:from-ink-900/80 md:via-ink-900/10
-          md:group-hover:from-ink-900/90 md:group-hover:via-ink-900/45
+          lg:from-ink-900/80 lg:via-ink-900/10
+          lg:group-hover:from-ink-900/90 lg:group-hover:via-ink-900/45
         "
       />
 
@@ -112,7 +113,7 @@ function ActivityCard({
               flex h-14 w-14 items-center justify-center
               rounded-full bg-white/95
               transition-transform duration-300 ease-out
-              md:group-hover:scale-110
+              lg:group-hover:scale-110
             "
           >
             <Play className="h-5 w-5 translate-x-px fill-brand-700 text-brand-700" />
@@ -146,13 +147,13 @@ function ActivityCard({
               mt-1.5 line-clamp-3 overflow-hidden wrap-break-word
               text-sm leading-relaxed text-white/90
 
-              md:max-h-0 md:translate-y-2 md:opacity-0
-              md:transition-[max-height,opacity,transform]
-              md:duration-300 md:ease-out
+              lg:max-h-0 lg:translate-y-2 lg:opacity-0
+              lg:transition-[max-height,opacity,transform]
+              lg:duration-300 lg:ease-out
 
-              md:group-hover:max-h-28
-              md:group-hover:translate-y-0
-              md:group-hover:opacity-100
+              lg:group-hover:max-h-28
+              lg:group-hover:translate-y-0
+              lg:group-hover:opacity-100
             "
           >
             {activity.description}
