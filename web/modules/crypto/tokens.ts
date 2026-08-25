@@ -2,8 +2,10 @@ import { SignJWT, jwtVerify } from "jose";
 import { randomBytes, createHash } from "crypto";
 import type { SessionUser } from "@/modules/auth/dto";
 
-const ACCESS_TOKEN_TTL_SECONDS = 60 * 60 * 8;
-const REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30;
+export const ACCESS_TOKEN_TTL_SECONDS = 60 * 60 * 8;
+export const REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30;
+export const INVITE_TOKEN_TTL_SECONDS = 60 * 60 * 4;
+export const RESET_TOKEN_TTL_SECONDS = 60 * 60 * 1;
 
 function getAccessSecret(): Uint8Array {
   return new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
@@ -46,12 +48,4 @@ export function generateRefreshToken(): string {
 export function hashRefreshToken(token: string): string {
   const pepper = process.env.JWT_REFRESH_PEPPER!;
   return createHash("sha256").update(`${token}${pepper}`).digest("hex");
-}
-
-export function getAccessTokenTtlSeconds(): number {
-  return ACCESS_TOKEN_TTL_SECONDS;
-}
-
-export function getRefreshTokenTtlSeconds(): number {
-  return REFRESH_TOKEN_TTL_SECONDS;
 }

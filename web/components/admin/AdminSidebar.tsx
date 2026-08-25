@@ -16,6 +16,8 @@ import {
   Menu,
   X,
   ExternalLink,
+  ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
 import { getPendingFollowUpCount } from "@/lib/api/registrations";
@@ -45,7 +47,19 @@ const sidebarPendingBadgeVariants = cva([
  * konten yang tampil di halaman utama dipisahkan dari data
  * yang masuk dari pengunjung.
  */
-const NAV_GROUPS = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  superadminOnly?: boolean;
+};
+
+type NavGroup = {
+  label: string | null;
+  items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
   {
     label: null,
     items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
@@ -64,9 +78,24 @@ const NAV_GROUPS = [
     label: "Masuk",
     items: [{ href: "/admin/registrations", label: "Pendaftar", icon: Inbox }],
   },
+  {
+    label: "Administrasi",
+    items: [
+      {
+        href: "/admin/admin-management",
+        label: "Kelola Admin",
+        icon: ShieldCheck,
+        superadminOnly: true,
+      },
+    ],
+  },
 ];
 
-export function AdminSidebar() {
+type AdminSidebarProps = {
+  role: "superadmin" | "admin";
+};
+
+export function AdminSidebar({ role }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -98,7 +127,6 @@ export function AdminSidebar() {
     };
   }, [loadPendingCount]);
 
-
   /*
    * Selama laci terbuka, halaman di belakangnya dikunci
    * agar tidak ikut bergeser saat menggulir menu.
@@ -126,7 +154,6 @@ export function AdminSidebar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-
   async function handleLogout() {
     await logout();
     router.replace("/admin/login");
@@ -153,42 +180,49 @@ export function AdminSidebar() {
 
   const navigation = (
     <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
-      {NAV_GROUPS.map((group, groupIndex) => (
-        <div key={group.label ?? groupIndex}>
-          {group.label && (
-            <p className="mb-2 px-3 text-[11px] font-semibold tracking-[0.12em] text-gray-400 uppercase">
-              {group.label}
-            </p>
-          )}
+      {NAV_GROUPS.map((group, groupIndex) => {
+        const visibleItems = group.items.filter(
+          (item) => !item.superadminOnly || role === "superadmin",
+        );
+        if (visibleItems.length === 0) return null;
 
-          <div className="space-y-1">
-            {group.items.map(({ href, label, icon: Icon }) => {
-              const isActive =
-                href === "/admin"
-                  ? pathname === "/admin"
-                  : pathname.startsWith(href);
+        return (
+          <div key={group.label ?? groupIndex}>
+            {group.label && (
+              <p className="mb-2 px-3 text-[11px] font-semibold tracking-[0.12em] text-gray-400 uppercase">
+                {group.label}
+              </p>
+            )}
 
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() => setIsOpen(false)}
-                  className={sidebarNavLinkVariants({ active: isActive })}
-                >
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {label}
+            <div className="space-y-1">
+              {visibleItems.map(({ href, label, icon: Icon }) => {
+                const isActive =
+                  href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(href);
 
-                  {href === "/admin/registrations" && pendingCount > 0 && (
-                    <span className={sidebarPendingBadgeVariants()}>
-                      {pendingCount}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setIsOpen(false)}
+                    className={sidebarNavLinkVariants({ active: isActive })}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+
+                    {href === "/admin/registrations" && pendingCount > 0 && (
+                      <span className={sidebarPendingBadgeVariants()}>
+                        {pendingCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </nav>
   );
 
