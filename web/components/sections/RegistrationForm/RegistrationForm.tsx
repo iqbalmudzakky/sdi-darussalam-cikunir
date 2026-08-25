@@ -1,30 +1,60 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cva } from "class-variance-authority";
-import { Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { startRegistrationPayment } from "@/lib/api/payments";
 import { useToast } from "@/hooks/useToast";
 import { REGISTRATION_TYPE_OPTIONS, GENDER_OPTIONS, PHYSICAL_DISABILITY_OPTIONS, PARENT_RELATIONSHIP_OPTIONS, RELIGION_OPTIONS } from "@/lib/registrationOptions";
 import type { SubmitRegistrationInput } from "@/types/Registration";
 import { TextField, SelectField, TextareaField } from "./fields";
 import { RegionSelect } from "./RegionSelect";
+import { clearDraft, isDraftMeaningful, loadDraft, saveDraft } from "./draft";
 import { EMPTY_FORM, FIELD_LABELS, validateField, normalizeWhatsappNumber, PHONE_FIELDS, type FieldName, type FieldErrors } from "./config";
 
-const sectionHeadingVariants = cva(["mb-1 border-b border-brand-200 pb-2 text-sm font-semibold text-ink-900"]);
+/*
+ * Judul bagian memakai gaya "eyebrow" yang sama dengan section di halaman
+ * utama — huruf kapital kecil ber-tracking lebar — supaya formulir terasa
+ * satu bahasa dengan situsnya, bukan komponen tempelan.
+ */
+const sectionHeadingVariants = cva([
+  "mb-1 border-b border-brand-200 pb-2",
+  "text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase",
+]);
 
 const honeypotVariants = cva(["absolute -left-2499.75 top-auto h-px w-px overflow-hidden"]);
 
 const submitButtonVariants = cva([
   "flex w-full cursor-pointer items-center justify-center gap-2",
-  "bg-brand-600 px-5 py-3.5",
+  "rounded-xl bg-brand-600 px-5 py-3.5",
   "font-medium text-white",
   "transition-colors duration-200",
   "hover:bg-brand-700",
   "disabled:cursor-not-allowed disabled:opacity-60",
 ]);
 
-const stepVariants = cva(["flex items-center justify-center rounded-xl px-4 py-2 text-xs font-medium"]);
+const stepVariants = cva(
+  [
+    "flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5",
+    "text-[11px] font-medium sm:text-xs",
+    "transition-colors duration-200",
+  ],
+  {
+    variants: {
+      state: {
+        /* Langkah yang sedang diisi. */
+        active: "bg-brand-600 text-white",
+        /* Sudah dilewati — ditandai centang supaya kemajuan terlihat. */
+        done: "bg-brand-100 text-brand-800",
+        /* Belum dijalani; sengaja paling redup agar tidak menarik perhatian. */
+        upcoming: "bg-brand-50 text-brand-700/70",
+      },
+    },
+    defaultVariants: {
+      state: "upcoming",
+    },
+  },
+);
 
 type RegistrationFormProps = {
   onSuccess?: () => void;
@@ -36,6 +66,24 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   const toast = useToast();
 
   const [form, setForm] = useState(EMPTY_FORM);
+
+  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
+
+  /*
+   * Mengembalikan isian yang belum sempat dikirim.
+   *
+   * Formulirnya panjang, dan dialog gampang tertutup — klik di luar, tombol
+   * back, atau tab keburu ditutup. Tanpa ini, semuanya harus diketik ulang
+   * dari nol.
+   */
+  useEffect(() => {
+    const draft = loadDraft();
+    if (!draft) return;
+
+    setForm(draft.form);
+    setStep(draft.step);
+    setHasRestoredDraft(true);
+  }, []);
 
   /*
    * Development convenience: fill the form from devPrefill.local.ts if that
@@ -65,11 +113,25 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   const [step, setStep] = useState(1);
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /*
+   * Menyimpan isian setiap kali berubah, ditunda sebentar supaya tidak menulis
+   * ke localStorage pada setiap ketikan.
+   */
+  useEffect(() => {
+    if (isSubmitting) return;
+    if (!isDraftMeaningful(form)) return;
+
+    const timer = setTimeout(() => saveDraft(form, step), 500);
+    return () => clearTimeout(timer);
+  }, [form, step, isSubmitting]);
 
   /*
    * Menyimpan pilihan wilayah beserta kodenya, lalu mengosongkan tingkat di
@@ -273,6 +335,31 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     return Object.keys(nextErrors).length === 0;
   }
 
+  /*
+   * Pindah langkah sekaligus mengembalikan tampilan ke awal formulir.
+   *
+   * Formulir ini tinggal di dalam dialog yang punya area gulir sendiri, jadi
+   * window.scrollTo tidak berpengaruh — yang harus digulir adalah pembungkus
+   * ber-overflow terdekat. Tanpa ini, langkah berikutnya terbuka di posisi
+   * gulir langkah sebelumnya, jadi pengisi melihat bagian tengah formulir
+   * dan harus menggulir ke atas sendiri.
+   */
+  function goToStep(nextStep: number) {
+    setStep(nextStep);
+
+    const container = formRef.current?.closest<HTMLElement>(
+      "[data-slot='dialog-scroll-area']",
+    );
+
+    if (container) {
+      container.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // Formulir bisa juga dipakai di luar dialog.
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function scrollToError() {
     const firstError = document.querySelector("[aria-invalid='true']");
 
@@ -448,6 +535,11 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       "Selesaikan pembayaran untuk menyelesaikan pendaftaran.",
     );
 
+    // Datanya sudah aman di server, jadi salinan lokalnya tidak diperlukan
+    // lagi — dan tidak perlu tertinggal di komputer yang mungkin dipakai
+    // bersama.
+    clearDraft();
+
     onSuccess?.();
     window.location.href = response.paymentUrl;
   }
@@ -471,11 +563,23 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         ].map((item) => (
           <div
             key={item.number}
+            aria-current={step === item.number ? "step" : undefined}
             className={stepVariants({
-              className: step === item.number ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700",
+              state:
+                step === item.number
+                  ? "active"
+                  : step > item.number
+                    ? "done"
+                    : "upcoming",
             })}
           >
-            {item.number}. {item.label}
+            {step > item.number ? (
+              <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            ) : (
+              <span aria-hidden="true">{item.number}.</span>
+            )}
+
+            <span className="truncate">{item.label}</span>
           </div>
         ))}
       </div>
@@ -483,7 +587,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="min-w-0 space-y-6">
       {/*
         Honeypot: hidden from people, tempting to bots. A submission that
         carries a value here is rejected server-side.
@@ -513,6 +617,29 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         className={honeypotVariants()}
         aria-hidden="true"
       />
+
+      {hasRestoredDraft && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50/60 px-4 py-3">
+          <p className="text-[13px] text-ink-700">
+            Isian sebelumnya dilanjutkan. Periksa kembali sebelum mengirim.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              clearDraft();
+              setForm(EMPTY_FORM);
+              setErrors({});
+              setTouched({});
+              setHasRestoredDraft(false);
+              goToStep(1);
+            }}
+            className="cursor-pointer text-[13px] font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800"
+          >
+            Mulai dari awal
+          </button>
+        </div>
+      )}
 
       {renderStepIndicator()}
 
@@ -639,7 +766,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             type="button"
             onClick={() => {
               if (validateStepOne()) {
-                setStep(2);
+                goToStep(2);
               } else {
                 setTimeout(scrollToError, 100);
               }
@@ -782,7 +909,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           })}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => setStep(1)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+            <button type="button" onClick={() => goToStep(1)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
               Kembali
             </button>
 
@@ -790,7 +917,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
               type="button"
               onClick={() => {
                 if (validateStepTwo()) {
-                  setStep(3);
+                  goToStep(3);
                 } else {
                   setTimeout(scrollToError, 100);
                 }
@@ -857,7 +984,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           })}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => setStep(2)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+            <button type="button" onClick={() => goToStep(2)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
               Kembali
             </button>
 
