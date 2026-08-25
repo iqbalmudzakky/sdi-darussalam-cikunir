@@ -1,5 +1,9 @@
 import { sql } from "@/modules/db/postgres";
-import type { PpdbRegistration, PpdbRegistrationStatus } from "./entity";
+import type {
+  PpdbRegistration,
+  PpdbRegistrationListItem,
+  PpdbRegistrationStatus,
+} from "./entity";
 import type { CreatePpdbRegistrationRequest } from "./dto";
 
 const REGISTRATION_COLUMNS = `
@@ -77,7 +81,9 @@ const DETAIL_COLUMNS = `
   updated_at
 `;
 
-export async function insert(input: CreatePpdbRegistrationRequest): Promise<string> {
+export async function insert(
+  input: CreatePpdbRegistrationRequest,
+): Promise<string> {
   return sql.begin(async (tx) => {
     const registrationRows = await tx.unsafe<{ id: string }[]>(
       `
@@ -176,12 +182,11 @@ export async function insert(input: CreatePpdbRegistrationRequest): Promise<stri
           position,
           income,
           citizenship,
-          phone,
-          email
+          phone
         )
                 VALUES (
           $1, $2, $3, $4, $5, $6, $7,
-          $8, $9, $10, $11, $12, $13, $14, $15
+          $8, $9, $10, $11, $12, $13, $14
         )
         `,
         [
@@ -199,7 +204,6 @@ export async function insert(input: CreatePpdbRegistrationRequest): Promise<stri
           parent.income ?? null,
           parent.citizenship ?? null,
           parent.phone,
-          null,
         ],
       );
     }
@@ -243,7 +247,10 @@ export async function insert(input: CreatePpdbRegistrationRequest): Promise<stri
   });
 }
 
-export async function countByIpSince(ip: string, minutesAgo: number): Promise<number> {
+export async function countByIpSince(
+  ip: string,
+  minutesAgo: number,
+): Promise<number> {
   const rows = await sql.unsafe<{ count: number }[]>(
     `
     SELECT COUNT(*)::int AS count
@@ -258,7 +265,11 @@ export async function countByIpSince(ip: string, minutesAgo: number): Promise<nu
   return rows[0].count;
 }
 
-export async function existsRecentDuplicate(fullName: string, dateOfBirth: string, hoursAgo: number): Promise<boolean> {
+export async function existsRecentDuplicate(
+  fullName: string,
+  dateOfBirth: string,
+  hoursAgo: number,
+): Promise<boolean> {
   const rows = await sql.unsafe(
     `
     SELECT prs.id
@@ -277,6 +288,7 @@ export async function existsRecentDuplicate(fullName: string, dateOfBirth: strin
   return rows.length > 0;
 }
 
+<<<<<<< HEAD
 export type PpdbRegistrationListItem = {
   id: string;
 
@@ -350,6 +362,8 @@ export type PpdbRegistrationListItem = {
   parent_email: string | null;
 };
 
+=======
+>>>>>>> origin/staging
 export async function list(): Promise<PpdbRegistrationListItem[]> {
   return sql.unsafe<PpdbRegistrationListItem[]>(
     `
@@ -358,20 +372,29 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
       pr.registration_type,
       pr.status,
       pr.ip_address,
+      pr.parent_email,
       pr.created_at,
+<<<<<<< HEAD
       pr.updated_at,
       pr.parent_email,
+=======
+>>>>>>> origin/staging
 
       -- student
       ps.full_name,
+<<<<<<< HEAD
       ps.nickname,
       ps.nik,
       ps.nisn,
+=======
+      ps.nik AS student_nik,
+>>>>>>> origin/staging
       ps.gender,
       ps.place_of_birth,
       ps.date_of_birth,
       ps.birth_order,
       ps.sibling_count,
+<<<<<<< HEAD
       ps.address,
       ps.village,
       ps.rt_rw,
@@ -379,15 +402,23 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
       ps.city,
       ps.province,
       ps.religion,
+=======
+      ps.address AS current_address,
+>>>>>>> origin/staging
       ps.physical_disability,
       ps.previous_school,
+      ps.nisn,
 
+<<<<<<< HEAD
       -- father
+=======
+>>>>>>> origin/staging
       father.relationship_status AS father_status,
       father.name AS father_name,
       father.nik AS father_nik,
       father.place_of_birth AS father_place_of_birth,
       father.date_of_birth AS father_date_of_birth,
+<<<<<<< HEAD
       father.religion AS father_religion,
       father.education AS father_education,
       father.occupation AS father_occupation,
@@ -396,11 +427,17 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
       father.income AS father_income,
 
       -- mother
+=======
+      father.phone AS father_phone,
+      father.income AS father_income,
+
+>>>>>>> origin/staging
       mother.relationship_status AS mother_status,
       mother.name AS mother_name,
       mother.nik AS mother_nik,
       mother.place_of_birth AS mother_place_of_birth,
       mother.date_of_birth AS mother_date_of_birth,
+<<<<<<< HEAD
       mother.religion AS mother_religion,
       mother.education AS mother_education,
       mother.occupation AS mother_occupation,
@@ -418,6 +455,10 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
       details.height,
       details.weight,
       details.head_circumference
+=======
+      mother.phone AS mother_phone,
+      mother.income AS mother_income
+>>>>>>> origin/staging
 
     FROM ppdb_registrations pr
 
@@ -450,7 +491,10 @@ export async function remove(id: string): Promise<void> {
   );
 }
 
-export async function updateStatus(id: string, status: PpdbRegistrationStatus): Promise<PpdbRegistration> {
+export async function updateStatus(
+  id: string,
+  status: PpdbRegistrationStatus,
+): Promise<PpdbRegistration> {
   const rows = await sql.unsafe(
     `
     UPDATE ppdb_registrations
@@ -466,7 +510,9 @@ export async function updateStatus(id: string, status: PpdbRegistrationStatus): 
   return rows[0] as unknown as PpdbRegistration;
 }
 
-export async function countByStatus(status: PpdbRegistrationStatus): Promise<number> {
+export async function countByStatus(
+  status: PpdbRegistrationStatus,
+): Promise<number> {
   const rows = await sql.unsafe<{ count: number }[]>(
     `
     SELECT COUNT(*)::int AS count

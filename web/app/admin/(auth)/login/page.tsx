@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { cva } from "class-variance-authority";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -74,6 +75,15 @@ export default function LoginPage() {
                       {showPassword ? <EyeOff /> : <Eye />}
                     </Button>
                   </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Link
+                    href="/admin/forgot-password"
+                    className="text-xs font-medium text-brand-600 hover:underline"
+                  >
+                    Lupa password?
+                  </Link>
                 </div>
 
                 {error && <p className={errorBoxVariants()}>{error}</p>}

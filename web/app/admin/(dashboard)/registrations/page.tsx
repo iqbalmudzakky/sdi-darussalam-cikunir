@@ -9,6 +9,7 @@ import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { listRegistrations, deleteRegistration, updateRegistrationStatus } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
+import { formatDateTime } from "@/lib/formatDate";
 import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
@@ -48,16 +49,6 @@ const STATUS_OPTIONS: {
 ];
 
 const statusButtonVariants = cva(["flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60"]);
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export default function AdminRegistrationsPage() {
   const toast = useToast();
@@ -159,7 +150,9 @@ export default function AdminRegistrationsPage() {
                 </p>
               </div>
 
-              <p className="text-xs text-gray-400">{formatDate(item.created_at)}</p>
+              <p className="text-xs text-gray-400">
+                {formatDateTime(item.created_at)}
+              </p>
 
               <div className="flex gap-2">
                 <a

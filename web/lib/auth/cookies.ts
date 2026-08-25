@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { getAccessTokenTtlSeconds, getRefreshTokenTtlSeconds } from "./tokens";
+import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_SECONDS } from "./tokens";
 
 const ACCESS_TOKEN_COOKIE = "access_token";
 const REFRESH_TOKEN_COOKIE = "refresh_token";
@@ -17,7 +17,7 @@ export async function setAuthCookies(
     secure: isProduction,
     sameSite: "lax",
     path: "/",
-    maxAge: getAccessTokenTtlSeconds(),
+    maxAge: ACCESS_TOKEN_TTL_SECONDS,
   });
 
   cookieStore.set(REFRESH_TOKEN_COOKIE, refreshToken, {
@@ -25,7 +25,7 @@ export async function setAuthCookies(
     secure: isProduction,
     sameSite: "lax",
     path: "/",
-    maxAge: getRefreshTokenTtlSeconds(),
+    maxAge: REFRESH_TOKEN_TTL_SECONDS,
   });
 }
 
