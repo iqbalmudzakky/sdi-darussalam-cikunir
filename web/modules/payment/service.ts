@@ -5,7 +5,10 @@ import { createCheckoutSession } from "./doku";
 import { getRegistrationFee } from "./config";
 import type { DokuNotification, PaymentStatus, RegistrationPayload } from "./entity";
 
+/** Sessions that reached a decision — paid, failed or expired. */
 const RATE_LIMIT_MAX_PER_HOUR = 3;
+/** Backstop covering abandoned sessions too, so they cannot be created freely. */
+const RATE_LIMIT_MAX_SESSIONS_PER_HOUR = 15;
 const RATE_LIMIT_WINDOW_MINUTES = 60;
 
 export type StartPaymentResult =
@@ -33,10 +36,16 @@ export async function startRegistrationPayment(input: {
   ipAddress: string;
   request?: Request;
 }): Promise<StartPaymentResult> {
+  const sessionCount = await withDbLogging("payment.countAllByIpSince", () =>
+    repository.countAllByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
+  );
   const recentCount = await withDbLogging("payment.countByIpSince", () =>
     repository.countByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
   );
-  if (recentCount >= RATE_LIMIT_MAX_PER_HOUR) {
+  if (
+    recentCount >= RATE_LIMIT_MAX_PER_HOUR ||
+    sessionCount >= RATE_LIMIT_MAX_SESSIONS_PER_HOUR
+  ) {
     return {
       ok: false,
       reason: "rate_limited",

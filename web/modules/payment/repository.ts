@@ -59,6 +59,37 @@ export async function findByInvoiceNumber(
   return rows[0] ?? null;
 }
 
+/**
+ * Counts every checkout session from one IP, abandoned ones included.
+ *
+ * Backstop for the settled-only limit above: creating sessions is cheap, so
+ * without a ceiling someone could open them indefinitely. The cap is set high
+ * enough that no genuine applicant reaches it.
+ */
+export async function countAllByIpSince(
+  ip: string,
+  minutesAgo: number,
+): Promise<number> {
+  const rows = await sql.unsafe<{ count: number }[]>(
+    `SELECT COUNT(*)::int AS count
+     FROM registration_payments
+     WHERE ip_address = $1
+       AND created_at > now() - ($2 || ' minutes')::interval`,
+    [ip, minutesAgo],
+  );
+  return rows[0].count;
+}
+
+/**
+ * Counts recent checkout attempts from one IP for the spam guard.
+ *
+ * Abandoned sessions are excluded: opening the DOKU page and deciding not to
+ * pay is ordinary behaviour — comparing methods, fetching a card, losing
+ * signal — and counting those locked out real applicants after three moments
+ * of hesitation. Only sessions that reached a decision (paid, failed, or
+ * expired) count against the limit, which still bounds how fast anyone can
+ * drive real checkout traffic.
+ */
 export async function countByIpSince(
   ip: string,
   minutesAgo: number,
@@ -67,6 +98,7 @@ export async function countByIpSince(
     `SELECT COUNT(*)::int AS count
      FROM registration_payments
      WHERE ip_address = $1
+       AND status <> 'pending'
        AND created_at > now() - ($2 || ' minutes')::interval`,
     [ip, minutesAgo],
   );
