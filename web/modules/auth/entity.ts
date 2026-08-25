@@ -49,3 +49,9 @@ export type NewAdminActionToken = Omit<
   AdminActionToken,
   "id" | "created_at" | "used_at"
 >;
+
+export type CountActionTokensInput = {
+  userId: string;
+  purpose: AdminActionTokenPurpose;
+  windowMinutes: number;
+};

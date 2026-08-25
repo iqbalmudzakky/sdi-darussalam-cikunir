@@ -11,7 +11,15 @@ import {
 import { comparePassword, hashPassword } from "@/modules/crypto/hash";
 import { sendInviteEmail, sendPasswordResetEmail } from "@/modules/email/email";
 import { buildAdminUrl } from "@/modules/shared/siteUrl";
-import type { AdminSummary, NewAdminActionToken } from "./entity";
+import {
+  FORGOT_PASSWORD_RATE_LIMIT_MAX,
+  FORGOT_PASSWORD_RATE_LIMIT_WINDOW_MINUTES,
+} from "@/modules/shared/constant/auth";
+import type {
+  AdminSummary,
+  CountActionTokensInput,
+  NewAdminActionToken,
+} from "./entity";
 import type {
   AcceptInviteRequest,
   AdminMutationResult,
@@ -336,6 +344,17 @@ export async function forgotPassword(
       repository.findByEmail(input.email),
     );
     if (!admin || admin.status !== "active") return;
+
+    const countInput: CountActionTokensInput = {
+      userId: admin.id,
+      purpose: "reset",
+      windowMinutes: FORGOT_PASSWORD_RATE_LIMIT_WINDOW_MINUTES,
+    };
+    const recentCount = await withDbLogging(
+      "auth.countRecentActionTokens",
+      () => repository.countRecentActionTokens(countInput),
+    );
+    if (recentCount >= FORGOT_PASSWORD_RATE_LIMIT_MAX) return;
 
     await withDbLogging("auth.invalidateActiveActionTokens", () =>
       repository.invalidateActiveActionTokens(admin.id, "reset"),
