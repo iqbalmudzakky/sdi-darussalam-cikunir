@@ -1,4 +1,5 @@
 import { sql } from "@/modules/db/postgres";
+import type { TransactionSql } from "postgres";
 import type {
   PpdbRegistration,
   PpdbRegistrationExportItem,
@@ -82,10 +83,18 @@ const DETAIL_COLUMNS = `
   updated_at
 `;
 
-export async function insert(
+/**
+ * Writes a registration and its student/parent/detail rows.
+ *
+ * Takes an existing transaction so callers that must do more work atomically —
+ * settling a DOKU payment, for instance — can join this into their own
+ * transaction instead of opening a nested one.
+ */
+export async function insertWithin(
+  tx: TransactionSql,
   input: CreatePpdbRegistrationRequest,
 ): Promise<string> {
-  return sql.begin(async (tx) => {
+  {
     const registrationRows = await tx.unsafe<{ id: string }[]>(
       `
       INSERT INTO ppdb_registrations (
@@ -245,7 +254,13 @@ export async function insert(
     );
 
     return registrationId;
-  });
+  }
+}
+
+export async function insert(
+  input: CreatePpdbRegistrationRequest,
+): Promise<string> {
+  return sql.begin((tx) => insertWithin(tx, input));
 }
 
 export async function countByIpSince(

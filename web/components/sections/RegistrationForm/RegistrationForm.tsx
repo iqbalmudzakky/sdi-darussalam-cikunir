@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { cva } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
-import { submitRegistration } from "@/lib/api/registrations";
+import { startRegistrationPayment } from "@/lib/api/payments";
 import { useToast } from "@/hooks/useToast";
 import { REGISTRATION_TYPE_OPTIONS, GENDER_OPTIONS, PHYSICAL_DISABILITY_OPTIONS, PARENT_RELATIONSHIP_OPTIONS, RELIGION_OPTIONS } from "@/lib/registrationOptions";
 import type { SubmitRegistrationInput } from "@/types/Registration";
@@ -236,7 +236,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
     setIsSubmitting(true);
 
-    const response = await submitRegistration({
+    const response = await startRegistrationPayment({
       registration_type: form.registration_type,
 
       parent_email: form.parent_email?.trim() || null,
@@ -370,21 +370,23 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       website: form.website,
     } as SubmitRegistrationInput);
 
-    setIsSubmitting(false);
-
     if (!response.ok) {
-      toast.error("Gagal mengirim pendaftaran", response.error);
+      setIsSubmitting(false);
+      toast.error("Gagal memulai pembayaran", response.error);
       return;
     }
 
-    toast.success("Pendaftaran terkirim!", "Tim kami akan segera menghubungi Anda.");
-
-    setForm(EMPTY_FORM);
-    setErrors({});
-    setTouched({});
-    setStep(1);
+    // The button stays disabled while the browser navigates to DOKU, so the
+    // form cannot be submitted twice and open a second checkout session. The
+    // fields are deliberately left filled: if the redirect fails the applicant
+    // still has their data.
+    toast.success(
+      "Mengalihkan ke halaman pembayaran",
+      "Selesaikan pembayaran untuk menyelesaikan pendaftaran.",
+    );
 
     onSuccess?.();
+    window.location.href = response.paymentUrl;
   }
 
   function renderStepIndicator() {
