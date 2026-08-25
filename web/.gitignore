@@ -46,3 +46,7 @@ next-env.d.ts
 /secrets/
 *.key
 *.pem
+
+# Local-only dev scratch files (e.g. form prefill for manual testing).
+# Never committed: the app imports them lazily and only in development.
+*.local.ts

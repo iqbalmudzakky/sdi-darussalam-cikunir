@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { cva } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { startRegistrationPayment } from "@/lib/api/payments";
@@ -35,6 +35,32 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   const toast = useToast();
 
   const [form, setForm] = useState(EMPTY_FORM);
+
+  /*
+   * Development convenience: fill the form from devPrefill.local.ts if that
+   * file exists, so manual testing does not mean typing 30-odd fields each
+   * time. The file is gitignored and the import is lazy, so this branch is
+   * dead code in production and the data can never ship.
+   */
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+
+    let cancelled = false;
+
+    import("./devPrefill.local")
+      .then((module) => {
+        if (!cancelled) {
+          setForm((prev) => ({ ...prev, ...module.DEV_PREFILL }));
+        }
+      })
+      .catch(() => {
+        // No prefill file — the normal case. Leave the form empty.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [step, setStep] = useState(1);
 
