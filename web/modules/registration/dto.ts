@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { personName, phoneNumber, birthPlace, birthDate } from "@/modules/validation/validators";
+import {
+  personName,
+  phoneNumber,
+  birthPlace,
+  birthDate,
+} from "@/modules/validation/validators";
 import type { PpdbRegistrationStatus } from "./entity";
 
 const REGISTRATION_TYPE_VALUES = ["siswa_baru", "pindahan"] as const;
@@ -10,7 +15,12 @@ const PHYSICAL_DISABILITY_VALUES = ["tidak_ada", "ada"] as const;
 
 const PARENT_TYPE_VALUES = ["father", "mother"] as const;
 
-const PARENT_RELATIONSHIP_STATUS_VALUES = ["kandung", "tiri", "angkat", "wali"] as const;
+const PARENT_RELATIONSHIP_STATUS_VALUES = [
+  "kandung",
+  "tiri",
+  "angkat",
+  "wali",
+] as const;
 
 function nik(label: string) {
   return z
@@ -45,7 +55,11 @@ export const CreatePpdbRegistrationStudentSchema = z.object({
 
   date_of_birth: birthDate("Tanggal lahir"),
 
-  address: z.string().trim().min(1, "Alamat wajib diisi.").max(200, "Alamat maksimal 200 karakter."),
+  address: z
+    .string()
+    .trim()
+    .min(1, "Alamat wajib diisi.")
+    .max(200, "Alamat maksimal 200 karakter."),
 
   village: z.string().trim().nullable().optional(),
 
@@ -59,9 +73,15 @@ export const CreatePpdbRegistrationStudentSchema = z.object({
 
   phone: phoneNumber("Nomor telepon siswa").nullable().optional(),
 
-  birth_order: z.number().int("Anak ke- harus berupa angka bulat.").min(1, "Anak ke- minimal 1."),
+  birth_order: z
+    .number()
+    .int("Anak ke- harus berupa angka bulat.")
+    .min(1, "Anak ke- minimal 1."),
 
-  sibling_count: z.number().int("Jumlah saudara harus berupa angka bulat.").min(0, "Jumlah saudara minimal 0."),
+  sibling_count: z
+    .number()
+    .int("Jumlah saudara harus berupa angka bulat.")
+    .min(0, "Jumlah saudara minimal 0."),
 
   orphan_status: z.string().trim().nullable().optional(),
 
@@ -73,7 +93,11 @@ export const CreatePpdbRegistrationStudentSchema = z.object({
 
   physical_disability: z.enum(PHYSICAL_DISABILITY_VALUES),
 
-  previous_school: z.string().trim().min(1, "Asal sekolah wajib diisi.").max(120, "Asal sekolah maksimal 120 karakter."),
+  previous_school: z
+    .string()
+    .trim()
+    .min(1, "Asal sekolah wajib diisi.")
+    .max(120, "Asal sekolah maksimal 120 karakter."),
 
   previous_school_transfer: z.string().trim().nullable().optional(),
 });
@@ -143,7 +167,9 @@ export const CreatePpdbRegistrationRequestSchema = z.object({
   details: CreatePpdbRegistrationDetailSchema,
 });
 
-export type CreatePpdbRegistrationRequest = z.infer<typeof CreatePpdbRegistrationRequestSchema> & {
+export type CreatePpdbRegistrationRequest = z.infer<
+  typeof CreatePpdbRegistrationRequestSchema
+> & {
   ip_address: string;
 };
 
@@ -158,10 +184,52 @@ export type CreatePpdbRegistrationResult =
       message: string;
     };
 
-const REGISTRATION_STATUSES: [PpdbRegistrationStatus, ...PpdbRegistrationStatus[]] = ["pending", "in_progress", "not_registered", "registered"];
+const REGISTRATION_STATUSES: [
+  PpdbRegistrationStatus,
+  ...PpdbRegistrationStatus[],
+] = ["pending", "in_progress", "not_registered", "registered"];
 
 export const UpdatePpdbRegistrationStatusRequestSchema = z.object({
   status: z.enum(REGISTRATION_STATUSES),
 });
 
-export type UpdatePpdbRegistrationStatusRequest = z.infer<typeof UpdatePpdbRegistrationStatusRequestSchema>;
+export type UpdatePpdbRegistrationStatusRequest = z.infer<
+  typeof UpdatePpdbRegistrationStatusRequestSchema
+>;
+
+export type RegistrationListItemResponse = {
+  id: string;
+  registration_type: "siswa_baru" | "pindahan";
+  status: PpdbRegistrationStatus;
+  ip_address: string | null;
+  parent_email: string | null;
+  created_at: string;
+
+  full_name: string;
+  student_nik: string;
+  gender: "laki_laki" | "perempuan";
+  place_of_birth: string;
+  date_of_birth: string;
+  birth_order: number;
+  sibling_count: number;
+  current_address: string;
+  physical_disability: "tidak_ada" | "ada";
+  previous_school: string;
+  nisn: string | null;
+
+  father_status: "kandung" | "tiri" | "angkat" | "wali" | null;
+  father_name: string | null;
+  father_nik: string | null;
+  father_place_of_birth: string | null;
+  father_date_of_birth: string | null;
+  father_phone: string | null;
+  father_income: number | null;
+
+  mother_status: "kandung" | "tiri" | "angkat" | "wali" | null;
+  mother_name: string | null;
+  mother_nik: string | null;
+  mother_place_of_birth: string | null;
+  mother_date_of_birth: string | null;
+  mother_phone: string | null;
+  mother_income: number | null;
+};
