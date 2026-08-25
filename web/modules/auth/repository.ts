@@ -5,6 +5,7 @@ import type {
   AdminCredentials,
   AdminPatch,
   AdminSummary,
+  CountActionTokensInput,
   NewAdminActionToken,
   NewInvitedAdmin,
   NewRefreshToken,
@@ -189,6 +190,18 @@ export async function invalidateActiveActionTokens(
      WHERE user_id = $1 AND purpose = $2 AND used_at IS NULL`,
     [userId, purpose],
   );
+}
+
+export async function countRecentActionTokens(
+  input: CountActionTokensInput,
+): Promise<number> {
+  const rows = await sql.unsafe<{ count: number }[]>(
+    `SELECT COUNT(*)::int AS count FROM admin_action_tokens
+     WHERE user_id = $1 AND purpose = $2
+       AND created_at > now() - ($3 || ' minutes')::interval`,
+    [input.userId, input.purpose, input.windowMinutes],
+  );
+  return rows[0].count;
 }
 
 export async function deleteStaleRefreshTokens(): Promise<number> {
