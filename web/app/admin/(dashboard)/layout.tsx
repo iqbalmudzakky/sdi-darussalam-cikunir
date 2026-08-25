@@ -17,12 +17,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-gray-50">
       <SessionRefresher />
-      <AdminSidebar />
-      {/*
-        pt-14 memberi ruang untuk bilah atas yang hanya
-        tampil di layar kecil; mulai lg bilah itu hilang
-        dan paddingnya ikut dilepas.
-      */}
+      <AdminSidebar role={user.role} />
       <main className="min-w-0 flex-1 px-4 pt-20 pb-10 sm:px-6 lg:px-10 lg:pt-10">
         {children}
       </main>

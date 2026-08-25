@@ -1,6 +1,6 @@
-import { verifyAccessToken } from "@/modules/crypto/tokens";
+import { verifyAccessToken } from "./tokens";
 import { getAccessTokenCookie } from "./cookies";
-import type { SessionUser } from "@/modules/auth/dto";
+import type { SessionUser } from "@/types/Auth";
 
 export async function getSession(): Promise<SessionUser | null> {
   const token = await getAccessTokenCookie();
