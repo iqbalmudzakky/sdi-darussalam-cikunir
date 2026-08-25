@@ -20,7 +20,7 @@ const fraunces = Fraunces({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: "Yayasan Pembangunan Umat Islam Darussalam",
-  description: "Situs resmi SD Islam Darussalam Cikunir"
+  description: "Situs resmi SD Islam Darussalam Cikunir",
   /*
    * Nilai bawaan untuk seluruh rute. Halaman publik menimpanya
    * lewat generateMetadata, sedangkan halaman admin cukup

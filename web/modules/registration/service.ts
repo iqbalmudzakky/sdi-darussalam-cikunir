@@ -1,11 +1,12 @@
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
+import {
+  RATE_LIMIT_MAX_PER_HOUR,
+  RATE_LIMIT_WINDOW_MINUTES,
+  DUPLICATE_WINDOW_HOURS,
+} from "@/modules/shared/constant/registration";
 import type { PpdbRegistration, PpdbRegistrationStatus } from "./entity";
 import type { CreatePpdbRegistrationRequest, CreatePpdbRegistrationResult } from "./dto";
-
-const RATE_LIMIT_MAX_PER_HOUR = 3;
-const RATE_LIMIT_WINDOW_MINUTES = 60;
-const DUPLICATE_WINDOW_HOURS = 24;
 
 export async function createRegistration(input: CreatePpdbRegistrationRequest): Promise<CreatePpdbRegistrationResult> {
   const recentCount = await withDbLogging("registration.countByIpSince", () => repository.countByIpSince(input.ip_address, RATE_LIMIT_WINDOW_MINUTES));
