@@ -12,11 +12,10 @@ import Vision from "@/components/sections/Vision";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
-const SITE_TITLE =
-  "Yayasan Pembangunan Umat Islam Darussalam - Perguruan Islam Darussalam";
-const SITE_NAME = "Yayasan Pembangunan Umat Islam Darussalam";
 const SITE_DESCRIPTION_FALLBACK =
-  "SDI Darussalam Cikunir merupakan lembaga pendidikan Islam yang berkomitmen untuk membentuk generasi Qur'ani yang cerdas, kreatif, dan berakhlakul karimah. Berlokasi strategis di Cikunir, Bekasi Selatan, dekat dengan Gerbang Tol Cikunir, sekolah kami mudah diakses dari berbagai wilayah. Dengan menggabungkan kurikulum nasional dan kurikulum madrasah diniyah, kami menghasilkan lulusan yang tidak hanya unggul secara akademis, tetapi juga memiliki pondasi keagamaan yang kuat dan karakter yang mulia.";
+  "SD Islam Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jakamulya, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlak karimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
+const SITE_TITLE = "Yayasan Pembangunan Umat Islam Darussalam - Perguruan Islam Darussalam";
+const SITE_NAME = "Yayasan Pembangunan Umat Islam Darussalam";
 
 export async function generateMetadata(): Promise<Metadata> {
   const profile = await getSchoolProfile();
@@ -30,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: [
       "Yayasan Pembangunan Umat Islam Darussalam",
       "Perguruan Islam Darussalam",
-      "SDI Darussalam Cikunir",
+      "SD Islam Darussalam Cikunir",
       "Sekolah Dasar Islam Bekasi",
       "SD Islam Bekasi Selatan",
       "SD Islam Jaka Mulya",
@@ -63,7 +62,7 @@ export async function generateMetadata(): Promise<Metadata> {
           url: ogImage,
           width: 1200,
           height: 630,
-          alt: "SDI Darussalam Cikunir",
+          alt: "SD Islam Darussalam Cikunir",
         },
       ],
     },
@@ -74,17 +73,12 @@ export default async function Home() {
   const profile = await getSchoolProfile();
   const siteUrl = getSiteUrl();
 
-  const sameAs = [
-    profile.facebook,
-    profile.instagram,
-    profile.tiktok,
-    profile.youtube,
-  ].filter(Boolean);
+  const sameAs = [profile.facebook, profile.instagram, profile.tiktok, profile.youtube].filter(Boolean);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ElementarySchool",
-    name: "SDI Darussalam Cikunir",
+    name: "SD Islam Darussalam Cikunir",
     description: profile.description || SITE_DESCRIPTION_FALLBACK,
     url: siteUrl,
     logo: `${siteUrl}/logo.png`,
@@ -102,10 +96,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Navigation */}
       <Navbar />

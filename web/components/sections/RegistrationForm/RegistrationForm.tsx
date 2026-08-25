@@ -5,32 +5,14 @@ import { cva } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import { submitRegistration } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
-import {
-  REGISTRATION_TYPE_OPTIONS,
-  GENDER_OPTIONS,
-  PHYSICAL_DISABILITY_OPTIONS,
-  PARENT_RELATIONSHIP_OPTIONS,
-} from "@/lib/registrationOptions";
+import { REGISTRATION_TYPE_OPTIONS, GENDER_OPTIONS, PHYSICAL_DISABILITY_OPTIONS, PARENT_RELATIONSHIP_OPTIONS, RELIGION_OPTIONS } from "@/lib/registrationOptions";
 import type { SubmitRegistrationInput } from "@/types/Registration";
 import { TextField, SelectField, TextareaField } from "./fields";
-import {
-  EMPTY_FORM,
-  FIELD_LABELS,
-  validateField,
-  normalizeWhatsappNumber,
-  REQUIRED_FIELDS,
-  PHONE_FIELDS,
-  type FieldName,
-  type FieldErrors,
-} from "./config";
+import { EMPTY_FORM, FIELD_LABELS, validateField, normalizeWhatsappNumber, PHONE_FIELDS, type FieldName, type FieldErrors } from "./config";
 
-const sectionHeadingVariants = cva([
-  "mb-1 border-b border-brand-200 pb-2 text-sm font-semibold text-ink-900",
-]);
+const sectionHeadingVariants = cva(["mb-1 border-b border-brand-200 pb-2 text-sm font-semibold text-ink-900"]);
 
-const honeypotVariants = cva([
-  "absolute -left-2499.75 top-auto h-px w-px overflow-hidden",
-]);
+const honeypotVariants = cva(["absolute -left-2499.75 top-auto h-px w-px overflow-hidden"]);
 
 const submitButtonVariants = cva([
   "flex w-full cursor-pointer items-center justify-center gap-2",
@@ -41,96 +23,54 @@ const submitButtonVariants = cva([
   "disabled:cursor-not-allowed disabled:opacity-60",
 ]);
 
+const stepVariants = cva(["flex items-center justify-center rounded-xl px-4 py-2 text-xs font-medium"]);
+
 type RegistrationFormProps = {
   onSuccess?: () => void;
 };
+
+const DIGITS_ONLY_FIELDS: FieldName[] = ["student_nik", "birth_order", "sibling_count", "father_nik", "father_income", "mother_nik", "mother_income", "height", "weight", "head_circumference"];
 
 export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   const toast = useToast();
 
   const [form, setForm] = useState(EMPTY_FORM);
+
+  const [step, setStep] = useState(1);
+
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>(
-    {},
-  );
+
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function updateField(field: FieldName, rawValue: string) {
-    const value = PHONE_FIELDS.includes(field)
-      ? rawValue.replace(/[^\d+\s()-]/g, "")
-      : rawValue;
+    let value = rawValue;
 
-    setForm((prev) => ({ ...prev, [field]: value }));
+    if (PHONE_FIELDS.includes(field)) {
+      value = rawValue.replace(/[^\d+\s()-]/g, "");
+    } else if (DIGITS_ONLY_FIELDS.includes(field)) {
+      value = rawValue.replace(/\D/g, "");
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
 
     if (touched[field]) {
-      setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }));
+      setErrors((prev) => ({
+        ...prev,
+        [field]: validateField(field, value),
+      }));
     }
   }
 
   function handleBlur(field: FieldName) {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-
-    setForm((currentForm) => {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: validateField(field, currentForm[field]),
-      }));
-      return currentForm;
-    });
-  }
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    const nextErrors: FieldErrors = {};
-
-    for (const field of REQUIRED_FIELDS) {
-      const error = validateField(field, form[field]);
-      if (error) nextErrors[field] = error;
-    }
-
-    setTouched(
-      REQUIRED_FIELDS.reduce(
-        (acc, field) => ({ ...acc, [field]: true }),
-        {} as Partial<Record<FieldName, boolean>>,
-      ),
-    );
-
-    setErrors(nextErrors);
-
-    if (Object.keys(nextErrors).length > 0) {
-      toast.error(
-        "Periksa kembali isian Anda",
-        "Beberapa kolom belum terisi dengan benar.",
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    const response = await submitRegistration({
-      ...form,
-      father_phone: normalizeWhatsappNumber(form.father_phone),
-      mother_phone: normalizeWhatsappNumber(form.mother_phone),
-    } as SubmitRegistrationInput);
-
-    setIsSubmitting(false);
-
-    if (!response.ok) {
-      toast.error("Gagal mengirim pendaftaran", response.error);
-      return;
-    }
-
-    toast.success(
-      "Pendaftaran terkirim!",
-      "Tim kami akan segera menghubungi Anda.",
-    );
-
-    setForm(EMPTY_FORM);
-    setErrors({});
-    setTouched({});
-
-    onSuccess?.();
+    setTouched((prev) => ({
+      ...prev,
+      [field]: true,
+    }));
   }
 
   function fieldError(field: FieldName) {
@@ -149,6 +89,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       optional?: boolean;
       autoComplete?: string;
       inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+      maxLength?: number;
     },
   ) {
     return (
@@ -164,50 +105,329 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         placeholder={options?.placeholder}
         autoComplete={options?.autoComplete}
         inputMode={options?.inputMode}
+        maxLength={options?.maxLength}
       />
     );
   }
 
   function renderSelect(
     field: FieldName,
-    options: { value: string; label: string }[],
+    options: {
+      value: string;
+      label: string;
+    }[],
   ) {
-    return (
-      <SelectField
-        id={fieldId(field)}
-        label={FIELD_LABELS[field]}
-        value={form[field]}
-        onChange={(value) => updateField(field, value)}
-        onBlur={() => handleBlur(field)}
-        error={fieldError(field)}
-        options={options}
-      />
-    );
+    return <SelectField id={fieldId(field)} label={FIELD_LABELS[field]} value={form[field]} onChange={(value) => updateField(field, value)} onBlur={() => handleBlur(field)} error={fieldError(field)} options={options} />;
   }
 
   function renderTextarea(field: FieldName, placeholder?: string) {
+    return <TextareaField id={fieldId(field)} label={FIELD_LABELS[field]} value={form[field]} onChange={(value) => updateField(field, value)} onBlur={() => handleBlur(field)} error={fieldError(field)} placeholder={placeholder} />;
+  }
+
+  function validateStepOne() {
+    const fields: FieldName[] = [
+      "registration_type",
+      "full_name",
+      "student_nik",
+      "gender",
+      "religion",
+
+      "place_of_birth",
+      "date_of_birth",
+
+      "current_address",
+      "village",
+      "rt_rw",
+      "district",
+      "city",
+      "province",
+
+      "birth_order",
+      "sibling_count",
+
+      "physical_disability",
+      "previous_school",
+    ];
+
+    return validateFields(fields);
+  }
+
+  function validateStepTwo() {
+    const fields: FieldName[] = [
+      "father_religion",
+      "father_education",
+      "father_occupation",
+      "father_position",
+      "father_phone",
+      "father_income",
+
+      "mother_religion",
+      "mother_education",
+      "mother_occupation",
+      "mother_position",
+      "mother_phone",
+      "mother_income",
+    ];
+
+    return validateFields(fields);
+  }
+
+  function validateFields(fields: FieldName[]) {
+    const nextErrors: FieldErrors = {};
+
+    for (const field of fields) {
+      const error = validateField(field, form[field]);
+
+      if (error) {
+        nextErrors[field] = error;
+      }
+    }
+
+    setTouched((prev) => ({
+      ...prev,
+      ...fields.reduce(
+        (acc, field) => ({
+          ...acc,
+          [field]: true,
+        }),
+        {},
+      ),
+    }));
+
+    setErrors((prev) => {
+      const updated = { ...prev };
+
+      for (const field of fields) {
+        delete updated[field];
+      }
+
+      return {
+        ...updated,
+        ...nextErrors,
+      };
+    });
+
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  function scrollToError() {
+    const firstError = document.querySelector("[aria-invalid='true']");
+
+    firstError?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!validateStepOne()) {
+      setStep(1);
+      setTimeout(scrollToError, 100);
+      return;
+    }
+
+    if (!validateStepTwo()) {
+      setStep(2);
+      setTimeout(scrollToError, 100);
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const response = await submitRegistration({
+      registration_type: form.registration_type,
+
+      parent_email: form.parent_email?.trim() || null,
+
+      student: {
+        full_name: form.full_name.trim().toUpperCase(),
+
+        nickname: form.nickname.trim() || null,
+
+        nik: form.student_nik.trim(),
+
+        nisn: form.nisn.trim() || null,
+
+        gender: form.gender,
+
+        place_of_birth: form.place_of_birth.trim(),
+
+        date_of_birth: form.date_of_birth,
+
+        address: form.current_address.trim(),
+
+        village: form.village.trim() || null,
+
+        rt_rw: form.rt_rw.trim() || null,
+
+        district: form.district.trim() || null,
+
+        city: form.city.trim() || null,
+
+        province: form.province.trim() || null,
+
+        phone: form.student_phone ? normalizeWhatsappNumber(form.student_phone) : null,
+
+        birth_order: Number(form.birth_order),
+
+        sibling_count: Number(form.sibling_count),
+
+        orphan_status: form.orphan_status.trim() || null,
+
+        daily_language: form.daily_language.trim() || null,
+
+        citizenship: form.citizenship.trim() || "Indonesia",
+
+        religion: form.religion.trim(),
+
+        physical_disability: form.physical_disability,
+
+        previous_school: form.previous_school.trim(),
+
+        previous_school_transfer: form.previous_school_transfer.trim() || null,
+      },
+
+      parents: [
+        {
+          parent_type: "father",
+
+          relationship_status: form.father_status,
+
+          name: form.father_name.trim().toUpperCase(),
+
+          nik: form.father_nik.trim(),
+
+          place_of_birth: form.father_place_of_birth.trim(),
+
+          date_of_birth: form.father_date_of_birth,
+
+          religion: form.father_religion.trim() || null,
+
+          education: form.father_education.trim() || null,
+
+          occupation: form.father_occupation.trim() || null,
+
+          position: form.father_position.trim() || null,
+
+          income: Number(form.father_income),
+
+          citizenship: form.father_citizenship.trim() || "Indonesia",
+
+          phone: normalizeWhatsappNumber(form.father_phone),
+        },
+
+        {
+          parent_type: "mother",
+
+          relationship_status: form.mother_status,
+
+          name: form.mother_name.trim().toUpperCase(),
+
+          nik: form.mother_nik.trim(),
+
+          place_of_birth: form.mother_place_of_birth.trim(),
+
+          date_of_birth: form.mother_date_of_birth,
+
+          religion: form.mother_religion.trim() || null,
+
+          education: form.mother_education.trim() || null,
+
+          occupation: form.mother_occupation.trim() || null,
+
+          position: form.mother_position.trim() || null,
+
+          income: Number(form.mother_income),
+
+          citizenship: form.mother_citizenship.trim() || "Indonesia",
+
+          phone: normalizeWhatsappNumber(form.mother_phone),
+        },
+      ],
+
+      details: {
+        living_with: form.living_with.trim() || null,
+
+        distance_to_school: form.distance_to_school.trim() || null,
+
+        owned_vehicle: form.owned_vehicle.trim() || null,
+
+        transportation_method: form.transportation_method.trim() || null,
+
+        talent: form.talent.trim() || null,
+
+        blood_type: form.blood_type.trim() || null,
+
+        height: form.height ? Number(form.height) : null,
+
+        weight: form.weight ? Number(form.weight) : null,
+
+        head_circumference: form.head_circumference ? Number(form.head_circumference) : null,
+      },
+
+      website: form.website,
+    } as SubmitRegistrationInput);
+
+    setIsSubmitting(false);
+
+    if (!response.ok) {
+      toast.error("Gagal mengirim pendaftaran", response.error);
+      return;
+    }
+
+    toast.success("Pendaftaran terkirim!", "Tim kami akan segera menghubungi Anda.");
+
+    setForm(EMPTY_FORM);
+    setErrors({});
+    setTouched({});
+    setStep(1);
+
+    onSuccess?.();
+  }
+
+  function renderStepIndicator() {
     return (
-      <TextareaField
-        id={fieldId(field)}
-        label={FIELD_LABELS[field]}
-        value={form[field]}
-        onChange={(value) => updateField(field, value)}
-        onBlur={() => handleBlur(field)}
-        error={fieldError(field)}
-        placeholder={placeholder}
-      />
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          {
+            number: 1,
+            label: "Data Siswa",
+          },
+          {
+            number: 2,
+            label: "Orang Tua",
+          },
+          {
+            number: 3,
+            label: "Keterangan",
+          },
+        ].map((item) => (
+          <div
+            key={item.number}
+            className={stepVariants({
+              className: step === item.number ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700",
+            })}
+          >
+            {item.number}. {item.label}
+          </div>
+        ))}
+      </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-6">
-      {/* Anti-spam honeypot */}
       <input
         type="text"
         name="website"
         value={form.website}
         onChange={(e) =>
-          setForm((prev) => ({ ...prev, website: e.target.value }))
+          setForm((prev) => ({
+            ...prev,
+            website: e.target.value,
+          }))
         }
         tabIndex={-1}
         autoComplete="off"
@@ -215,97 +435,331 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         aria-hidden="true"
       />
 
-      <div className="space-y-4">
-        <p className={sectionHeadingVariants()}>Data Siswa</p>
+      {renderStepIndicator()}
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          {renderSelect("registration_type", REGISTRATION_TYPE_OPTIONS)}
-          {renderSelect("gender", GENDER_OPTIONS)}
-        </div>
+      {step === 1 && (
+        <div className="space-y-4">
+          <div className="border-b border-brand-200 pb-2" />
 
-        {renderText("full_name", { placeholder: "Nama lengkap siswa" })}
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderSelect("registration_type", REGISTRATION_TYPE_OPTIONS)}
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          {renderText("place_of_birth", { placeholder: "Tempat lahir" })}
-          {renderText("date_of_birth", { type: "date" })}
-        </div>
+            {renderSelect("gender", GENDER_OPTIONS)}
+          </div>
 
-        {renderTextarea("current_address", "Alamat lengkap saat ini")}
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          {renderSelect("physical_disability", PHYSICAL_DISABILITY_OPTIONS)}
-          {renderText("previous_school", { placeholder: "Asal sekolah" })}
-        </div>
-
-        {renderText("nisn", { optional: true, placeholder: "Kalau sudah ada" })}
-      </div>
-
-      <div className="space-y-4">
-        <p className={sectionHeadingVariants()}>Data Ayah</p>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          {renderSelect("father_status", PARENT_RELATIONSHIP_OPTIONS)}
-          {renderText("father_name", { placeholder: "Nama ayah" })}
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          {renderText("father_place_of_birth", {
-            placeholder: "Tempat lahir ayah",
+          {renderText("full_name", {
+            placeholder: "Nama lengkap siswa",
           })}
-          {renderText("father_date_of_birth", { type: "date" })}
-        </div>
 
-        {renderText("father_phone", {
-          type: "tel",
-          inputMode: "numeric",
-          autoComplete: "tel",
-          placeholder: "081234567890",
-        })}
-      </div>
-
-      <div className="space-y-4">
-        <p className={sectionHeadingVariants()}>Data Ibu</p>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          {renderSelect("mother_status", PARENT_RELATIONSHIP_OPTIONS)}
-          {renderText("mother_name", { placeholder: "Nama ibu" })}
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          {renderText("mother_place_of_birth", {
-            placeholder: "Tempat lahir ibu",
+          {renderText("nickname", {
+            optional: true,
+            placeholder: "Nama panggilan",
           })}
-          {renderText("mother_date_of_birth", { type: "date" })}
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("student_nik", {
+              inputMode: "numeric",
+              maxLength: 16,
+              placeholder: "16 digit NIK anak",
+            })}
+
+            {renderText("nisn", {
+              optional: true,
+              inputMode: "numeric",
+              placeholder: "Jika sudah ada",
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("place_of_birth", {
+              placeholder: "Tempat lahir",
+            })}
+
+            {renderText("date_of_birth", {
+              type: "date",
+            })}
+          </div>
+
+          {renderTextarea("current_address", "Alamat lengkap saat ini")}
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("village", {
+              optional: true,
+              placeholder: "Kelurahan",
+            })}
+
+            {renderText("rt_rw", {
+              optional: true,
+              placeholder: "RT/RW",
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            {renderText("district", {
+              optional: true,
+            })}
+
+            {renderText("city", {
+              optional: true,
+            })}
+
+            {renderText("province", {
+              optional: true,
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("birth_order", {
+              inputMode: "numeric",
+            })}
+
+            {renderText("sibling_count", {
+              inputMode: "numeric",
+            })}
+          </div>
+
+          {renderSelect("religion", RELIGION_OPTIONS)}
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderSelect("physical_disability", PHYSICAL_DISABILITY_OPTIONS)}
+
+            {renderText("previous_school")}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (validateStepOne()) {
+                setStep(2);
+              } else {
+                setTimeout(scrollToError, 100);
+              }
+            }}
+            className={submitButtonVariants()}
+          >
+            Selanjutnya
+          </button>
         </div>
+      )}
 
-        {renderText("mother_phone", {
-          type: "tel",
-          inputMode: "numeric",
-          autoComplete: "tel",
-          placeholder: "081234567890",
-        })}
-      </div>
+      {step === 2 && (
+        <div className="space-y-4">
+          <p className={sectionHeadingVariants()}>Data Orang Tua/Wali</p>
 
-      <div className="space-y-4">
-        <p className={sectionHeadingVariants()}>Kontak</p>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderSelect("father_status", PARENT_RELATIONSHIP_OPTIONS)}
 
-        {renderText("parent_email", {
-          type: "email",
-          inputMode: "email",
-          autoComplete: "email",
-          placeholder: "nama@email.com",
-        })}
-      </div>
+            {renderText("father_name", {
+              placeholder: "Nama ayah",
+            })}
+          </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className={submitButtonVariants()}
-      >
-        {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+          {renderText("father_nik", {
+            inputMode: "numeric",
+            maxLength: 16,
+            placeholder: "16 digit NIK ayah",
+          })}
 
-        {isSubmitting ? "Mengirim..." : "Kirim pendaftaran"}
-      </button>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("father_place_of_birth", {
+              placeholder: "Tempat lahir ayah",
+            })}
+
+            {renderText("father_date_of_birth", {
+              type: "date",
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderSelect("father_religion", RELIGION_OPTIONS)}
+
+            {renderText("father_education", {
+              optional: true,
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("father_occupation", {
+              optional: true,
+            })}
+
+            {renderText("father_position", {
+              optional: true,
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("father_phone", {
+              type: "tel",
+              inputMode: "numeric",
+              maxLength: 13,
+              placeholder: "081234567890",
+            })}
+
+            {renderText("father_income", {
+              inputMode: "numeric",
+              maxLength: 12,
+              placeholder: "Contoh: 5000000",
+            })}
+          </div>
+
+          <div className="border-t border-brand-100 pt-5">
+            <p className={sectionHeadingVariants()}>Data Ibu</p>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderSelect("mother_status", PARENT_RELATIONSHIP_OPTIONS)}
+
+            {renderText("mother_name", {
+              placeholder: "Nama ibu",
+            })}
+          </div>
+
+          {renderText("mother_nik", {
+            inputMode: "numeric",
+            maxLength: 16,
+            placeholder: "16 digit NIK ibu",
+          })}
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("mother_place_of_birth", {
+              placeholder: "Tempat lahir ibu",
+            })}
+
+            {renderText("mother_date_of_birth", {
+              type: "date",
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderSelect("mother_religion", RELIGION_OPTIONS)}
+
+            {renderText("mother_education", {
+              optional: true,
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("mother_occupation", {
+              optional: true,
+            })}
+
+            {renderText("mother_position", {
+              optional: true,
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("mother_phone", {
+              type: "tel",
+              inputMode: "numeric",
+              maxLength: 13,
+              placeholder: "081234567890",
+            })}
+
+            {renderText("mother_income", {
+              inputMode: "numeric",
+              maxLength: 12,
+              placeholder: "Contoh: 5000000",
+            })}
+          </div>
+
+          <div className="border-t border-brand-100 pt-5"></div>
+
+          {renderText("parent_email", {
+            type: "email",
+            optional: true,
+            placeholder: "nama@email.com",
+          })}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button type="button" onClick={() => setStep(1)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+              Kembali
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (validateStepTwo()) {
+                  setStep(3);
+                } else {
+                  setTimeout(scrollToError, 100);
+                }
+              }}
+              className={submitButtonVariants()}
+            >
+              Selanjutnya
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="space-y-4">
+          <p className={sectionHeadingVariants()}>Keterangan Lain Tentang Anak</p>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("living_with", {
+              optional: true,
+            })}
+
+            {renderText("distance_to_school", {
+              optional: true,
+            })}
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {renderText("owned_vehicle", {
+              optional: true,
+            })}
+
+            {renderText("transportation_method", {
+              optional: true,
+            })}
+          </div>
+
+          {renderText("talent", {
+            optional: true,
+            placeholder: "Bakat/minat anak",
+          })}
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            {renderText("blood_type", {
+              optional: true,
+            })}
+
+            {renderText("height", {
+              optional: true,
+              inputMode: "numeric",
+              maxLength: 3,
+            })}
+
+            {renderText("weight", {
+              optional: true,
+              inputMode: "numeric",
+              maxLength: 3,
+            })}
+          </div>
+
+          {renderText("head_circumference", {
+            optional: true,
+            inputMode: "numeric",
+            maxLength: 3,
+          })}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button type="button" onClick={() => setStep(2)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+              Kembali
+            </button>
+
+            <button type="submit" disabled={isSubmitting} className={submitButtonVariants()}>
+              {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
+
+              {isSubmitting ? "Mengirim..." : "Kirim Pendaftaran"}
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
