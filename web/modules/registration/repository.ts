@@ -289,82 +289,6 @@ export async function existsRecentDuplicate(
   return rows.length > 0;
 }
 
-<<<<<<< HEAD
-export type PpdbRegistrationListItem = {
-  id: string;
-
-  registration_type: "siswa_baru" | "pindahan";
-
-  status: "pending" | "in_progress" | "not_registered" | "registered";
-
-  ip_address: string | null;
-
-  created_at: string;
-
-  updated_at: string;
-
-  // student
-  full_name: string;
-  nickname: string | null;
-  nik: string;
-  nisn: string | null;
-  gender: string;
-  place_of_birth: string;
-  date_of_birth: string;
-  birth_order: number;
-  sibling_count: number;
-  address: string;
-  village: string | null;
-  rt_rw: string | null;
-  district: string | null;
-  city: string | null;
-  province: string | null;
-  religion: string | null;
-  physical_disability: string;
-  previous_school: string;
-
-  // father
-  father_status: string | null;
-  father_name: string | null;
-  father_nik: string | null;
-  father_place_of_birth: string | null;
-  father_date_of_birth: string | null;
-  father_religion: string | null;
-  father_education: string | null;
-  father_occupation: string | null;
-  father_position: string | null;
-  father_phone: string | null;
-  father_income: number | null;
-
-  // mother
-  mother_status: string | null;
-  mother_name: string | null;
-  mother_nik: string | null;
-  mother_place_of_birth: string | null;
-  mother_date_of_birth: string | null;
-  mother_religion: string | null;
-  mother_education: string | null;
-  mother_occupation: string | null;
-  mother_position: string | null;
-  mother_phone: string | null;
-  mother_income: number | null;
-
-  // detail anak
-  living_with: string | null;
-  distance_to_school: string | null;
-  owned_vehicle: string | null;
-  transportation_method: string | null;
-  talent: string | null;
-  blood_type: string | null;
-  height: number | null;
-  weight: number | null;
-  head_circumference: number | null;
-
-  parent_email: string | null;
-};
-
-=======
->>>>>>> origin/staging
 export async function list(): Promise<PpdbRegistrationListItem[]> {
   return sql.unsafe<PpdbRegistrationListItem[]>(
     `
@@ -375,91 +299,34 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
       pr.ip_address,
       pr.parent_email,
       pr.created_at,
-<<<<<<< HEAD
-      pr.updated_at,
-      pr.parent_email,
-=======
->>>>>>> origin/staging
 
-      -- student
       ps.full_name,
-<<<<<<< HEAD
-      ps.nickname,
-      ps.nik,
-      ps.nisn,
-=======
       ps.nik AS student_nik,
->>>>>>> origin/staging
       ps.gender,
       ps.place_of_birth,
       ps.date_of_birth,
       ps.birth_order,
       ps.sibling_count,
-<<<<<<< HEAD
-      ps.address,
-      ps.village,
-      ps.rt_rw,
-      ps.district,
-      ps.city,
-      ps.province,
-      ps.religion,
-=======
       ps.address AS current_address,
->>>>>>> origin/staging
       ps.physical_disability,
       ps.previous_school,
       ps.nisn,
 
-<<<<<<< HEAD
-      -- father
-=======
->>>>>>> origin/staging
       father.relationship_status AS father_status,
       father.name AS father_name,
       father.nik AS father_nik,
       father.place_of_birth AS father_place_of_birth,
       father.date_of_birth AS father_date_of_birth,
-<<<<<<< HEAD
-      father.religion AS father_religion,
-      father.education AS father_education,
-      father.occupation AS father_occupation,
-      father.position AS father_position,
       father.phone AS father_phone,
       father.income AS father_income,
 
-      -- mother
-=======
-      father.phone AS father_phone,
-      father.income AS father_income,
-
->>>>>>> origin/staging
       mother.relationship_status AS mother_status,
       mother.name AS mother_name,
       mother.nik AS mother_nik,
       mother.place_of_birth AS mother_place_of_birth,
       mother.date_of_birth AS mother_date_of_birth,
-<<<<<<< HEAD
-      mother.religion AS mother_religion,
-      mother.education AS mother_education,
-      mother.occupation AS mother_occupation,
-      mother.position AS mother_position,
-      mother.phone AS mother_phone,
-      mother.income AS mother_income,
-
-      -- detail anak
-      details.living_with,
-      details.distance_to_school,
-      details.owned_vehicle,
-      details.transportation_method,
-      details.talent,
-      details.blood_type,
-      details.height,
-      details.weight,
-      details.head_circumference
-=======
       mother.phone AS mother_phone,
       mother.income AS mother_income
->>>>>>> origin/staging
 
     FROM ppdb_registrations pr
 
@@ -473,9 +340,6 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
     LEFT JOIN ppdb_registration_parents mother
       ON mother.registration_id = pr.id
       AND mother.parent_type = 'mother'
-
-    LEFT JOIN ppdb_registration_details details
-      ON details.registration_id = pr.id
 
     ORDER BY pr.created_at DESC
     `,
