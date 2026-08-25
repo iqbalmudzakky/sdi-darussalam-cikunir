@@ -12,9 +12,10 @@ import Vision from "@/components/sections/Vision";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
-const SITE_TITLE = "Yayasan Pembangunan Umat Islam Darussalam - Perguruan Islam Darussalam";
 const SITE_DESCRIPTION_FALLBACK =
   "SD Islam Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jakamulya, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlak karimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
+const SITE_TITLE = "Yayasan Pembangunan Umat Islam Darussalam - Perguruan Islam Darussalam";
+const SITE_NAME = "Yayasan Pembangunan Umat Islam Darussalam";
 
 export async function generateMetadata(): Promise<Metadata> {
   const profile = await getSchoolProfile();
@@ -35,6 +36,16 @@ export async function generateMetadata(): Promise<Metadata> {
       "sekolah dasar islam unggulan",
       "pendaftaran SD Islam Bekasi",
     ],
+    authors: [{ name: SITE_NAME, url: siteUrl }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
+    /*
+     * Canonical menunjuk ke akar situs. Halaman ini satu-satunya
+     * halaman publik, jadi semua varian URL bermuara ke sini.
+     */
+    alternates: {
+      canonical: "/",
+    },
     robots: {
       index: true,
       follow: true,
@@ -44,7 +55,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: SITE_TITLE,
       description,
       url: siteUrl,
-      siteName: "Yayasan Pembangunan Umat Islam Darussalam",
+      siteName: SITE_NAME,
       locale: "id_ID",
       images: [
         {

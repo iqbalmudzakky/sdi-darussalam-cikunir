@@ -112,7 +112,7 @@ export default function Navbar() {
           </a>
 
           {/* Navigasi desktop */}
-          <div className="hidden items-center gap-7 md:flex">
+          <div className="hidden items-center gap-7 lg:flex">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
@@ -153,7 +153,7 @@ export default function Navbar() {
               transition-colors
               hover:bg-brand-50
 
-              md:hidden
+              lg:hidden
             "
           >
             <span className="relative block h-4 w-6" aria-hidden="true">
@@ -196,9 +196,9 @@ export default function Navbar() {
             Latar gelap menutupi halaman di belakang menu,
             sekaligus menjadi area tap untuk menutup.
           */}
-          <button type="button" aria-label="Tutup menu" onClick={() => setIsMenuOpen(false)} className="mobile-menu-backdrop fixed inset-0 top-16 z-0 cursor-default bg-ink-900/30 backdrop-blur-[2px] sm:top-[72px] md:hidden" />
+          <button type="button" aria-label="Tutup menu" onClick={() => setIsMenuOpen(false)} className="mobile-menu-backdrop fixed inset-0 top-16 z-0 cursor-default bg-ink-900/30 backdrop-blur-[2px] sm:top-[72px] lg:hidden" />
 
-          <div id="mobile-navigation" className="mobile-menu-panel relative z-10 border-t border-brand-100 bg-paper shadow-sm md:hidden">
+          <div id="mobile-navigation" className="mobile-menu-panel relative z-10 border-t border-brand-100 bg-paper shadow-sm lg:hidden">
             <div className="page-container pt-2 pb-6">
               <ul>
                 {NAV_LINKS.map((link, index) => (
