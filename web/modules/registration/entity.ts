@@ -1,4 +1,8 @@
-export type PpdbRegistrationStatus = "pending" | "in_progress" | "not_registered" | "registered";
+export type PpdbRegistrationStatus =
+  | "pending"
+  | "in_progress"
+  | "not_registered"
+  | "registered";
 
 export type RegistrationType = "siswa_baru" | "pindahan";
 
@@ -146,10 +150,59 @@ export type PpdbRegistrationDetail = {
   updated_at: string;
 };
 
-export type NewPpdbRegistration = Omit<PpdbRegistration, "id" | "created_at" | "updated_at">;
+export type NewPpdbRegistration = Omit<
+  PpdbRegistration,
+  "id" | "created_at" | "updated_at"
+>;
 
-export type NewPpdbRegistrationStudent = Omit<PpdbRegistrationStudent, "id" | "created_at" | "updated_at">;
+export type NewPpdbRegistrationStudent = Omit<
+  PpdbRegistrationStudent,
+  "id" | "created_at" | "updated_at"
+>;
 
-export type NewPpdbRegistrationParent = Omit<PpdbRegistrationParent, "id" | "created_at" | "updated_at">;
+export type NewPpdbRegistrationParent = Omit<
+  PpdbRegistrationParent,
+  "id" | "created_at" | "updated_at"
+>;
 
-export type NewPpdbRegistrationDetail = Omit<PpdbRegistrationDetail, "id" | "created_at" | "updated_at">;
+export type NewPpdbRegistrationDetail = Omit<
+  PpdbRegistrationDetail,
+  "id" | "created_at" | "updated_at"
+>;
+
+export type PpdbRegistrationListItem = {
+  id: string;
+  registration_type: RegistrationType;
+  status: PpdbRegistrationStatus;
+  ip_address: string | null;
+  parent_email: string | null;
+  created_at: string;
+
+  full_name: string;
+  student_nik: string;
+  gender: Gender;
+  place_of_birth: string;
+  date_of_birth: string;
+  birth_order: number;
+  sibling_count: number;
+  current_address: string;
+  physical_disability: PhysicalDisability;
+  previous_school: string;
+  nisn: string | null;
+
+  father_status: ParentRelationshipStatus | null;
+  father_name: string | null;
+  father_nik: string | null;
+  father_place_of_birth: string | null;
+  father_date_of_birth: string | null;
+  father_phone: string | null;
+  father_income: number | null;
+
+  mother_status: ParentRelationshipStatus | null;
+  mother_name: string | null;
+  mother_nik: string | null;
+  mother_place_of_birth: string | null;
+  mother_date_of_birth: string | null;
+  mother_phone: string | null;
+  mother_income: number | null;
+};
