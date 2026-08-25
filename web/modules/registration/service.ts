@@ -1,5 +1,10 @@
+import type ExcelJS from "exceljs";
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
+import {
+  buildRegistrationsWorkbookBuffer,
+  getRegistrationsExportFilename,
+} from "@/modules/export/registrationWorkbook";
 import {
   RATE_LIMIT_MAX_PER_HOUR,
   RATE_LIMIT_WINDOW_MINUTES,
@@ -129,6 +134,19 @@ export async function countPendingFollowUp(): Promise<number> {
   );
 }
 
-export async function exportRegistrations() {
-  return withDbLogging("registration.export", () => repository.exportList());
+export async function exportRegistrations(): Promise<{
+  buffer: ExcelJS.Buffer;
+  filename: string;
+}> {
+  try {
+    const registrations = await withDbLogging("registration.export", () =>
+      repository.exportList(),
+    );
+    const buffer = await buildRegistrationsWorkbookBuffer(registrations);
+    const filename = getRegistrationsExportFilename();
+    return { buffer, filename };
+  } catch (error) {
+    console.error("registration.exportRegistrations failed:", error);
+    throw error;
+  }
 }
