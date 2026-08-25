@@ -17,6 +17,7 @@ import {
   X,
   ExternalLink,
   ShieldCheck,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
@@ -72,6 +73,13 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Administrasi",
     items: [
+      {
+        // Sets what applicants are charged, so it stays with the superadmin.
+        href: "/admin/payment",
+        label: "Pembayaran",
+        icon: Wallet,
+        superadminOnly: true,
+      },
       {
         href: "/admin/admin-management",
         label: "Kelola Admin",

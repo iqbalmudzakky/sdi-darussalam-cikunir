@@ -36,20 +36,6 @@ export function getDokuConfig() {
   };
 }
 
-/** Registration fee in IDR, without decimals. */
-export function getRegistrationFee(): number {
-  const raw = process.env.DOKU_REGISTRATION_FEE;
-  const amount = Number(raw);
-
-  if (!raw || !Number.isInteger(amount) || amount <= 0) {
-    throw new Error(
-      "Environment variable DOKU_REGISTRATION_FEE must be a positive integer.",
-    );
-  }
-
-  return amount;
-}
-
 /**
  * Public base URL used to build the callback and notification URLs we hand to
  * DOKU.

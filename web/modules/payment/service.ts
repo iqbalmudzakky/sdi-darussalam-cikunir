@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { withDbLogging } from "@/modules/db/errors";
 import * as repository from "./repository";
 import { createCheckoutSession } from "./doku";
-import { getRegistrationFee } from "./config";
+import { getRegistrationFee } from "@/modules/payment-settings/service";
 import type { DokuNotification, PaymentStatus, RegistrationPayload } from "./entity";
 
 /** Sessions that reached a decision — paid, failed or expired. */
@@ -73,7 +73,7 @@ export async function startRegistrationPayment(input: {
     };
   }
 
-  const amount = getRegistrationFee();
+  const amount = await getRegistrationFee();
   const invoiceNumber = generateInvoiceNumber();
 
   const payment = await withDbLogging("payment.insert", () =>
