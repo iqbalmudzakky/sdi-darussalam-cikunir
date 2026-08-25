@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cva } from "class-variance-authority";
-import { CheckCircle2, Clock, Download, Eye, Inbox, Loader2, MessageCircle, PhoneCall, Trash2 } from "lucide-react";
+import { CheckCircle2, Clock, Download, Eye, Inbox, Loader2, MessageCircle, PhoneCall, Trash2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
@@ -47,6 +47,32 @@ const STATUS_OPTIONS: {
     activeClassName: "bg-brand-100 text-brand-700",
   },
 ];
+
+const PAYMENT_BADGES: Record<
+  NonNullable<Registration["payment_status"]>,
+  { label: string; icon: typeof Clock; className: string }
+> = {
+  success: {
+    label: "Lunas",
+    icon: CheckCircle2,
+    className: "bg-green-100 text-green-700",
+  },
+  pending: {
+    label: "Belum Bayar",
+    icon: Clock,
+    className: "bg-amber-100 text-amber-700",
+  },
+  failed: {
+    label: "Gagal Bayar",
+    icon: XCircle,
+    className: "bg-red-100 text-red-700",
+  },
+  expired: {
+    label: "Kedaluwarsa",
+    icon: XCircle,
+    className: "bg-gray-100 text-gray-600",
+  },
+};
 
 const statusButtonVariants = cva(["flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60"]);
 
@@ -150,9 +176,12 @@ export default function AdminRegistrationsPage() {
                 </p>
               </div>
 
-              <p className="text-xs text-gray-400">
-                {formatDateTime(item.created_at)}
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs text-gray-400">
+                  {formatDateTime(item.created_at)}
+                </p>
+                <PaymentBadge item={item} />
+              </div>
 
               <div className="flex gap-2">
                 <a
@@ -230,5 +259,30 @@ export default function AdminRegistrationsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/**
+ * Payment state shown alongside the follow-up status, never merged into it:
+ * `status` is what the admin is doing about the applicant, this is whether the
+ * fee has been paid. Registrations created before the payment flow have no
+ * payment row, so nothing is shown for them.
+ */
+function PaymentBadge({ item }: { item: Registration }) {
+  if (!item.payment_status) return null;
+
+  const badge = PAYMENT_BADGES[item.payment_status];
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+        badge.className,
+      )}
+      title={item.invoice_number ?? undefined}
+    >
+      <badge.icon className="h-3 w-3" />
+      {badge.label}
+    </span>
   );
 }

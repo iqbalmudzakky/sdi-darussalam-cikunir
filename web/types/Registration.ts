@@ -64,8 +64,23 @@ type RegistrationBiodata = {
   parent_email: string;
 };
 
+export type PaymentStatus = "pending" | "success" | "failed" | "expired";
+
 export type Registration = RegistrationBiodata & {
   id: string;
+
+  /**
+   * Payment facts from registration_payments. Null for registrations made
+   * before the payment flow existed. Kept separate from `status`, which is the
+   * admin's own follow-up state.
+   */
+  payment_status: PaymentStatus | null;
+
+  payment_amount: number | null;
+
+  paid_at: string | null;
+
+  invoice_number: string | null;
 
   ip_address: string | null;
 

@@ -232,4 +232,9 @@ export type RegistrationListItemResponse = {
   mother_date_of_birth: string | null;
   mother_phone: string | null;
   mother_income: number | null;
+
+  payment_status: "pending" | "success" | "failed" | "expired" | null;
+  payment_amount: number | null;
+  paid_at: string | null;
+  invoice_number: string | null;
 };

@@ -341,7 +341,12 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
       mother.place_of_birth AS mother_place_of_birth,
       mother.date_of_birth AS mother_date_of_birth,
       mother.phone AS mother_phone,
-      mother.income AS mother_income
+      mother.income AS mother_income,
+
+      payment.status AS payment_status,
+      payment.amount AS payment_amount,
+      payment.paid_at,
+      payment.invoice_number
 
     FROM ppdb_registrations pr
 
@@ -355,6 +360,9 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
     LEFT JOIN ppdb_registration_parents mother
       ON mother.registration_id = pr.id
       AND mother.parent_type = 'mother'
+
+    LEFT JOIN registration_payments payment
+      ON payment.registration_id = pr.id
 
     ORDER BY pr.created_at DESC
     `,
@@ -443,8 +451,12 @@ export async function exportList(): Promise<PpdbRegistrationExportItem[]> {
       mother.place_of_birth AS mother_place_of_birth,
       mother.date_of_birth AS mother_date_of_birth,
       mother.phone AS mother_phone,
-      mother.income AS mother_income
+      mother.income AS mother_income,
 
+      payment.status AS payment_status,
+      payment.amount AS payment_amount,
+      payment.paid_at,
+      payment.invoice_number
 
     FROM ppdb_registrations pr
 
@@ -458,6 +470,9 @@ export async function exportList(): Promise<PpdbRegistrationExportItem[]> {
     LEFT JOIN ppdb_registration_parents mother
       ON mother.registration_id = pr.id
       AND mother.parent_type = 'mother'
+
+    LEFT JOIN registration_payments payment
+      ON payment.registration_id = pr.id
 
     ORDER BY pr.created_at DESC
     `,

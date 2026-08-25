@@ -1,6 +1,7 @@
 import { Mail, Phone } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
+import { formatDateTime } from "@/lib/formatDate";
 import { REGISTRATION_TYPE_OPTIONS, GENDER_OPTIONS, PHYSICAL_DISABILITY_OPTIONS, PARENT_RELATIONSHIP_OPTIONS, getOptionLabel } from "@/lib/registrationOptions";
 import type { Registration } from "@/types/Registration";
 
@@ -27,6 +28,16 @@ function formatRupiah(value: number): string {
     maximumFractionDigits: 0,
   }).format(value);
 }
+
+const PAYMENT_STATUS_LABELS: Record<
+  NonNullable<Registration["payment_status"]>,
+  string
+> = {
+  success: "Lunas",
+  pending: "Belum dibayar",
+  failed: "Gagal",
+  expired: "Kedaluwarsa",
+};
 
 type DetailRowProps = {
   label: string;
@@ -130,6 +141,21 @@ export function RegistrationDetailDialog({ registration, onOpenChange }: Registr
                 {registration.parent_email || "-"}
               </div>
             </div>
+
+            {/* Registrations made before the payment flow have no payment row. */}
+            {registration.payment_status && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase text-gray-400">Pembayaran</p>
+
+                <DetailRow label="Status" value={PAYMENT_STATUS_LABELS[registration.payment_status]} />
+
+                <DetailRow label="Nominal" value={registration.payment_amount ? formatRupiah(registration.payment_amount) : "-"} />
+
+                <DetailRow label="Nomor invoice" value={registration.invoice_number} />
+
+                <DetailRow label="Waktu bayar" value={registration.paid_at ? formatDateTime(registration.paid_at) : "-"} />
+              </div>
+            )}
           </div>
         )}
       </DialogContent>

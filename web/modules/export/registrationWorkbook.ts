@@ -23,6 +23,13 @@ const PARENT_RELATIONSHIP_LABELS: Record<string, string> = {
   wali: "Wali",
 };
 
+const PAYMENT_STATUS_LABELS = {
+  pending: "Belum Bayar",
+  success: "Lunas",
+  failed: "Gagal",
+  expired: "Kedaluwarsa",
+} as const;
+
 const STATUS_LABELS = {
   pending: "Belum",
   in_progress: "Proses",
@@ -105,6 +112,9 @@ export async function buildRegistrationsWorkbookBuffer(
     { header: "No. HP Ibu", key: "mother_phone", width: 18 },
     { header: "Penghasilan Ibu (Rp)", key: "mother_income", width: 22 },
     { header: "Email Orang Tua", key: "parent_email", width: 30 },
+    { header: "Status Bayar", key: "payment_status", width: 16 },
+    { header: "Nominal Bayar (Rp)", key: "payment_amount", width: 20 },
+    { header: "Nomor Invoice", key: "invoice_number", width: 26 },
   ];
 
   registrations.forEach((registration, index) => {
@@ -153,6 +163,11 @@ export async function buildRegistrationsWorkbookBuffer(
       mother_phone: registration.mother_phone,
       mother_income: registration.mother_income,
       parent_email: registration.parent_email ?? "",
+      payment_status: registration.payment_status
+        ? PAYMENT_STATUS_LABELS[registration.payment_status]
+        : "",
+      payment_amount: registration.payment_amount ?? "",
+      invoice_number: registration.invoice_number ?? "",
     });
   });
 
