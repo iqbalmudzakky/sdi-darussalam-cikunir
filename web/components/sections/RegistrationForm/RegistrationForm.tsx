@@ -559,12 +559,10 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             })}
           </div>
 
-          {renderTextarea("current_address", "Nama jalan, nomor rumah, RT/RW")}
-
           {/*
             Wilayah dipilih dari atas ke bawah: setiap pilihan menentukan
-            daftar di bawahnya. Nama jalan tetap diketik manual di kolom
-            alamat, jadi tidak ada bagian alamat yang ditulis dua kali.
+            daftar di bawahnya, lalu detail jalan diisi terakhir — mengikuti
+            cara alamat dibacakan, dari yang paling umum ke paling spesifik.
           */}
           <div className="grid gap-5 sm:grid-cols-2">
             <RegionSelect
@@ -616,6 +614,8 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           {renderText("rt_rw", {
             placeholder: "Contoh: 004/006",
           })}
+
+          {renderTextarea("current_address", "Nama jalan dan nomor rumah")}
 
           <div className="grid gap-5 sm:grid-cols-2">
             {renderText("birth_order", {

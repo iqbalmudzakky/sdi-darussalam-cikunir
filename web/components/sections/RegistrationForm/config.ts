@@ -122,7 +122,7 @@ export const FIELD_LABELS: Record<FieldName, string> = {
   place_of_birth: "Tempat lahir",
   date_of_birth: "Tanggal lahir",
 
-  current_address: "Alamat sekarang",
+  current_address: "Detail alamat",
   village: "Kelurahan",
   rt_rw: "RT/RW",
   district: "Kecamatan",
