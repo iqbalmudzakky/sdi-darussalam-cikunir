@@ -421,6 +421,16 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-6">
+      {/*
+        Honeypot: hidden from people, tempting to bots. A submission that
+        carries a value here is rejected server-side.
+
+        readOnly is what keeps it from catching the wrong culprit — browser
+        autofill and form-filler extensions skip read-only inputs, while a bot
+        that assigns the value through script still trips it. Without it, an
+        autofill pass silently looks exactly like a bot and the applicant is
+        turned away with no idea why.
+      */}
       <input
         type="text"
         name="website"
@@ -431,8 +441,12 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             website: e.target.value,
           }))
         }
+        readOnly
         tabIndex={-1}
         autoComplete="off"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
         className={honeypotVariants()}
         aria-hidden="true"
       />

@@ -16,7 +16,14 @@ function getClientIp(request: Request): string {
 export async function POST(request: Request) {
   const body = await request.json();
 
+  // Honeypot: answer as if accepted so a bot cannot tell it was caught, but
+  // log it — a real applicant tripping this (an autofill extension filling
+  // every field, say) would otherwise fail with nothing in the logs to explain
+  // why they never reached the payment page.
   if (body.website) {
+    console.warn(
+      "[payment] checkout rejected by honeypot; 'website' field was filled",
+    );
     return NextResponse.json({ ok: true });
   }
 
