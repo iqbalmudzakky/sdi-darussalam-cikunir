@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/useToast";
 import { REGISTRATION_TYPE_OPTIONS, GENDER_OPTIONS, PHYSICAL_DISABILITY_OPTIONS, PARENT_RELATIONSHIP_OPTIONS, RELIGION_OPTIONS } from "@/lib/registrationOptions";
 import type { SubmitRegistrationInput } from "@/types/Registration";
 import { TextField, SelectField, TextareaField } from "./fields";
+import { RegionSelect } from "./RegionSelect";
 import { EMPTY_FORM, FIELD_LABELS, validateField, normalizeWhatsappNumber, PHONE_FIELDS, type FieldName, type FieldErrors } from "./config";
 
 const sectionHeadingVariants = cva(["mb-1 border-b border-brand-200 pb-2 text-sm font-semibold text-ink-900"]);
@@ -69,6 +70,42 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /*
+   * Menyimpan pilihan wilayah beserta kodenya, lalu mengosongkan tingkat di
+   * bawahnya. Tanpa itu, mengganti provinsi setelah kecamatan terisi akan
+   * menyisakan kecamatan lama yang sudah tidak cocok — dan ikut terkirim.
+   */
+  function selectRegion(
+    field: "province" | "city" | "district" | "village",
+    name: string,
+    code: string,
+  ) {
+    setForm((prev) => {
+      const next = { ...prev, [field]: name };
+
+      if (field === "province") {
+        next.province_code = code;
+        next.city = "";
+        next.city_code = "";
+        next.district = "";
+        next.district_code = "";
+        next.village = "";
+      } else if (field === "city") {
+        next.city_code = code;
+        next.district = "";
+        next.district_code = "";
+        next.village = "";
+      } else if (field === "district") {
+        next.district_code = code;
+        next.village = "";
+      }
+
+      return next;
+    });
+
+    setErrors((prev) => ({ ...prev, [field]: validateField(field, name) }));
+  }
 
   function updateField(field: FieldName, rawValue: string) {
     let value = rawValue;
@@ -284,15 +321,15 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
         address: form.current_address.trim(),
 
-        village: form.village.trim() || null,
+        village: form.village.trim(),
 
-        rt_rw: form.rt_rw.trim() || null,
+        rt_rw: form.rt_rw.trim(),
 
-        district: form.district.trim() || null,
+        district: form.district.trim(),
 
-        city: form.city.trim() || null,
+        city: form.city.trim(),
 
-        province: form.province.trim() || null,
+        province: form.province.trim(),
 
         phone: form.student_phone ? normalizeWhatsappNumber(form.student_phone) : null,
 
@@ -522,33 +559,63 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             })}
           </div>
 
-          {renderTextarea("current_address", "Alamat lengkap saat ini")}
+          {renderTextarea("current_address", "Nama jalan, nomor rumah, RT/RW")}
+
+          {/*
+            Wilayah dipilih dari atas ke bawah: setiap pilihan menentukan
+            daftar di bawahnya. Nama jalan tetap diketik manual di kolom
+            alamat, jadi tidak ada bagian alamat yang ditulis dua kali.
+          */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <RegionSelect
+              id={fieldId("province")}
+              label={FIELD_LABELS.province}
+              level="provinces"
+              value={form.province}
+              onChange={(name, code) => selectRegion("province", name, code)}
+              onBlur={() => handleBlur("province")}
+              error={fieldError("province")}
+            />
+
+            <RegionSelect
+              id={fieldId("city")}
+              label={FIELD_LABELS.city}
+              level="regencies"
+              parentCode={form.province_code || undefined}
+              value={form.city}
+              onChange={(name, code) => selectRegion("city", name, code)}
+              onBlur={() => handleBlur("city")}
+              error={fieldError("city")}
+            />
+          </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            {renderText("village", {
-              optional: true,
-              placeholder: "Kelurahan",
-            })}
+            <RegionSelect
+              id={fieldId("district")}
+              label={FIELD_LABELS.district}
+              level="districts"
+              parentCode={form.city_code || undefined}
+              value={form.district}
+              onChange={(name, code) => selectRegion("district", name, code)}
+              onBlur={() => handleBlur("district")}
+              error={fieldError("district")}
+            />
 
-            {renderText("rt_rw", {
-              optional: true,
-              placeholder: "RT/RW",
-            })}
+            <RegionSelect
+              id={fieldId("village")}
+              label={FIELD_LABELS.village}
+              level="villages"
+              parentCode={form.district_code || undefined}
+              value={form.village}
+              onChange={(name) => selectRegion("village", name, "")}
+              onBlur={() => handleBlur("village")}
+              error={fieldError("village")}
+            />
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-3">
-            {renderText("district", {
-              optional: true,
-            })}
-
-            {renderText("city", {
-              optional: true,
-            })}
-
-            {renderText("province", {
-              optional: true,
-            })}
-          </div>
+          {renderText("rt_rw", {
+            placeholder: "Contoh: 004/006",
+          })}
 
           <div className="grid gap-5 sm:grid-cols-2">
             {renderText("birth_order", {

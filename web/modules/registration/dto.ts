@@ -61,15 +61,18 @@ export const CreatePpdbRegistrationStudentSchema = z.object({
     .min(1, "Alamat wajib diisi.")
     .max(200, "Alamat maksimal 200 karakter."),
 
-  village: z.string().trim().nullable().optional(),
+  // Wajib: alamat yang setengah kosong tidak terpakai untuk pelaporan
+  // Dapodik, dan melengkapinya belakangan berarti menghubungi orang tua
+  // satu per satu.
+  village: z.string().trim().min(1, "Kelurahan wajib dipilih."),
 
-  rt_rw: z.string().trim().nullable().optional(),
+  rt_rw: z.string().trim().min(1, "RT/RW wajib diisi."),
 
-  district: z.string().trim().nullable().optional(),
+  district: z.string().trim().min(1, "Kecamatan wajib dipilih."),
 
-  city: z.string().trim().nullable().optional(),
+  city: z.string().trim().min(1, "Kabupaten/Kota wajib dipilih."),
 
-  province: z.string().trim().nullable().optional(),
+  province: z.string().trim().min(1, "Provinsi wajib dipilih."),
 
   phone: phoneNumber("Nomor telepon siswa").nullable().optional(),
 
