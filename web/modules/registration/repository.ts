@@ -1,6 +1,7 @@
 import { sql } from "@/modules/db/postgres";
 import type {
   PpdbRegistration,
+  PpdbRegistrationExportItem,
   PpdbRegistrationListItem,
   PpdbRegistrationStatus,
 } from "./entity";
@@ -389,48 +390,6 @@ export async function countByStatus(
   return rows[0].count;
 }
 
-export type PpdbRegistrationExportItem = {
-  id: string;
-
-  registration_type: "siswa_baru" | "pindahan";
-
-  status: "pending" | "in_progress" | "not_registered" | "registered";
-
-  created_at: string;
-
-  full_name: string;
-  nik: string;
-  nisn: string | null;
-  gender: "laki_laki" | "perempuan";
-  place_of_birth: string;
-  date_of_birth: string;
-
-  birth_order: number;
-  sibling_count: number;
-
-  address: string;
-
-  physical_disability: "tidak_ada" | "ada";
-
-  previous_school: string;
-
-  father_status: string | null;
-  father_name: string | null;
-  father_nik: string | null;
-  father_place_of_birth: string | null;
-  father_date_of_birth: string | null;
-  father_phone: string | null;
-  father_income: number | null;
-
-  mother_status: string | null;
-  mother_name: string | null;
-  mother_nik: string | null;
-  mother_place_of_birth: string | null;
-  mother_date_of_birth: string | null;
-  mother_phone: string | null;
-  mother_income: number | null;
-};
-
 export async function exportList(): Promise<PpdbRegistrationExportItem[]> {
   return sql.unsafe<PpdbRegistrationExportItem[]>(
     `
@@ -439,6 +398,7 @@ export async function exportList(): Promise<PpdbRegistrationExportItem[]> {
       pr.registration_type,
       pr.status,
       pr.created_at,
+      pr.parent_email,
 
       ps.full_name,
       ps.nik,

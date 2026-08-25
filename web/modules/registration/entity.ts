@@ -170,25 +170,22 @@ export type NewPpdbRegistrationDetail = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
-export type PpdbRegistrationListItem = {
+type PpdbRegistrationOverviewBase = {
   id: string;
   registration_type: RegistrationType;
   status: PpdbRegistrationStatus;
-  ip_address: string | null;
   parent_email: string | null;
   created_at: string;
 
   full_name: string;
-  student_nik: string;
+  nisn: string | null;
   gender: Gender;
   place_of_birth: string;
   date_of_birth: string;
   birth_order: number;
   sibling_count: number;
-  current_address: string;
   physical_disability: PhysicalDisability;
   previous_school: string;
-  nisn: string | null;
 
   father_status: ParentRelationshipStatus | null;
   father_name: string | null;
@@ -205,4 +202,15 @@ export type PpdbRegistrationListItem = {
   mother_date_of_birth: string | null;
   mother_phone: string | null;
   mother_income: number | null;
+};
+
+export type PpdbRegistrationListItem = PpdbRegistrationOverviewBase & {
+  ip_address: string | null;
+  student_nik: string;
+  current_address: string;
+};
+
+export type PpdbRegistrationExportItem = PpdbRegistrationOverviewBase & {
+  nik: string;
+  address: string;
 };
