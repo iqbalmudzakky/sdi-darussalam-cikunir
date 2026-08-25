@@ -36,21 +36,26 @@ export async function startRegistrationPayment(input: {
   ipAddress: string;
   request?: Request;
 }): Promise<StartPaymentResult> {
-  const sessionCount = await withDbLogging("payment.countAllByIpSince", () =>
-    repository.countAllByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
-  );
-  const recentCount = await withDbLogging("payment.countByIpSince", () =>
-    repository.countByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
-  );
-  if (
-    recentCount >= RATE_LIMIT_MAX_PER_HOUR ||
-    sessionCount >= RATE_LIMIT_MAX_SESSIONS_PER_HOUR
-  ) {
-    return {
-      ok: false,
-      reason: "rate_limited",
-      message: "Terlalu banyak percobaan. Coba lagi beberapa saat lagi.",
-    };
+  // Manual testing means paying over and over from one machine, which is
+  // exactly the pattern this guard exists to stop. Skipping it in development
+  // keeps the limits intact where they matter, in production.
+  if (process.env.NODE_ENV !== "development") {
+    const sessionCount = await withDbLogging("payment.countAllByIpSince", () =>
+      repository.countAllByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
+    );
+    const recentCount = await withDbLogging("payment.countByIpSince", () =>
+      repository.countByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
+    );
+    if (
+      recentCount >= RATE_LIMIT_MAX_PER_HOUR ||
+      sessionCount >= RATE_LIMIT_MAX_SESSIONS_PER_HOUR
+    ) {
+      return {
+        ok: false,
+        reason: "rate_limited",
+        message: "Terlalu banyak percobaan. Coba lagi beberapa saat lagi.",
+      };
+    }
   }
 
   const isDuplicate = await withDbLogging("payment.existsPaidDuplicate", () =>
