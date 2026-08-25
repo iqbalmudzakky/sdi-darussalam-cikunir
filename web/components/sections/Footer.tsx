@@ -18,12 +18,7 @@ type FooterDetailProps = {
   preserveLineBreaks?: boolean;
 };
 
-function FooterDetail({
-  label,
-  value,
-  href,
-  preserveLineBreaks,
-}: FooterDetailProps) {
+function FooterDetail({ label, value, href, preserveLineBreaks }: FooterDetailProps) {
   if (!value) return null;
 
   const body = (
@@ -40,16 +35,11 @@ function FooterDetail({
 
   return (
     <div className="min-w-0">
-      <dt className="text-[11px] font-medium tracking-[0.18em] text-brand-300 uppercase">
-        {label}
-      </dt>
+      <dt className="text-[11px] font-medium tracking-[0.18em] text-brand-300 uppercase">{label}</dt>
 
       <dd className="mt-1.5">
         {href ? (
-          <a
-            href={href}
-            className="cursor-pointer transition-colors hover:text-white"
-          >
+          <a href={href} className="cursor-pointer transition-colors hover:text-white">
             {body}
           </a>
         ) : (
@@ -70,38 +60,19 @@ export default async function Footer() {
           {/* Identitas sekolah */}
           <div className="min-w-0 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3">
-              <img
-                src="/logo.png"
-                alt=""
-                aria-hidden="true"
-                className="h-10 w-10 object-contain"
-              />
+              <img src="/logo.png" alt="" aria-hidden="true" className="h-10 w-10 object-contain" />
 
-              <p className="font-display text-lg font-semibold text-white">
-                SDI Darussalam Cikunir
-              </p>
+              <p className="font-display text-lg font-semibold text-white">SD Islam Darussalam Cikunir</p>
             </div>
 
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-brand-200">
-              Sekolah dasar Islam di Jaka Mulya, Bekasi Selatan. Terakreditasi
-              A.
-            </p>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-brand-200">Sekolah dasar Islam di Jaka Mulya, Bekasi Selatan. Terakreditasi A.</p>
 
-            <ContactSocialLinks
-              whatsapp={profile.whatsapp}
-              whatsappMessage={profile.whatsapp_message}
-              facebook={profile.facebook}
-              instagram={profile.instagram}
-              tiktok={profile.tiktok}
-              youtube={profile.youtube}
-            />
+            <ContactSocialLinks whatsapp={profile.whatsapp} whatsappMessage={profile.whatsapp_message} facebook={profile.facebook} instagram={profile.instagram} tiktok={profile.tiktok} youtube={profile.youtube} />
           </div>
 
           {/* Navigasi */}
           <nav className="min-w-0">
-            <p className="text-[11px] font-medium tracking-[0.18em] text-brand-300 uppercase">
-              Halaman
-            </p>
+            <p className="text-[11px] font-medium tracking-[0.18em] text-brand-300 uppercase">Halaman</p>
 
             {/*
               Dua kolom selama footer masih sempit, supaya
@@ -110,10 +81,7 @@ export default async function Footer() {
             <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-1 sm:gap-y-2.5">
               {NAV_LINKS.map((link) => (
                 <li key={link.href} className="min-w-0">
-                  <a
-                    href={link.href}
-                    className="cursor-pointer text-sm text-brand-100 transition-colors hover:text-white"
-                  >
+                  <a href={link.href} className="cursor-pointer text-sm text-brand-100 transition-colors hover:text-white">
                     {link.label}
                   </a>
                 </li>
@@ -123,36 +91,18 @@ export default async function Footer() {
 
           {/* Kontak lengkap */}
           <dl className="min-w-0 space-y-5">
-            <FooterDetail
-              label="Alamat"
-              value={profile.alamat}
-              preserveLineBreaks
-            />
+            <FooterDetail label="Alamat" value={profile.alamat} preserveLineBreaks />
 
-            <FooterDetail
-              label="Telepon"
-              value={profile.telepon}
-              href={profile.telepon ? `tel:${profile.telepon.replace(/\s/g, "")}` : undefined}
-            />
+            <FooterDetail label="Telepon" value={profile.telepon} href={profile.telepon ? `tel:${profile.telepon.replace(/\s/g, "")}` : undefined} />
 
-            <FooterDetail
-              label="Email"
-              value={profile.email}
-              href={profile.email ? `mailto:${profile.email}` : undefined}
-            />
+            <FooterDetail label="Email" value={profile.email} href={profile.email ? `mailto:${profile.email}` : undefined} />
 
-            <FooterDetail
-              label="Jam operasional"
-              value={profile.jam_operasional}
-              preserveLineBreaks
-            />
+            <FooterDetail label="Jam operasional" value={profile.jam_operasional} preserveLineBreaks />
           </dl>
         </Reveal>
 
         <div className="mt-14 border-t border-brand-800 pt-6">
-          <p className="text-xs text-brand-300">
-            &copy; {new Date().getFullYear()} SDI Darussalam Cikunir
-          </p>
+          <p className="text-xs text-brand-300">&copy; {new Date().getFullYear()} SD Islam Darussalam Cikunir</p>
         </div>
       </div>
     </footer>

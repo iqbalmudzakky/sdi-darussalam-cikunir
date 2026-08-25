@@ -8,6 +8,15 @@ export const GENDER_OPTIONS = [
   { value: "perempuan", label: "Perempuan" },
 ];
 
+export const RELIGION_OPTIONS = [
+  { value: "islam", label: "Islam" },
+  { value: "kristen", label: "Kristen" },
+  { value: "katolik", label: "Katolik" },
+  { value: "hindu", label: "Hindu" },
+  { value: "buddha", label: "Buddha" },
+  { value: "konghucu", label: "Konghucu" },
+];
+
 export const PHYSICAL_DISABILITY_OPTIONS = [
   { value: "tidak_ada", label: "Tidak Ada" },
   { value: "ada", label: "Ada" },
@@ -20,9 +29,6 @@ export const PARENT_RELATIONSHIP_OPTIONS = [
   { value: "wali", label: "Wali" },
 ];
 
-export function getOptionLabel(
-  options: { value: string; label: string }[],
-  value: string,
-): string {
+export function getOptionLabel(options: { value: string; label: string }[], value: string): string {
   return options.find((option) => option.value === value)?.label ?? value;
 }

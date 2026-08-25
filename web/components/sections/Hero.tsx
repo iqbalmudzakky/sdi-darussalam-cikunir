@@ -26,33 +26,17 @@ export default async function Hero() {
             di layar kecil.
           */}
           <div className="order-2 min-w-0 lg:order-1">
-            <p className="intro text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
-              Sekolah Dasar Islam &middot; Terakreditasi A
-            </p>
+            <p className="intro text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">Sekolah Dasar Islam &middot; Terakreditasi A</p>
 
-            <h1
-              className="font-display intro mt-5 text-[2.1rem] leading-[1.2] font-semibold text-balance text-ink-900 sm:text-5xl lg:text-[3.4rem]"
-              style={{ animationDelay: "80ms" }}
-            >
-              Membentuk generasi yang{" "}
-              <span className="text-brand-700">
-                cerdas dan berakhlakulkarimah
-              </span>
+            <h1 className="font-display intro mt-5 text-[2.1rem] leading-[1.2] font-semibold text-balance text-ink-900 sm:text-5xl lg:text-[3.4rem]" style={{ animationDelay: "80ms" }}>
+              Membentuk generasi yang <span className="text-brand-700">cerdas dan berakhlak karimah</span>
             </h1>
 
-            <p
-              className="intro mt-6 max-w-lg text-[17px] leading-relaxed text-ink-700"
-              style={{ animationDelay: "160ms" }}
-            >
-              Sejak 2009 kami mendampingi anak-anak di Jaka Mulya tumbuh dengan
-              dasar akademik yang kuat, hafalan Al-Qur&rsquo;an, dan kebiasaan
-              baik yang terbawa sampai dewasa.
+            <p className="intro mt-6 max-w-lg text-[17px] leading-relaxed text-ink-700" style={{ animationDelay: "160ms" }}>
+              Sejak 2009 kami mendampingi anak-anak di Jaka Mulya tumbuh dengan dasar akademik yang kuat, hafalan Al-Qur&rsquo;an, dan kebiasaan baik yang terbawa sampai dewasa.
             </p>
 
-            <div
-              className="intro mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5"
-              style={{ animationDelay: "240ms" }}
-            >
+            <div className="intro mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5" style={{ animationDelay: "240ms" }}>
               <RegistrationDialog variant="primary">
                 Daftar tahun ajaran 2026/2027
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -86,16 +70,10 @@ export default async function Hero() {
           <div className="intro intro-hero-photo relative order-1 lg:order-2 lg:h-full lg:min-h-[30rem]">
             <div className="aspect-4/3 overflow-hidden rounded-sm bg-brand-100 lg:absolute lg:inset-0 lg:aspect-auto">
               {profile.photo_url ? (
-                <img
-                  src={profile.photo_url}
-                  alt="Gedung SDI Darussalam Cikunir"
-                  className="h-full w-full object-cover"
-                />
+                <img src={profile.photo_url} alt="Gedung SD Islam Darussalam Cikunir" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center px-6 text-center">
-                  <p className="text-sm text-brand-700">
-                    Foto gedung sekolah belum diunggah
-                  </p>
+                  <p className="text-sm text-brand-700">Foto gedung sekolah belum diunggah</p>
                 </div>
               )}
             </div>

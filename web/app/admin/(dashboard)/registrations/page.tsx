@@ -2,40 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { cva } from "class-variance-authority";
-import {
-  CheckCircle2,
-  Clock,
-  Eye,
-  Inbox,
-  Loader2,
-  MessageCircle,
-  PhoneCall,
-  Trash2,
-} from "lucide-react";
+import { CheckCircle2, Clock, Download, Eye, Inbox, Loader2, MessageCircle, PhoneCall, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  listRegistrations,
-  deleteRegistration,
-  updateRegistrationStatus,
-} from "@/lib/api/registrations";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { listRegistrations, deleteRegistration, updateRegistrationStatus } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
 import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
-import {
-  REGISTRATION_TYPE_OPTIONS,
-  getOptionLabel,
-} from "@/lib/registrationOptions";
+import { REGISTRATION_TYPE_OPTIONS, getOptionLabel } from "@/lib/registrationOptions";
 import type { Registration, RegistrationStatus } from "@/types/Registration";
 
 const STATUS_OPTIONS: {
@@ -57,16 +34,20 @@ const STATUS_OPTIONS: {
     activeClassName: "bg-blue-100 text-blue-700",
   },
   {
-    value: "completed",
-    label: "Selesai",
+    value: "not_registered",
+    label: "Tidak Jadi",
+    icon: CheckCircle2,
+    activeClassName: "bg-gray-100 text-gray-700",
+  },
+  {
+    value: "registered",
+    label: "Sudah Daftar",
     icon: CheckCircle2,
     activeClassName: "bg-brand-100 text-brand-700",
   },
 ];
 
-const statusButtonVariants = cva([
-  "flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60",
-]);
+const statusButtonVariants = cva(["flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60"]);
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("id-ID", {
@@ -104,6 +85,10 @@ export default function AdminRegistrationsPage() {
     }
   }
 
+  function handleDownloadExcel() {
+    window.location.href = "/api/registrations/export";
+  }
+
   async function handleConfirmDelete() {
     if (!confirmDeleteId) return;
     setIsDeleting(true);
@@ -120,10 +105,7 @@ export default function AdminRegistrationsPage() {
     }
   }
 
-  async function handleStatusChange(
-    item: Registration,
-    status: RegistrationStatus,
-  ) {
+  async function handleStatusChange(item: Registration, status: RegistrationStatus) {
     if (item.status === status || statusUpdatingId) return;
     setStatusUpdatingId(item.id);
     try {
@@ -146,6 +128,12 @@ export default function AdminRegistrationsPage() {
         title="Pendaftar"
         description="Calon siswa yang mengisi formulir pendaftaran di halaman utama."
         count={isLoading || loadError ? undefined : items.length}
+        action={
+          <Button type="button" onClick={handleDownloadExcel} disabled={isLoading || loadError || items.length === 0}>
+            <Download className="w-4 h-4" />
+            Download Excel
+          </Button>
+        }
       />
 
       {isLoading ? (
@@ -154,38 +142,24 @@ export default function AdminRegistrationsPage() {
         </div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
-          <p className="text-sm font-medium text-red-700">
-            Gagal memuat data pendaftar. Coba refresh halaman.
-          </p>
+          <p className="text-sm font-medium text-red-700">Gagal memuat data pendaftar. Coba refresh halaman.</p>
         </div>
       ) : items.length === 0 ? (
-        <AdminEmptyState
-          icon={Inbox}
-          title="Belum ada pendaftar"
-          description="Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama."
-        />
+        <AdminEmptyState icon={Inbox} title="Belum ada pendaftar" description="Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama." />
       ) : (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
-            >
+            <div key={item.id} className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300">
               <div>
                 <h3 className="font-bold text-gray-900">{item.full_name}</h3>
                 <p className="text-sm text-gray-500">
-                  {getOptionLabel(
-                    REGISTRATION_TYPE_OPTIONS,
-                    item.registration_type,
-                  )}
+                  {getOptionLabel(REGISTRATION_TYPE_OPTIONS, item.registration_type)}
                   {" · "}
                   {item.previous_school}
                 </p>
               </div>
 
-              <p className="text-xs text-gray-400">
-                {formatDate(item.created_at)}
-              </p>
+              <p className="text-xs text-gray-400">{formatDate(item.created_at)}</p>
 
               <div className="flex gap-2">
                 <a
@@ -217,12 +191,7 @@ export default function AdminRegistrationsPage() {
                       type="button"
                       disabled={statusUpdatingId === item.id}
                       onClick={() => handleStatusChange(item, option.value)}
-                      className={cn(
-                        statusButtonVariants(),
-                        isActive
-                          ? option.activeClassName
-                          : "text-gray-400 hover:bg-gray-100",
-                      )}
+                      className={cn(statusButtonVariants(), isActive ? option.activeClassName : "text-gray-400 hover:bg-gray-100")}
                     >
                       <option.icon className="w-3.5 h-3.5" />
                       {option.label}
@@ -232,24 +201,12 @@ export default function AdminRegistrationsPage() {
               </div>
 
               <div className="flex gap-2 mt-auto pt-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setDetailItem(item)}
-                  className="flex-1 rounded-xl"
-                >
+                <Button type="button" size="sm" variant="outline" onClick={() => setDetailItem(item)} className="flex-1 rounded-xl">
                   <Eye className="w-4 h-4" />
                   Lihat Detail
                 </Button>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setConfirmDeleteId(item.id)}
-                  className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
-                >
+                <Button type="button" size="sm" variant="outline" onClick={() => setConfirmDeleteId(item.id)} className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
@@ -258,40 +215,21 @@ export default function AdminRegistrationsPage() {
         </div>
       )}
 
-      <RegistrationDetailDialog
-        registration={detailItem}
-        onOpenChange={(open) => !open && setDetailItem(null)}
-      />
+      <RegistrationDetailDialog registration={detailItem} onOpenChange={(open) => !open && setDetailItem(null)} />
 
-      <Dialog
-        open={confirmDeleteId !== null}
-        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
-      >
+      <Dialog open={confirmDeleteId !== null} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
         <DialogContent size="sm">
           <DialogHeader>
             <DialogTitle>Hapus Data Pendaftar</DialogTitle>
             <DialogDescription>
-              Yakin mau hapus data pendaftaran{" "}
-              <span className="font-semibold">{deletingItem?.full_name}</span>?
-              Tindakan ini tidak bisa dibatalkan.
+              Yakin mau hapus data pendaftaran <span className="font-semibold">{deletingItem?.full_name}</span>? Tindakan ini tidak bisa dibatalkan.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setConfirmDeleteId(null)}
-              disabled={isDeleting}
-              className="flex-1"
-            >
+            <Button type="button" variant="ghost" onClick={() => setConfirmDeleteId(null)} disabled={isDeleting} className="flex-1">
               Batal
             </Button>
-            <Button
-              type="button"
-              onClick={handleConfirmDelete}
-              disabled={isDeleting}
-              className="flex-1 bg-red-600 text-white hover:bg-red-700"
-            >
+            <Button type="button" onClick={handleConfirmDelete} disabled={isDeleting} className="flex-1 bg-red-600 text-white hover:bg-red-700">
               <Trash2 className="w-4 h-4" />
               {isDeleting ? "Menghapus..." : "Ya, Hapus"}
             </Button>
