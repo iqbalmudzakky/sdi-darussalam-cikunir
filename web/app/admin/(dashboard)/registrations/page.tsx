@@ -2,18 +2,45 @@
 
 import { useEffect, useState } from "react";
 import { cva } from "class-variance-authority";
-import { CheckCircle2, Clock, Download, Eye, Inbox, Loader2, MessageCircle, PhoneCall, Trash2, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock,
+  Download,
+  Eye,
+  Inbox,
+  LayoutGrid,
+  List,
+  Loader2,
+  MessageCircle,
+  PhoneCall,
+  Trash2,
+  XCircle,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { listRegistrations, deleteRegistration, updateRegistrationStatus } from "@/lib/api/registrations";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  listRegistrations,
+  deleteRegistration,
+  updateRegistrationStatus,
+} from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
 import { formatDateTime } from "@/lib/formatDate";
 import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
-import { REGISTRATION_TYPE_OPTIONS, getOptionLabel } from "@/lib/registrationOptions";
+import {
+  REGISTRATION_TYPE_OPTIONS,
+  getOptionLabel,
+} from "@/lib/registrationOptions";
 import type { Registration, RegistrationStatus } from "@/types/Registration";
 
 const STATUS_OPTIONS: {
@@ -48,6 +75,15 @@ const STATUS_OPTIONS: {
   },
 ];
 
+const PRIMARY_STATUS_OPTIONS = STATUS_OPTIONS.filter(
+  (option) => option.value === "pending" || option.value === "in_progress",
+);
+
+const FINAL_STATUS_OPTIONS = STATUS_OPTIONS.filter(
+  (option) =>
+    option.value === "not_registered" || option.value === "registered",
+);
+
 const PAYMENT_BADGES: Record<
   NonNullable<Registration["payment_status"]>,
   { label: string; icon: typeof Clock; className: string }
@@ -74,7 +110,45 @@ const PAYMENT_BADGES: Record<
   },
 };
 
-const statusButtonVariants = cva(["flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60"]);
+const actionButtonVariants = cva(
+  "flex items-center justify-center font-medium transition-colors disabled:opacity-60",
+  {
+    variants: {
+      size: {
+        pill: "flex-1 gap-1.5 rounded-lg px-2 py-2 text-xs",
+        icon: "h-8 w-8 shrink-0 rounded-lg text-xs",
+        row: "justify-start gap-2 rounded-lg px-3 py-2.5 text-sm",
+      },
+    },
+    defaultVariants: {
+      size: "pill",
+    },
+  },
+);
+
+const CONTACT_BUTTON_CLASSNAME =
+  "bg-brand-50 text-brand-700 hover:bg-brand-100";
+
+const viewToggleButtonVariants = cva(
+  "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
+  {
+    variants: {
+      active: {
+        true: "bg-white text-brand-700 shadow-sm",
+        false: "text-gray-400 hover:text-gray-600",
+      },
+    },
+  },
+);
+
+const VIEW_MODE_OPTIONS: {
+  value: "card" | "list";
+  label: string;
+  icon: typeof LayoutGrid;
+}[] = [
+  { value: "card", label: "Tampilan kartu", icon: LayoutGrid },
+  { value: "list", label: "Tampilan list", icon: List },
+];
 
 export default function AdminRegistrationsPage() {
   const toast = useToast();
@@ -85,6 +159,10 @@ export default function AdminRegistrationsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [detailItem, setDetailItem] = useState<Registration | null>(null);
+  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const [waPickerItem, setWaPickerItem] = useState<Registration | null>(null);
+  const [finalStatusPickerItem, setFinalStatusPickerItem] =
+    useState<Registration | null>(null);
 
   useEffect(() => {
     loadRegistrations();
@@ -122,7 +200,10 @@ export default function AdminRegistrationsPage() {
     }
   }
 
-  async function handleStatusChange(item: Registration, status: RegistrationStatus) {
+  async function handleStatusChange(
+    item: Registration,
+    status: RegistrationStatus,
+  ) {
     if (item.status === status || statusUpdatingId) return;
     setStatusUpdatingId(item.id);
     try {
@@ -146,10 +227,33 @@ export default function AdminRegistrationsPage() {
         description="Calon siswa yang mengisi formulir pendaftaran di halaman utama."
         count={isLoading || loadError ? undefined : items.length}
         action={
-          <Button type="button" onClick={handleDownloadExcel} disabled={isLoading || loadError || items.length === 0}>
-            <Download className="w-4 h-4" />
-            Download Excel
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+              {VIEW_MODE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setViewMode(option.value)}
+                  aria-label={option.label}
+                  aria-pressed={viewMode === option.value}
+                  className={viewToggleButtonVariants({
+                    active: viewMode === option.value,
+                  })}
+                >
+                  <option.icon className="h-4 w-4" />
+                </button>
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleDownloadExcel}
+              disabled={isLoading || loadError || items.length === 0}
+            >
+              <Download className="w-4 h-4" />
+              Download Excel
+            </Button>
+          </div>
         }
       />
 
@@ -159,18 +263,30 @@ export default function AdminRegistrationsPage() {
         </div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
-          <p className="text-sm font-medium text-red-700">Gagal memuat data pendaftar. Coba refresh halaman.</p>
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data pendaftar. Coba refresh halaman.
+          </p>
         </div>
       ) : items.length === 0 ? (
-        <AdminEmptyState icon={Inbox} title="Belum ada pendaftar" description="Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama." />
-      ) : (
+        <AdminEmptyState
+          icon={Inbox}
+          title="Belum ada pendaftar"
+          description="Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama."
+        />
+      ) : viewMode === "card" ? (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
-            <div key={item.id} className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300">
+            <div
+              key={item.id}
+              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
+            >
               <div>
                 <h3 className="font-bold text-gray-900">{item.full_name}</h3>
                 <p className="text-sm text-gray-500">
-                  {getOptionLabel(REGISTRATION_TYPE_OPTIONS, item.registration_type)}
+                  {getOptionLabel(
+                    REGISTRATION_TYPE_OPTIONS,
+                    item.registration_type,
+                  )}
                   {" · "}
                   {item.previous_school}
                 </p>
@@ -188,7 +304,10 @@ export default function AdminRegistrationsPage() {
                   href={buildWhatsAppLink(item.father_phone)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+                  className={cn(
+                    actionButtonVariants({ size: "pill" }),
+                    CONTACT_BUTTON_CLASSNAME,
+                  )}
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   WA Ayah
@@ -197,7 +316,10 @@ export default function AdminRegistrationsPage() {
                   href={buildWhatsAppLink(item.mother_phone)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors"
+                  className={cn(
+                    actionButtonVariants({ size: "pill" }),
+                    CONTACT_BUTTON_CLASSNAME,
+                  )}
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   WA Ibu
@@ -213,7 +335,12 @@ export default function AdminRegistrationsPage() {
                       type="button"
                       disabled={statusUpdatingId === item.id}
                       onClick={() => handleStatusChange(item, option.value)}
-                      className={cn(statusButtonVariants(), isActive ? option.activeClassName : "text-gray-400 hover:bg-gray-100")}
+                      className={cn(
+                        actionButtonVariants({ size: "pill" }),
+                        isActive
+                          ? option.activeClassName
+                          : "text-gray-400 hover:bg-gray-100",
+                      )}
                     >
                       <option.icon className="w-3.5 h-3.5" />
                       {option.label}
@@ -223,39 +350,285 @@ export default function AdminRegistrationsPage() {
               </div>
 
               <div className="flex gap-2 mt-auto pt-1">
-                <Button type="button" size="sm" variant="outline" onClick={() => setDetailItem(item)} className="flex-1 rounded-xl">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDetailItem(item)}
+                  className="flex-1 rounded-xl"
+                >
                   <Eye className="w-4 h-4" />
                   Lihat Detail
                 </Button>
 
-                <Button type="button" size="sm" variant="outline" onClick={() => setConfirmDeleteId(item.id)} className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setConfirmDeleteId(item.id)}
+                  className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                >
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>
           ))}
         </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <div className="flex min-w-220 flex-col gap-2">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300"
+              >
+                <div className="min-w-50 flex-1">
+                  <p className="truncate font-semibold text-gray-900">
+                    {item.full_name}
+                  </p>
+                  <p className="truncate text-xs text-gray-500">
+                    {getOptionLabel(
+                      REGISTRATION_TYPE_OPTIONS,
+                      item.registration_type,
+                    )}
+                    {" · "}
+                    {item.previous_school}
+                  </p>
+                </div>
+
+                <p className="w-32 shrink-0 text-xs text-gray-400">
+                  {formatDateTime(item.created_at)}
+                </p>
+
+                <div className="w-24 shrink-0">
+                  <PaymentBadge item={item} />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setWaPickerItem(item)}
+                  title="Hubungi Orang Tua"
+                  aria-label={`Hubungi orang tua ${item.full_name}`}
+                  className={cn(
+                    actionButtonVariants({ size: "icon" }),
+                    CONTACT_BUTTON_CLASSNAME,
+                  )}
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                </button>
+
+                <div className="flex shrink-0 gap-1 rounded-lg bg-gray-50 p-1">
+                  {PRIMARY_STATUS_OPTIONS.map((option) => {
+                    const isActive = item.status === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        disabled={statusUpdatingId === item.id}
+                        onClick={() => handleStatusChange(item, option.value)}
+                        title={option.label}
+                        aria-label={option.label}
+                        className={cn(
+                          actionButtonVariants({ size: "icon" }),
+                          isActive
+                            ? option.activeClassName
+                            : "text-gray-400 hover:bg-gray-100",
+                        )}
+                      >
+                        <option.icon className="h-3.5 w-3.5" />
+                      </button>
+                    );
+                  })}
+                  {(() => {
+                    const activeFinalOption = FINAL_STATUS_OPTIONS.find(
+                      (option) => option.value === item.status,
+                    );
+                    return (
+                      <button
+                        type="button"
+                        disabled={statusUpdatingId === item.id}
+                        onClick={() => setFinalStatusPickerItem(item)}
+                        title={
+                          activeFinalOption?.label ??
+                          "Tidak Jadi / Sudah Daftar"
+                        }
+                        aria-label={
+                          activeFinalOption?.label ?? "Pilih status akhir"
+                        }
+                        className={cn(
+                          actionButtonVariants({ size: "icon" }),
+                          activeFinalOption
+                            ? activeFinalOption.activeClassName
+                            : "text-gray-400 hover:bg-gray-100",
+                        )}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                      </button>
+                    );
+                  })()}
+                </div>
+
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="outline"
+                    onClick={() => setDetailItem(item)}
+                    aria-label="Lihat detail"
+                    title="Lihat Detail"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon-sm"
+                    variant="outline"
+                    onClick={() => setConfirmDeleteId(item.id)}
+                    className="text-red-500 hover:bg-red-50 hover:text-red-600"
+                    aria-label="Hapus"
+                    title="Hapus"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      <RegistrationDetailDialog registration={detailItem} onOpenChange={(open) => !open && setDetailItem(null)} />
+      <RegistrationDetailDialog
+        registration={detailItem}
+        onOpenChange={(open) => !open && setDetailItem(null)}
+      />
 
-      <Dialog open={confirmDeleteId !== null} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
+      <Dialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(open) => !open && setConfirmDeleteId(null)}
+      >
         <DialogContent size="sm">
           <DialogHeader>
             <DialogTitle>Hapus Data Pendaftar</DialogTitle>
             <DialogDescription>
-              Yakin mau hapus data pendaftaran <span className="font-semibold">{deletingItem?.full_name}</span>? Tindakan ini tidak bisa dibatalkan.
+              Yakin mau hapus data pendaftaran{" "}
+              <span className="font-semibold">{deletingItem?.full_name}</span>?
+              Tindakan ini tidak bisa dibatalkan.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setConfirmDeleteId(null)} disabled={isDeleting} className="flex-1">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setConfirmDeleteId(null)}
+              disabled={isDeleting}
+              className="flex-1"
+            >
               Batal
             </Button>
-            <Button type="button" onClick={handleConfirmDelete} disabled={isDeleting} className="flex-1 bg-red-600 text-white hover:bg-red-700">
+            <Button
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="flex-1 bg-red-600 text-white hover:bg-red-700"
+            >
               <Trash2 className="w-4 h-4" />
               {isDeleting ? "Menghapus..." : "Ya, Hapus"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={waPickerItem !== null}
+        onOpenChange={(open) => !open && setWaPickerItem(null)}
+      >
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>Hubungi Orang Tua</DialogTitle>
+            <DialogDescription>
+              Pilih nomor WhatsApp yang mau dihubungi untuk{" "}
+              <span className="font-semibold">{waPickerItem?.full_name}</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <a
+              href={
+                waPickerItem
+                  ? buildWhatsAppLink(waPickerItem.father_phone)
+                  : "#"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setWaPickerItem(null)}
+              className={cn(
+                actionButtonVariants({ size: "row" }),
+                CONTACT_BUTTON_CLASSNAME,
+              )}
+            >
+              <MessageCircle className="h-4 w-4" />
+              WA Ayah
+            </a>
+            <a
+              href={
+                waPickerItem
+                  ? buildWhatsAppLink(waPickerItem.mother_phone)
+                  : "#"
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setWaPickerItem(null)}
+              className={cn(
+                actionButtonVariants({ size: "row" }),
+                CONTACT_BUTTON_CLASSNAME,
+              )}
+            >
+              <MessageCircle className="h-4 w-4" />
+              WA Ibu
+            </a>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={finalStatusPickerItem !== null}
+        onOpenChange={(open) => !open && setFinalStatusPickerItem(null)}
+      >
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>Ubah Status Pendaftaran</DialogTitle>
+            <DialogDescription>
+              Pilih status akhir untuk{" "}
+              <span className="font-semibold">
+                {finalStatusPickerItem?.full_name}
+              </span>
+              .
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            {FINAL_STATUS_OPTIONS.map((option) => {
+              const isActive = finalStatusPickerItem?.status === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    if (finalStatusPickerItem)
+                      handleStatusChange(finalStatusPickerItem, option.value);
+                    setFinalStatusPickerItem(null);
+                  }}
+                  className={cn(
+                    actionButtonVariants({ size: "row" }),
+                    isActive
+                      ? option.activeClassName
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100",
+                  )}
+                >
+                  <option.icon className="h-4 w-4" />
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
