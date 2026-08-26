@@ -204,13 +204,27 @@ type PpdbRegistrationOverviewBase = {
   mother_income: number | null;
 };
 
-export type PpdbRegistrationListItem = PpdbRegistrationOverviewBase & {
-  ip_address: string | null;
-  student_nik: string;
-  current_address: string;
+/**
+ * Payment facts joined from registration_payments. Null on registrations that
+ * predate the payment flow — `status` on the registration itself stays the
+ * admin's follow-up state and is deliberately not derived from these.
+ */
+export type RegistrationPaymentSummary = {
+  payment_status: "pending" | "success" | "failed" | "expired" | null;
+  payment_amount: number | null;
+  paid_at: string | null;
+  invoice_number: string | null;
 };
 
-export type PpdbRegistrationExportItem = PpdbRegistrationOverviewBase & {
-  nik: string;
-  address: string;
-};
+export type PpdbRegistrationListItem = PpdbRegistrationOverviewBase &
+  RegistrationPaymentSummary & {
+    ip_address: string | null;
+    student_nik: string;
+    current_address: string;
+  };
+
+export type PpdbRegistrationExportItem = PpdbRegistrationOverviewBase &
+  RegistrationPaymentSummary & {
+    nik: string;
+    address: string;
+  };

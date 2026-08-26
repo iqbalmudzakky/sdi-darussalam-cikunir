@@ -103,6 +103,11 @@ function toRegistrationListItemResponse(
     mother_date_of_birth: item.mother_date_of_birth,
     mother_phone: item.mother_phone,
     mother_income: item.mother_income,
+
+    payment_status: item.payment_status,
+    payment_amount: item.payment_amount,
+    paid_at: item.paid_at,
+    invoice_number: item.invoice_number,
   };
 }
 

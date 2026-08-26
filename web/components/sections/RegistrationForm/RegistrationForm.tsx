@@ -1,29 +1,60 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cva } from "class-variance-authority";
-import { Loader2 } from "lucide-react";
-import { submitRegistration } from "@/lib/api/registrations";
+import { Check, Loader2 } from "lucide-react";
+import { startRegistrationPayment } from "@/lib/api/payments";
 import { useToast } from "@/hooks/useToast";
 import { REGISTRATION_TYPE_OPTIONS, GENDER_OPTIONS, PHYSICAL_DISABILITY_OPTIONS, PARENT_RELATIONSHIP_OPTIONS, RELIGION_OPTIONS } from "@/lib/registrationOptions";
 import type { SubmitRegistrationInput } from "@/types/Registration";
 import { TextField, SelectField, TextareaField } from "./fields";
+import { RegionSelect } from "./RegionSelect";
+import { clearDraft, isDraftMeaningful, loadDraft, saveDraft } from "./draft";
 import { EMPTY_FORM, FIELD_LABELS, validateField, normalizeWhatsappNumber, PHONE_FIELDS, type FieldName, type FieldErrors } from "./config";
 
-const sectionHeadingVariants = cva(["mb-1 border-b border-brand-200 pb-2 text-sm font-semibold text-ink-900"]);
+/*
+ * Judul bagian memakai gaya "eyebrow" yang sama dengan section di halaman
+ * utama — huruf kapital kecil ber-tracking lebar — supaya formulir terasa
+ * satu bahasa dengan situsnya, bukan komponen tempelan.
+ */
+const sectionHeadingVariants = cva([
+  "mb-1 border-b border-brand-200 pb-2",
+  "text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase",
+]);
 
 const honeypotVariants = cva(["absolute -left-2499.75 top-auto h-px w-px overflow-hidden"]);
 
 const submitButtonVariants = cva([
   "flex w-full cursor-pointer items-center justify-center gap-2",
-  "bg-brand-600 px-5 py-3.5",
+  "rounded-xl bg-brand-600 px-5 py-3.5",
   "font-medium text-white",
   "transition-colors duration-200",
   "hover:bg-brand-700",
   "disabled:cursor-not-allowed disabled:opacity-60",
 ]);
 
-const stepVariants = cva(["flex items-center justify-center rounded-xl px-4 py-2 text-xs font-medium"]);
+const stepVariants = cva(
+  [
+    "flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5",
+    "text-[11px] font-medium sm:text-xs",
+    "transition-colors duration-200",
+  ],
+  {
+    variants: {
+      state: {
+        /* Langkah yang sedang diisi. */
+        active: "bg-brand-600 text-white",
+        /* Sudah dilewati — ditandai centang supaya kemajuan terlihat. */
+        done: "bg-brand-100 text-brand-800",
+        /* Belum dijalani; sengaja paling redup agar tidak menarik perhatian. */
+        upcoming: "bg-brand-50 text-brand-700/70",
+      },
+    },
+    defaultVariants: {
+      state: "upcoming",
+    },
+  },
+);
 
 type RegistrationFormProps = {
   onSuccess?: () => void;
@@ -36,13 +67,107 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   const [form, setForm] = useState(EMPTY_FORM);
 
+  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
+
+  /*
+   * Mengembalikan isian yang belum sempat dikirim.
+   *
+   * Formulirnya panjang, dan dialog gampang tertutup — klik di luar, tombol
+   * back, atau tab keburu ditutup. Tanpa ini, semuanya harus diketik ulang
+   * dari nol.
+   */
+  useEffect(() => {
+    const draft = loadDraft();
+    if (!draft) return;
+
+    setForm(draft.form);
+    setStep(draft.step);
+    setHasRestoredDraft(true);
+  }, []);
+
+  /*
+   * Development convenience: fill the form from devPrefill.local.ts if that
+   * file exists, so manual testing does not mean typing 30-odd fields each
+   * time. The file is gitignored and the import is lazy, so this branch is
+   * dead code in production and the data can never ship.
+   */
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+
+    let cancelled = false;
+
+    import("./devPrefill.local")
+      .then((module) => {
+        if (!cancelled) {
+          setForm((prev) => ({ ...prev, ...module.DEV_PREFILL }));
+        }
+      })
+      .catch(() => {
+        // No prefill file — the normal case. Leave the form empty.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [step, setStep] = useState(1);
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [errors, setErrors] = useState<FieldErrors>({});
 
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  /*
+   * Menyimpan isian setiap kali berubah, ditunda sebentar supaya tidak menulis
+   * ke localStorage pada setiap ketikan.
+   */
+  useEffect(() => {
+    if (isSubmitting) return;
+    if (!isDraftMeaningful(form)) return;
+
+    const timer = setTimeout(() => saveDraft(form, step), 500);
+    return () => clearTimeout(timer);
+  }, [form, step, isSubmitting]);
+
+  /*
+   * Menyimpan pilihan wilayah beserta kodenya, lalu mengosongkan tingkat di
+   * bawahnya. Tanpa itu, mengganti provinsi setelah kecamatan terisi akan
+   * menyisakan kecamatan lama yang sudah tidak cocok — dan ikut terkirim.
+   */
+  function selectRegion(
+    field: "province" | "city" | "district" | "village",
+    name: string,
+    code: string,
+  ) {
+    setForm((prev) => {
+      const next = { ...prev, [field]: name };
+
+      if (field === "province") {
+        next.province_code = code;
+        next.city = "";
+        next.city_code = "";
+        next.district = "";
+        next.district_code = "";
+        next.village = "";
+      } else if (field === "city") {
+        next.city_code = code;
+        next.district = "";
+        next.district_code = "";
+        next.village = "";
+      } else if (field === "district") {
+        next.district_code = code;
+        next.village = "";
+      }
+
+      return next;
+    });
+
+    setErrors((prev) => ({ ...prev, [field]: validateField(field, name) }));
+  }
 
   function updateField(field: FieldName, rawValue: string) {
     let value = rawValue;
@@ -210,6 +335,31 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
     return Object.keys(nextErrors).length === 0;
   }
 
+  /*
+   * Pindah langkah sekaligus mengembalikan tampilan ke awal formulir.
+   *
+   * Formulir ini tinggal di dalam dialog yang punya area gulir sendiri, jadi
+   * window.scrollTo tidak berpengaruh — yang harus digulir adalah pembungkus
+   * ber-overflow terdekat. Tanpa ini, langkah berikutnya terbuka di posisi
+   * gulir langkah sebelumnya, jadi pengisi melihat bagian tengah formulir
+   * dan harus menggulir ke atas sendiri.
+   */
+  function goToStep(nextStep: number) {
+    setStep(nextStep);
+
+    const container = formRef.current?.closest<HTMLElement>(
+      "[data-slot='dialog-scroll-area']",
+    );
+
+    if (container) {
+      container.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // Formulir bisa juga dipakai di luar dialog.
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   function scrollToError() {
     const firstError = document.querySelector("[aria-invalid='true']");
 
@@ -236,7 +386,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
     setIsSubmitting(true);
 
-    const response = await submitRegistration({
+    const response = await startRegistrationPayment({
       registration_type: form.registration_type,
 
       parent_email: form.parent_email?.trim() || null,
@@ -258,15 +408,15 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
         address: form.current_address.trim(),
 
-        village: form.village.trim() || null,
+        village: form.village.trim(),
 
-        rt_rw: form.rt_rw.trim() || null,
+        rt_rw: form.rt_rw.trim(),
 
-        district: form.district.trim() || null,
+        district: form.district.trim(),
 
-        city: form.city.trim() || null,
+        city: form.city.trim(),
 
-        province: form.province.trim() || null,
+        province: form.province.trim(),
 
         phone: form.student_phone ? normalizeWhatsappNumber(form.student_phone) : null,
 
@@ -370,21 +520,28 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       website: form.website,
     } as SubmitRegistrationInput);
 
-    setIsSubmitting(false);
-
     if (!response.ok) {
-      toast.error("Gagal mengirim pendaftaran", response.error);
+      setIsSubmitting(false);
+      toast.error("Gagal memulai pembayaran", response.error);
       return;
     }
 
-    toast.success("Pendaftaran terkirim!", "Tim kami akan segera menghubungi Anda.");
+    // The button stays disabled while the browser navigates to DOKU, so the
+    // form cannot be submitted twice and open a second checkout session. The
+    // fields are deliberately left filled: if the redirect fails the applicant
+    // still has their data.
+    toast.success(
+      "Mengalihkan ke halaman pembayaran",
+      "Selesaikan pembayaran untuk menyelesaikan pendaftaran.",
+    );
 
-    setForm(EMPTY_FORM);
-    setErrors({});
-    setTouched({});
-    setStep(1);
+    // Datanya sudah aman di server, jadi salinan lokalnya tidak diperlukan
+    // lagi — dan tidak perlu tertinggal di komputer yang mungkin dipakai
+    // bersama.
+    clearDraft();
 
     onSuccess?.();
+    window.location.href = response.paymentUrl;
   }
 
   function renderStepIndicator() {
@@ -406,11 +563,23 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
         ].map((item) => (
           <div
             key={item.number}
+            aria-current={step === item.number ? "step" : undefined}
             className={stepVariants({
-              className: step === item.number ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700",
+              state:
+                step === item.number
+                  ? "active"
+                  : step > item.number
+                    ? "done"
+                    : "upcoming",
             })}
           >
-            {item.number}. {item.label}
+            {step > item.number ? (
+              <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            ) : (
+              <span aria-hidden="true">{item.number}.</span>
+            )}
+
+            <span className="truncate">{item.label}</span>
           </div>
         ))}
       </div>
@@ -418,7 +587,17 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="min-w-0 space-y-6">
+    <form ref={formRef} onSubmit={handleSubmit} noValidate className="min-w-0 space-y-6">
+      {/*
+        Honeypot: hidden from people, tempting to bots. A submission that
+        carries a value here is rejected server-side.
+
+        readOnly is what keeps it from catching the wrong culprit — browser
+        autofill and form-filler extensions skip read-only inputs, while a bot
+        that assigns the value through script still trips it. Without it, an
+        autofill pass silently looks exactly like a bot and the applicant is
+        turned away with no idea why.
+      */}
       <input
         type="text"
         name="website"
@@ -429,11 +608,38 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             website: e.target.value,
           }))
         }
+        readOnly
         tabIndex={-1}
         autoComplete="off"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
         className={honeypotVariants()}
         aria-hidden="true"
       />
+
+      {hasRestoredDraft && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50/60 px-4 py-3">
+          <p className="text-[13px] text-ink-700">
+            Isian sebelumnya dilanjutkan. Periksa kembali sebelum mengirim.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              clearDraft();
+              setForm(EMPTY_FORM);
+              setErrors({});
+              setTouched({});
+              setHasRestoredDraft(false);
+              goToStep(1);
+            }}
+            className="cursor-pointer text-[13px] font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800"
+          >
+            Mulai dari awal
+          </button>
+        </div>
+      )}
 
       {renderStepIndicator()}
 
@@ -480,33 +686,63 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             })}
           </div>
 
-          {renderTextarea("current_address", "Alamat lengkap saat ini")}
+          {/*
+            Wilayah dipilih dari atas ke bawah: setiap pilihan menentukan
+            daftar di bawahnya, lalu detail jalan diisi terakhir — mengikuti
+            cara alamat dibacakan, dari yang paling umum ke paling spesifik.
+          */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <RegionSelect
+              id={fieldId("province")}
+              label={FIELD_LABELS.province}
+              level="provinces"
+              value={form.province}
+              onChange={(name, code) => selectRegion("province", name, code)}
+              onBlur={() => handleBlur("province")}
+              error={fieldError("province")}
+            />
+
+            <RegionSelect
+              id={fieldId("city")}
+              label={FIELD_LABELS.city}
+              level="regencies"
+              parentCode={form.province_code || undefined}
+              value={form.city}
+              onChange={(name, code) => selectRegion("city", name, code)}
+              onBlur={() => handleBlur("city")}
+              error={fieldError("city")}
+            />
+          </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
-            {renderText("village", {
-              optional: true,
-              placeholder: "Kelurahan",
-            })}
+            <RegionSelect
+              id={fieldId("district")}
+              label={FIELD_LABELS.district}
+              level="districts"
+              parentCode={form.city_code || undefined}
+              value={form.district}
+              onChange={(name, code) => selectRegion("district", name, code)}
+              onBlur={() => handleBlur("district")}
+              error={fieldError("district")}
+            />
 
-            {renderText("rt_rw", {
-              optional: true,
-              placeholder: "RT/RW",
-            })}
+            <RegionSelect
+              id={fieldId("village")}
+              label={FIELD_LABELS.village}
+              level="villages"
+              parentCode={form.district_code || undefined}
+              value={form.village}
+              onChange={(name) => selectRegion("village", name, "")}
+              onBlur={() => handleBlur("village")}
+              error={fieldError("village")}
+            />
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-3">
-            {renderText("district", {
-              optional: true,
-            })}
+          {renderText("rt_rw", {
+            placeholder: "Contoh: 004/006",
+          })}
 
-            {renderText("city", {
-              optional: true,
-            })}
-
-            {renderText("province", {
-              optional: true,
-            })}
-          </div>
+          {renderTextarea("current_address", "Nama jalan dan nomor rumah")}
 
           <div className="grid gap-5 sm:grid-cols-2">
             {renderText("birth_order", {
@@ -530,7 +766,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
             type="button"
             onClick={() => {
               if (validateStepOne()) {
-                setStep(2);
+                goToStep(2);
               } else {
                 setTimeout(scrollToError, 100);
               }
@@ -673,7 +909,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           })}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => setStep(1)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+            <button type="button" onClick={() => goToStep(1)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
               Kembali
             </button>
 
@@ -681,7 +917,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
               type="button"
               onClick={() => {
                 if (validateStepTwo()) {
-                  setStep(3);
+                  goToStep(3);
                 } else {
                   setTimeout(scrollToError, 100);
                 }
@@ -748,7 +984,7 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           })}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => setStep(2)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+            <button type="button" onClick={() => goToStep(2)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
               Kembali
             </button>
 

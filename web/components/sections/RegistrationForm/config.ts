@@ -32,6 +32,15 @@ export const EMPTY_FORM = {
   city: "",
   province: "",
 
+  /*
+   * Kode wilayah dari wilayah.id. Hanya dipakai untuk merantai pilihan
+   * (provinsi -> kabupaten -> kecamatan -> kelurahan); yang dikirim ke
+   * server tetap namanya, karena itu yang dicetak di berkas.
+   */
+  province_code: "",
+  city_code: "",
+  district_code: "",
+
   student_phone: "",
 
   birth_order: "",
@@ -92,7 +101,10 @@ export const EMPTY_FORM = {
 
 export type FormFields = typeof EMPTY_FORM;
 
-export type FieldName = keyof Omit<FormFields, "website">;
+export type FieldName = keyof Omit<
+  FormFields,
+  "website" | "province_code" | "city_code" | "district_code"
+>;
 
 export type FieldErrors = Partial<Record<FieldName, string>>;
 
@@ -110,7 +122,7 @@ export const FIELD_LABELS: Record<FieldName, string> = {
   place_of_birth: "Tempat lahir",
   date_of_birth: "Tanggal lahir",
 
-  current_address: "Alamat sekarang",
+  current_address: "Detail alamat",
   village: "Kelurahan",
   rt_rw: "RT/RW",
   district: "Kecamatan",
@@ -327,6 +339,11 @@ export const REQUIRED_FIELDS: FieldName[] = [
   "birth_order",
   "sibling_count",
   "current_address",
+  "village",
+  "rt_rw",
+  "district",
+  "city",
+  "province",
   "physical_disability",
   "previous_school",
 
