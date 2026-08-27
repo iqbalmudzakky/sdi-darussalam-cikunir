@@ -1,7 +1,5 @@
 import { sql } from "@/modules/db/postgres";
-import type {
-  CheckoutSession,
-} from "./doku";
+import type { CheckoutSession } from "./doku";
 import type {
   DokuNotification,
   NewRegistrationPayment,
@@ -108,20 +106,20 @@ export async function countByIpSince(
 /**
  * A pendaftar counts as already registered only once they have paid — an
  * abandoned checkout must not block them from trying again.
+ *
+ * Dicek lewat NIK, sama seperti penjagaan duplikat di jalur input manual: NIK
+ * unik per orang, sedangkan nama + tanggal lahir bisa kebetulan sama pada dua
+ * anak yang berbeda.
  */
-export async function existsPaidDuplicate(
-  fullName: string,
-  dateOfBirth: string,
-): Promise<boolean> {
+export async function existsPaidDuplicate(nik: string): Promise<boolean> {
   // The biodata now sits under payload -> 'student', matching the PPDB DTO.
   const rows = await sql.unsafe(
     `SELECT id
      FROM registration_payments
      WHERE status = 'success'
-       AND lower(payload -> 'student' ->> 'full_name') = lower($1)
-       AND payload -> 'student' ->> 'date_of_birth' = $2
+       AND payload -> 'student' ->> 'nik' = $1
      LIMIT 1`,
-    [fullName, dateOfBirth],
+    [nik],
   );
   return rows.length > 0;
 }

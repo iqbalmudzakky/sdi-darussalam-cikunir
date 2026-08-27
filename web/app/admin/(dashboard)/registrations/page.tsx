@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import InfiniteScroll from "react-infinite-scroll-component";
 import { cva } from "class-variance-authority";
 import {
+  ArrowDown,
+  ArrowUp,
+  Check,
   CheckCircle2,
   Clock,
   Download,
@@ -13,11 +18,14 @@ import {
   Loader2,
   MessageCircle,
   PhoneCall,
+  Plus,
+  Search,
   Trash2,
   XCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import {
   Dialog,
@@ -31,6 +39,7 @@ import {
   listRegistrations,
   deleteRegistration,
   updateRegistrationStatus,
+  buildRegistrationsExportUrl,
 } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
 import { formatDateTime } from "@/lib/formatDate";
@@ -41,8 +50,14 @@ import {
   REGISTRATION_TYPE_OPTIONS,
   getOptionLabel,
 } from "@/lib/registrationOptions";
-import type { Registration, RegistrationStatus } from "@/types/Registration";
+import type {
+  Registration,
+  RegistrationSortDirection,
+  RegistrationStatus,
+} from "@/types/Registration";
 
+const PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 1000;
 const STATUS_OPTIONS: {
   value: RegistrationStatus;
   label: string;
@@ -74,16 +89,13 @@ const STATUS_OPTIONS: {
     activeClassName: "bg-brand-100 text-brand-700",
   },
 ];
-
 const PRIMARY_STATUS_OPTIONS = STATUS_OPTIONS.filter(
   (option) => option.value === "pending" || option.value === "in_progress",
 );
-
 const FINAL_STATUS_OPTIONS = STATUS_OPTIONS.filter(
   (option) =>
     option.value === "not_registered" || option.value === "registered",
 );
-
 const PAYMENT_BADGES: Record<
   NonNullable<Registration["payment_status"]>,
   { label: string; icon: typeof Clock; className: string }
@@ -109,7 +121,6 @@ const PAYMENT_BADGES: Record<
     className: "bg-gray-100 text-gray-600",
   },
 };
-
 const actionButtonVariants = cva(
   "flex items-center justify-center font-medium transition-colors disabled:opacity-60",
   {
@@ -118,6 +129,7 @@ const actionButtonVariants = cva(
         pill: "flex-1 gap-1.5 rounded-lg px-2 py-2 text-xs",
         icon: "h-8 w-8 shrink-0 rounded-lg text-xs",
         row: "justify-start gap-2 rounded-lg px-3 py-2.5 text-sm",
+        chip: "shrink-0 gap-1.5 rounded-full px-3 py-1.5 text-xs",
       },
     },
     defaultVariants: {
@@ -125,10 +137,8 @@ const actionButtonVariants = cva(
     },
   },
 );
-
 const CONTACT_BUTTON_CLASSNAME =
   "bg-brand-50 text-brand-700 hover:bg-brand-100";
-
 const viewToggleButtonVariants = cva(
   "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
   {
@@ -140,7 +150,6 @@ const viewToggleButtonVariants = cva(
     },
   },
 );
-
 const VIEW_MODE_OPTIONS: {
   value: "card" | "list";
   label: string;
@@ -159,29 +168,106 @@ export default function AdminRegistrationsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
   const [detailItem, setDetailItem] = useState<Registration | null>(null);
-  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const [viewMode, setViewMode] = useState<"card" | "list">("list");
   const [waPickerItem, setWaPickerItem] = useState<Registration | null>(null);
   const [finalStatusPickerItem, setFinalStatusPickerItem] =
     useState<Registration | null>(null);
 
-  useEffect(() => {
-    loadRegistrations();
-  }, []);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<RegistrationStatus[]>([]);
+  const [sort, setSort] = useState<RegistrationSortDirection>("desc");
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [exportStatuses, setExportStatuses] = useState<RegistrationStatus[]>(
+    [],
+  );
 
-  async function loadRegistrations() {
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setSearch(searchInput.trim()),
+      SEARCH_DEBOUNCE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  async function loadRegistrations(isCancelled: () => boolean) {
+    setIsRefreshing(true);
+    setLoadError(false);
+
     try {
-      const data = await listRegistrations();
-      setItems(data);
+      const page = await listRegistrations({
+        search,
+        statuses: statusFilter,
+        sort,
+        limit: PAGE_SIZE,
+        offset: 0,
+      });
+      if (isCancelled()) return;
+      setItems(page.items);
+      setTotal(page.total);
+      setHasMore(page.has_more);
     } catch (error) {
+      if (isCancelled()) return;
       console.error("Failed to load registrations:", error);
       setLoadError(true);
     } finally {
+      if (isCancelled()) return;
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }
 
+  useEffect(() => {
+    let cancelled = false;
+
+    loadRegistrations(() => cancelled);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [search, statusFilter, sort]);
+
+  async function handleLoadMore() {
+    try {
+      const page = await listRegistrations({
+        search,
+        statuses: statusFilter,
+        sort,
+        limit: PAGE_SIZE,
+        offset: items.length,
+      });
+      setItems((prev) => [...prev, ...page.items]);
+      setTotal(page.total);
+      setHasMore(page.has_more);
+    } catch (error) {
+      console.error("Failed to load more registrations:", error);
+      setHasMore(false);
+      toast.error("Gagal memuat data berikutnya", "Coba refresh halaman.");
+    }
+  }
+
+  function toggleStatusFilter(status: RegistrationStatus) {
+    setStatusFilter((prev) =>
+      prev.includes(status)
+        ? prev.filter((value) => value !== status)
+        : [...prev, status],
+    );
+  }
+
+  function toggleExportStatus(status: RegistrationStatus) {
+    setExportStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((value) => value !== status)
+        : [...prev, status],
+    );
+  }
+
   function handleDownloadExcel() {
-    window.location.href = "/api/registrations/export";
+    window.location.href = buildRegistrationsExportUrl(exportStatuses);
+    setIsExportOpen(false);
   }
 
   async function handleConfirmDelete() {
@@ -190,6 +276,7 @@ export default function AdminRegistrationsPage() {
     try {
       await deleteRegistration(confirmDeleteId);
       setItems((prev) => prev.filter((item) => item.id !== confirmDeleteId));
+      setTotal((prev) => Math.max(0, prev - 1));
       setConfirmDeleteId(null);
       toast.success("Data pendaftar dihapus");
     } catch (error) {
@@ -207,8 +294,10 @@ export default function AdminRegistrationsPage() {
     if (item.status === status || statusUpdatingId) return;
     setStatusUpdatingId(item.id);
     try {
-      const updated = await updateRegistrationStatus(item.id, { status });
-      setItems((prev) => prev.map((r) => (r.id === item.id ? updated : r)));
+      await updateRegistrationStatus(item.id, { status });
+      setItems((prev) =>
+        prev.map((r) => (r.id === item.id ? { ...r, status } : r)),
+      );
       window.dispatchEvent(new Event("registrations-updated"));
     } catch (error) {
       console.error("Failed to update registration status:", error);
@@ -219,13 +308,14 @@ export default function AdminRegistrationsPage() {
   }
 
   const deletingItem = items.find((item) => item.id === confirmDeleteId);
+  const hasActiveFilter = search !== "" || statusFilter.length > 0;
 
   return (
     <div className="max-w-6xl mx-auto">
       <AdminPageHeader
         title="Pendaftar"
         description="Calon siswa yang mengisi formulir pendaftaran di halaman utama."
-        count={isLoading || loadError ? undefined : items.length}
+        count={isLoading || loadError ? undefined : total}
         action={
           <div className="flex items-center gap-2">
             <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
@@ -247,15 +337,98 @@ export default function AdminRegistrationsPage() {
 
             <Button
               type="button"
-              onClick={handleDownloadExcel}
-              disabled={isLoading || loadError || items.length === 0}
+              variant="outline"
+              onClick={() => setIsExportOpen(true)}
+              disabled={isLoading || loadError}
             >
               <Download className="w-4 h-4" />
               Download Excel
             </Button>
+
+            <Button
+              type="button"
+              render={<Link href="/admin/registrations/new" />}
+            >
+              <Plus className="w-4 h-4" />
+              Input Manual
+            </Button>
           </div>
         }
       />
+
+      <div className="mb-5 flex flex-col gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="search"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Cari nama siswa..."
+              aria-label="Cari nama siswa"
+              className="h-9 pr-8 pl-8"
+            />
+
+            {isRefreshing && !isLoading && (
+              <Loader2 className="pointer-events-none absolute top-1/2 right-2.5 h-4 w-4 -translate-y-1/2 animate-spin text-gray-400" />
+            )}
+          </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() =>
+              setSort((prev) => (prev === "desc" ? "asc" : "desc"))
+            }
+            className="h-9 shrink-0"
+            title={
+              sort === "desc"
+                ? "Urut dari pendaftar terbaru"
+                : "Urut dari pendaftar terlama"
+            }
+          >
+            {sort === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUp className="h-4 w-4" />
+            )}
+            {sort === "desc" ? "Terbaru" : "Terlama"}
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {STATUS_OPTIONS.map((option) => {
+            const isActive = statusFilter.includes(option.value);
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => toggleStatusFilter(option.value)}
+                aria-pressed={isActive}
+                className={cn(
+                  actionButtonVariants({ size: "chip" }),
+                  isActive
+                    ? option.activeClassName
+                    : "bg-gray-50 text-gray-500 hover:bg-gray-100",
+                )}
+              >
+                <option.icon className="h-3.5 w-3.5" />
+                {option.label}
+              </button>
+            );
+          })}
+
+          {statusFilter.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setStatusFilter([])}
+              className="px-2 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-gray-600"
+            >
+              Reset filter
+            </button>
+          )}
+        </div>
+      </div>
 
       {isLoading ? (
         <div className="flex min-h-[40vh] items-center justify-center">
@@ -269,232 +442,264 @@ export default function AdminRegistrationsPage() {
         </div>
       ) : items.length === 0 ? (
         <AdminEmptyState
-          icon={Inbox}
-          title="Belum ada pendaftar"
-          description="Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama."
+          icon={hasActiveFilter ? Search : Inbox}
+          title={
+            hasActiveFilter ? "Tidak ada yang cocok" : "Belum ada pendaftar"
+          }
+          description={
+            hasActiveFilter
+              ? "Coba ubah kata kunci pencarian atau filter statusnya."
+              : "Data akan muncul di sini begitu ada orang tua yang mengisi formulir pendaftaran di halaman utama."
+          }
         />
-      ) : viewMode === "card" ? (
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
-            >
-              <div>
-                <h3 className="font-bold text-gray-900">{item.full_name}</h3>
-                <p className="text-sm text-gray-500">
-                  {getOptionLabel(
-                    REGISTRATION_TYPE_OPTIONS,
-                    item.registration_type,
-                  )}
-                  {" · "}
-                  {item.previous_school}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs text-gray-400">
-                  {formatDateTime(item.created_at)}
-                </p>
-                <PaymentBadge item={item} />
-              </div>
-
-              <div className="flex gap-2">
-                <a
-                  href={buildWhatsAppLink(item.father_phone)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    actionButtonVariants({ size: "pill" }),
-                    CONTACT_BUTTON_CLASSNAME,
-                  )}
+      ) : (
+        <InfiniteScroll
+          dataLength={items.length}
+          next={handleLoadMore}
+          hasMore={hasMore}
+          className={cn(
+            "transition-opacity",
+            isRefreshing && "pointer-events-none opacity-50",
+          )}
+          loader={
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            </div>
+          }
+          endMessage={
+            <p className="py-6 text-center text-xs text-gray-400">
+              Semua {total} pendaftar sudah ditampilkan.
+            </p>
+          }
+        >
+          {viewMode === "card" ? (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  WA Ayah
-                </a>
-                <a
-                  href={buildWhatsAppLink(item.mother_phone)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    actionButtonVariants({ size: "pill" }),
-                    CONTACT_BUTTON_CLASSNAME,
-                  )}
-                >
-                  <MessageCircle className="w-3.5 h-3.5" />
-                  WA Ibu
-                </a>
-              </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">
+                      {item.full_name}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {getOptionLabel(
+                        REGISTRATION_TYPE_OPTIONS,
+                        item.registration_type,
+                      )}
+                      {" · "}
+                      {item.previous_school}
+                    </p>
+                  </div>
 
-              <div className="flex gap-1.5 bg-gray-50 rounded-xl p-1">
-                {STATUS_OPTIONS.map((option) => {
-                  const isActive = item.status === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      disabled={statusUpdatingId === item.id}
-                      onClick={() => handleStatusChange(item, option.value)}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xs text-gray-400">
+                      {formatDateTime(item.created_at)}
+                    </p>
+                    <PaymentBadge item={item} />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <a
+                      href={buildWhatsAppLink(item.father_phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className={cn(
                         actionButtonVariants({ size: "pill" }),
-                        isActive
-                          ? option.activeClassName
-                          : "text-gray-400 hover:bg-gray-100",
+                        CONTACT_BUTTON_CLASSNAME,
                       )}
                     >
-                      <option.icon className="w-3.5 h-3.5" />
-                      {option.label}
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      WA Ayah
+                    </a>
+                    <a
+                      href={buildWhatsAppLink(item.mother_phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        actionButtonVariants({ size: "pill" }),
+                        CONTACT_BUTTON_CLASSNAME,
+                      )}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      WA Ibu
+                    </a>
+                  </div>
+
+                  <div className="flex gap-1.5 bg-gray-50 rounded-xl p-1">
+                    {STATUS_OPTIONS.map((option) => {
+                      const isActive = item.status === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          disabled={statusUpdatingId === item.id}
+                          onClick={() => handleStatusChange(item, option.value)}
+                          className={cn(
+                            actionButtonVariants({ size: "pill" }),
+                            isActive
+                              ? option.activeClassName
+                              : "text-gray-400 hover:bg-gray-100",
+                          )}
+                        >
+                          <option.icon className="w-3.5 h-3.5" />
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex gap-2 mt-auto pt-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setDetailItem(item)}
+                      className="flex-1 rounded-xl"
+                    >
+                      <Eye className="w-4 h-4" />
+                      Lihat Detail
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setConfirmDeleteId(item.id)}
+                      className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <div className="flex min-w-220 flex-col gap-2">
+                {items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300"
+                  >
+                    <div className="min-w-50 flex-1">
+                      <p className="truncate font-semibold text-gray-900">
+                        {item.full_name}
+                      </p>
+                      <p className="truncate text-xs text-gray-500">
+                        {getOptionLabel(
+                          REGISTRATION_TYPE_OPTIONS,
+                          item.registration_type,
+                        )}
+                        {" · "}
+                        {item.previous_school}
+                      </p>
+                    </div>
+
+                    <p className="w-32 shrink-0 text-xs text-gray-400">
+                      {formatDateTime(item.created_at)}
+                    </p>
+
+                    <div className="w-24 shrink-0">
+                      <PaymentBadge item={item} />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setWaPickerItem(item)}
+                      title="Hubungi Orang Tua"
+                      aria-label={`Hubungi orang tua ${item.full_name}`}
+                      className={cn(
+                        actionButtonVariants({ size: "icon" }),
+                        CONTACT_BUTTON_CLASSNAME,
+                      )}
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
                     </button>
-                  );
-                })}
-              </div>
 
-              <div className="flex gap-2 mt-auto pt-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setDetailItem(item)}
-                  className="flex-1 rounded-xl"
-                >
-                  <Eye className="w-4 h-4" />
-                  Lihat Detail
-                </Button>
+                    <div className="flex shrink-0 gap-1 rounded-lg bg-gray-50 p-1">
+                      {PRIMARY_STATUS_OPTIONS.map((option) => {
+                        const isActive = item.status === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            disabled={statusUpdatingId === item.id}
+                            onClick={() =>
+                              handleStatusChange(item, option.value)
+                            }
+                            title={option.label}
+                            aria-label={option.label}
+                            className={cn(
+                              actionButtonVariants({ size: "icon" }),
+                              isActive
+                                ? option.activeClassName
+                                : "text-gray-400 hover:bg-gray-100",
+                            )}
+                          >
+                            <option.icon className="h-3.5 w-3.5" />
+                          </button>
+                        );
+                      })}
+                      {(() => {
+                        const activeFinalOption = FINAL_STATUS_OPTIONS.find(
+                          (option) => option.value === item.status,
+                        );
+                        return (
+                          <button
+                            type="button"
+                            disabled={statusUpdatingId === item.id}
+                            onClick={() => setFinalStatusPickerItem(item)}
+                            title={
+                              activeFinalOption?.label ??
+                              "Tidak Jadi / Sudah Daftar"
+                            }
+                            aria-label={
+                              activeFinalOption?.label ?? "Pilih status akhir"
+                            }
+                            className={cn(
+                              actionButtonVariants({ size: "icon" }),
+                              activeFinalOption
+                                ? activeFinalOption.activeClassName
+                                : "text-gray-400 hover:bg-gray-100",
+                            )}
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                          </button>
+                        );
+                      })()}
+                    </div>
 
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setConfirmDeleteId(item.id)}
-                  className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                    <div className="flex shrink-0 gap-1">
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="outline"
+                        onClick={() => setDetailItem(item)}
+                        aria-label="Lihat detail"
+                        title="Lihat Detail"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="outline"
+                        onClick={() => setConfirmDeleteId(item.id)}
+                        className="text-red-500 hover:bg-red-50 hover:text-red-600"
+                        aria-label="Hapus"
+                        title="Hapus"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <div className="flex min-w-220 flex-col gap-2">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300"
-              >
-                <div className="min-w-50 flex-1">
-                  <p className="truncate font-semibold text-gray-900">
-                    {item.full_name}
-                  </p>
-                  <p className="truncate text-xs text-gray-500">
-                    {getOptionLabel(
-                      REGISTRATION_TYPE_OPTIONS,
-                      item.registration_type,
-                    )}
-                    {" · "}
-                    {item.previous_school}
-                  </p>
-                </div>
-
-                <p className="w-32 shrink-0 text-xs text-gray-400">
-                  {formatDateTime(item.created_at)}
-                </p>
-
-                <div className="w-24 shrink-0">
-                  <PaymentBadge item={item} />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setWaPickerItem(item)}
-                  title="Hubungi Orang Tua"
-                  aria-label={`Hubungi orang tua ${item.full_name}`}
-                  className={cn(
-                    actionButtonVariants({ size: "icon" }),
-                    CONTACT_BUTTON_CLASSNAME,
-                  )}
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                </button>
-
-                <div className="flex shrink-0 gap-1 rounded-lg bg-gray-50 p-1">
-                  {PRIMARY_STATUS_OPTIONS.map((option) => {
-                    const isActive = item.status === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        disabled={statusUpdatingId === item.id}
-                        onClick={() => handleStatusChange(item, option.value)}
-                        title={option.label}
-                        aria-label={option.label}
-                        className={cn(
-                          actionButtonVariants({ size: "icon" }),
-                          isActive
-                            ? option.activeClassName
-                            : "text-gray-400 hover:bg-gray-100",
-                        )}
-                      >
-                        <option.icon className="h-3.5 w-3.5" />
-                      </button>
-                    );
-                  })}
-                  {(() => {
-                    const activeFinalOption = FINAL_STATUS_OPTIONS.find(
-                      (option) => option.value === item.status,
-                    );
-                    return (
-                      <button
-                        type="button"
-                        disabled={statusUpdatingId === item.id}
-                        onClick={() => setFinalStatusPickerItem(item)}
-                        title={
-                          activeFinalOption?.label ??
-                          "Tidak Jadi / Sudah Daftar"
-                        }
-                        aria-label={
-                          activeFinalOption?.label ?? "Pilih status akhir"
-                        }
-                        className={cn(
-                          actionButtonVariants({ size: "icon" }),
-                          activeFinalOption
-                            ? activeFinalOption.activeClassName
-                            : "text-gray-400 hover:bg-gray-100",
-                        )}
-                      >
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                      </button>
-                    );
-                  })()}
-                </div>
-
-                <div className="flex shrink-0 gap-1">
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="outline"
-                    onClick={() => setDetailItem(item)}
-                    aria-label="Lihat detail"
-                    title="Lihat Detail"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="outline"
-                    onClick={() => setConfirmDeleteId(item.id)}
-                    className="text-red-500 hover:bg-red-50 hover:text-red-600"
-                    aria-label="Hapus"
-                    title="Hapus"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          )}
+        </InfiniteScroll>
       )}
 
       <RegistrationDetailDialog
@@ -629,6 +834,71 @@ export default function AdminRegistrationsPage() {
               );
             })}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isExportOpen} onOpenChange={setIsExportOpen}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>Download Excel</DialogTitle>
+            <DialogDescription>
+              Centang status yang mau diunduh. Kalau tidak ada yang dicentang,
+              semua pendaftar ikut terunduh.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-2">
+            {STATUS_OPTIONS.map((option) => {
+              const isChecked = exportStatuses.includes(option.value);
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="checkbox"
+                  aria-checked={isChecked}
+                  onClick={() => toggleExportStatus(option.value)}
+                  className={cn(
+                    actionButtonVariants({ size: "row" }),
+                    isChecked
+                      ? "bg-brand-50 text-brand-700"
+                      : "bg-gray-50 text-gray-600 hover:bg-gray-100",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                      isChecked
+                        ? "border-brand-600 bg-brand-600 text-white"
+                        : "border-gray-300 bg-white",
+                    )}
+                  >
+                    {isChecked && <Check className="h-3 w-3" />}
+                  </span>
+                  <option.icon className="h-4 w-4" />
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsExportOpen(false)}
+              className="flex-1"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDownloadExcel}
+              className="flex-1"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -5,53 +5,34 @@ import {
   buildRegistrationsWorkbookBuffer,
   getRegistrationsExportFilename,
 } from "@/modules/export/registrationWorkbook";
-import {
-  RATE_LIMIT_MAX_PER_HOUR,
-  RATE_LIMIT_WINDOW_MINUTES,
-  DUPLICATE_WINDOW_HOURS,
-} from "@/modules/shared/constant/registration";
 import type {
+  ListRegistrationsInput,
   PpdbRegistration,
   PpdbRegistrationListItem,
   PpdbRegistrationStatus,
+  RegistrationFilter,
 } from "./entity";
 import type {
   CreatePpdbRegistrationRequest,
   CreatePpdbRegistrationResult,
+  ExportRegistrationsQuery,
+  ListRegistrationsQuery,
   RegistrationListItemResponse,
+  RegistrationListResponse,
 } from "./dto";
 
-export async function createRegistration(
+export async function createManualRegistration(
   input: CreatePpdbRegistrationRequest,
 ): Promise<CreatePpdbRegistrationResult> {
-  const recentCount = await withDbLogging("registration.countByIpSince", () =>
-    repository.countByIpSince(input.ip_address, RATE_LIMIT_WINDOW_MINUTES),
-  );
+  const nik = input.student.nik;
 
-  if (recentCount >= RATE_LIMIT_MAX_PER_HOUR) {
-    return {
-      ok: false,
-      reason: "rate_limited",
-      message: "Terlalu banyak percobaan. Coba lagi beberapa saat lagi.",
-    };
-  }
-
-  const isDuplicate = await withDbLogging(
-    "registration.existsRecentDuplicate",
-    () =>
-      repository.existsRecentDuplicate(
-        input.student.full_name,
-        input.student.date_of_birth,
-        DUPLICATE_WINDOW_HOURS,
-      ),
-  );
+  const isDuplicate = await existsDuplicateByNik(nik);
 
   if (isDuplicate) {
     return {
       ok: false,
       reason: "duplicate",
-      message:
-        "Anda sudah mengirim pendaftaran ini. Mohon tunggu, tim kami akan segera menghubungi.",
+      message: "NIK ini sudah terdaftar atas nama pendaftar lain.",
     };
   }
 
@@ -111,13 +92,31 @@ function toRegistrationListItemResponse(
   };
 }
 
-export async function listRegistrations(): Promise<
-  RegistrationListItemResponse[]
-> {
-  const items = await withDbLogging("registration.list", () =>
-    repository.list(),
-  );
-  return items.map(toRegistrationListItemResponse);
+export async function listRegistrations(
+  query: ListRegistrationsQuery,
+): Promise<RegistrationListResponse> {
+  const filter: RegistrationFilter = {
+    search: query.search,
+    statuses: query.statuses,
+  };
+
+  const listInput: ListRegistrationsInput = {
+    ...filter,
+    sortDirection: query.sort,
+    limit: query.limit,
+    offset: query.offset,
+  };
+
+  const [items, total] = await Promise.all([
+    withDbLogging("registration.list", () => repository.list(listInput)),
+    withDbLogging("registration.count", () => repository.count(filter)),
+  ]);
+
+  return {
+    items: items.map(toRegistrationListItemResponse),
+    total,
+    has_more: query.offset + items.length < total,
+  };
 }
 
 export async function deleteRegistration(id: string): Promise<void> {
@@ -133,19 +132,27 @@ export async function updateRegistrationStatus(
   );
 }
 
+export async function existsDuplicateByNik(nik: string): Promise<boolean> {
+  return withDbLogging("registration.existsDuplicateByNik", () =>
+    repository.existsDuplicateByNik(nik),
+  );
+}
+
 export async function countPendingFollowUp(): Promise<number> {
   return withDbLogging("registration.countByStatus", () =>
     repository.countByStatus("pending"),
   );
 }
 
-export async function exportRegistrations(): Promise<{
+export async function exportRegistrations(
+  query: ExportRegistrationsQuery,
+): Promise<{
   buffer: ExcelJS.Buffer;
   filename: string;
 }> {
   try {
     const registrations = await withDbLogging("registration.export", () =>
-      repository.exportList(),
+      repository.exportList(query.statuses),
     );
     const buffer = await buildRegistrationsWorkbookBuffer(registrations);
     const filename = getRegistrationsExportFilename();

@@ -4,13 +4,28 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cva } from "class-variance-authority";
 import { Check, Loader2 } from "lucide-react";
 import { startRegistrationPayment } from "@/lib/api/payments";
+import { createManualRegistration } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
-import { REGISTRATION_TYPE_OPTIONS, GENDER_OPTIONS, PHYSICAL_DISABILITY_OPTIONS, PARENT_RELATIONSHIP_OPTIONS, RELIGION_OPTIONS } from "@/lib/registrationOptions";
-import type { SubmitRegistrationInput } from "@/types/Registration";
+import {
+  REGISTRATION_TYPE_OPTIONS,
+  GENDER_OPTIONS,
+  PHYSICAL_DISABILITY_OPTIONS,
+  PARENT_RELATIONSHIP_OPTIONS,
+  RELIGION_OPTIONS,
+} from "@/lib/registrationOptions";
 import { TextField, SelectField, TextareaField } from "./fields";
 import { RegionSelect } from "./RegionSelect";
 import { clearDraft, isDraftMeaningful, loadDraft, saveDraft } from "./draft";
-import { EMPTY_FORM, FIELD_LABELS, validateField, normalizeWhatsappNumber, PHONE_FIELDS, type FieldName, type FieldErrors } from "./config";
+import { buildRegistrationPayload } from "./payload";
+import {
+  EMPTY_FORM,
+  FIELD_LABELS,
+  validateField,
+  normalizeWhatsappNumber,
+  PHONE_FIELDS,
+  type FieldName,
+  type FieldErrors,
+} from "./config";
 
 /*
  * Judul bagian memakai gaya "eyebrow" yang sama dengan section di halaman
@@ -22,7 +37,9 @@ const sectionHeadingVariants = cva([
   "text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase",
 ]);
 
-const honeypotVariants = cva(["absolute -left-2499.75 top-auto h-px w-px overflow-hidden"]);
+const honeypotVariants = cva([
+  "absolute -left-2499.75 top-auto h-px w-px overflow-hidden",
+]);
 
 const submitButtonVariants = cva([
   "flex w-full cursor-pointer items-center justify-center gap-2",
@@ -56,14 +73,33 @@ const stepVariants = cva(
   },
 );
 
+export type RegistrationFormMode = "public" | "manual";
+
 type RegistrationFormProps = {
   onSuccess?: () => void;
+  mode?: RegistrationFormMode;
 };
 
-const DIGITS_ONLY_FIELDS: FieldName[] = ["student_nik", "birth_order", "sibling_count", "father_nik", "father_income", "mother_nik", "mother_income", "height", "weight", "head_circumference"];
+const DIGITS_ONLY_FIELDS: FieldName[] = [
+  "student_nik",
+  "birth_order",
+  "sibling_count",
+  "father_nik",
+  "father_income",
+  "mother_nik",
+  "mother_income",
+  "height",
+  "weight",
+  "head_circumference",
+];
 
-export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
+export function RegistrationForm({
+  onSuccess,
+  mode = "public",
+}: RegistrationFormProps) {
   const toast = useToast();
+
+  const isManual = mode === "manual";
 
   const [form, setForm] = useState(EMPTY_FORM);
 
@@ -77,13 +113,15 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
    * dari nol.
    */
   useEffect(() => {
+    if (isManual) return;
+
     const draft = loadDraft();
     if (!draft) return;
 
     setForm(draft.form);
     setStep(draft.step);
     setHasRestoredDraft(true);
-  }, []);
+  }, [isManual]);
 
   /*
    * Development convenience: fill the form from devPrefill.local.ts if that
@@ -117,7 +155,9 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>(
+    {},
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -126,12 +166,13 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
    * ke localStorage pada setiap ketikan.
    */
   useEffect(() => {
+    if (isManual) return;
     if (isSubmitting) return;
     if (!isDraftMeaningful(form)) return;
 
     const timer = setTimeout(() => saveDraft(form, step), 500);
     return () => clearTimeout(timer);
-  }, [form, step, isSubmitting]);
+  }, [form, step, isSubmitting, isManual]);
 
   /*
    * Menyimpan pilihan wilayah beserta kodenya, lalu mengosongkan tingkat di
@@ -242,11 +283,31 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
       label: string;
     }[],
   ) {
-    return <SelectField id={fieldId(field)} label={FIELD_LABELS[field]} value={form[field]} onChange={(value) => updateField(field, value)} onBlur={() => handleBlur(field)} error={fieldError(field)} options={options} />;
+    return (
+      <SelectField
+        id={fieldId(field)}
+        label={FIELD_LABELS[field]}
+        value={form[field]}
+        onChange={(value) => updateField(field, value)}
+        onBlur={() => handleBlur(field)}
+        error={fieldError(field)}
+        options={options}
+      />
+    );
   }
 
   function renderTextarea(field: FieldName, placeholder?: string) {
-    return <TextareaField id={fieldId(field)} label={FIELD_LABELS[field]} value={form[field]} onChange={(value) => updateField(field, value)} onBlur={() => handleBlur(field)} error={fieldError(field)} placeholder={placeholder} />;
+    return (
+      <TextareaField
+        id={fieldId(field)}
+        label={FIELD_LABELS[field]}
+        value={form[field]}
+        onChange={(value) => updateField(field, value)}
+        onBlur={() => handleBlur(field)}
+        error={fieldError(field)}
+        placeholder={placeholder}
+      />
+    );
   }
 
   function validateStepOne() {
@@ -386,162 +447,65 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
     setIsSubmitting(true);
 
-    const response = await startRegistrationPayment({
-      registration_type: form.registration_type,
+    const payload = buildRegistrationPayload(form);
 
-      parent_email: form.parent_email?.trim() || null,
+    try {
+      if (isManual) {
+        const result = await createManualRegistration(payload);
 
-      student: {
-        full_name: form.full_name.trim().toUpperCase(),
+        setIsSubmitting(false);
 
-        nickname: form.nickname.trim() || null,
+        if (!result.ok) {
+          toast.error("Gagal menyimpan pendaftaran", result.error);
+          return;
+        }
 
-        nik: form.student_nik.trim(),
+        toast.success(
+          "Pendaftar tersimpan",
+          "Data sudah masuk ke daftar pendaftar.",
+        );
 
-        nisn: form.nisn.trim() || null,
+        setForm(EMPTY_FORM);
+        setErrors({});
+        setTouched({});
+        setStep(1);
 
-        gender: form.gender,
+        onSuccess?.();
+        return;
+      }
 
-        place_of_birth: form.place_of_birth.trim(),
+      const response = await startRegistrationPayment(payload);
 
-        date_of_birth: form.date_of_birth,
+      if (!response.ok) {
+        setIsSubmitting(false);
+        toast.error("Gagal memulai pembayaran", response.error);
+        return;
+      }
 
-        address: form.current_address.trim(),
+      // The button stays disabled while the browser navigates to DOKU, so the
+      // form cannot be submitted twice and open a second checkout session. The
+      // fields are deliberately left filled: if the redirect fails the applicant
+      // still has their data.
+      toast.success(
+        "Mengalihkan ke halaman pembayaran",
+        "Selesaikan pembayaran untuk menyelesaikan pendaftaran.",
+      );
 
-        village: form.village.trim(),
+      // Datanya sudah aman di server, jadi salinan lokalnya tidak diperlukan
+      // lagi — dan tidak perlu tertinggal di komputer yang mungkin dipakai
+      // bersama.
+      clearDraft();
 
-        rt_rw: form.rt_rw.trim(),
-
-        district: form.district.trim(),
-
-        city: form.city.trim(),
-
-        province: form.province.trim(),
-
-        phone: form.student_phone ? normalizeWhatsappNumber(form.student_phone) : null,
-
-        birth_order: Number(form.birth_order),
-
-        sibling_count: Number(form.sibling_count),
-
-        orphan_status: form.orphan_status.trim() || null,
-
-        daily_language: form.daily_language.trim() || null,
-
-        citizenship: form.citizenship.trim() || "Indonesia",
-
-        religion: form.religion.trim(),
-
-        physical_disability: form.physical_disability,
-
-        previous_school: form.previous_school.trim(),
-
-        previous_school_transfer: form.previous_school_transfer.trim() || null,
-      },
-
-      parents: [
-        {
-          parent_type: "father",
-
-          relationship_status: form.father_status,
-
-          name: form.father_name.trim().toUpperCase(),
-
-          nik: form.father_nik.trim(),
-
-          place_of_birth: form.father_place_of_birth.trim(),
-
-          date_of_birth: form.father_date_of_birth,
-
-          religion: form.father_religion.trim() || null,
-
-          education: form.father_education.trim() || null,
-
-          occupation: form.father_occupation.trim() || null,
-
-          position: form.father_position.trim() || null,
-
-          income: Number(form.father_income),
-
-          citizenship: form.father_citizenship.trim() || "Indonesia",
-
-          phone: normalizeWhatsappNumber(form.father_phone),
-        },
-
-        {
-          parent_type: "mother",
-
-          relationship_status: form.mother_status,
-
-          name: form.mother_name.trim().toUpperCase(),
-
-          nik: form.mother_nik.trim(),
-
-          place_of_birth: form.mother_place_of_birth.trim(),
-
-          date_of_birth: form.mother_date_of_birth,
-
-          religion: form.mother_religion.trim() || null,
-
-          education: form.mother_education.trim() || null,
-
-          occupation: form.mother_occupation.trim() || null,
-
-          position: form.mother_position.trim() || null,
-
-          income: Number(form.mother_income),
-
-          citizenship: form.mother_citizenship.trim() || "Indonesia",
-
-          phone: normalizeWhatsappNumber(form.mother_phone),
-        },
-      ],
-
-      details: {
-        living_with: form.living_with.trim() || null,
-
-        distance_to_school: form.distance_to_school.trim() || null,
-
-        owned_vehicle: form.owned_vehicle.trim() || null,
-
-        transportation_method: form.transportation_method.trim() || null,
-
-        talent: form.talent.trim() || null,
-
-        blood_type: form.blood_type.trim() || null,
-
-        height: form.height ? Number(form.height) : null,
-
-        weight: form.weight ? Number(form.weight) : null,
-
-        head_circumference: form.head_circumference ? Number(form.head_circumference) : null,
-      },
-
-      website: form.website,
-    } as SubmitRegistrationInput);
-
-    if (!response.ok) {
+      onSuccess?.();
+      window.location.href = response.paymentUrl;
+    } catch (error) {
+      console.error("Failed to submit registration:", error);
       setIsSubmitting(false);
-      toast.error("Gagal memulai pembayaran", response.error);
-      return;
+      toast.error(
+        isManual ? "Gagal menyimpan pendaftaran" : "Gagal memulai pembayaran",
+        "Periksa koneksi internet Anda, lalu coba lagi.",
+      );
     }
-
-    // The button stays disabled while the browser navigates to DOKU, so the
-    // form cannot be submitted twice and open a second checkout session. The
-    // fields are deliberately left filled: if the redirect fails the applicant
-    // still has their data.
-    toast.success(
-      "Mengalihkan ke halaman pembayaran",
-      "Selesaikan pembayaran untuk menyelesaikan pendaftaran.",
-    );
-
-    // Datanya sudah aman di server, jadi salinan lokalnya tidak diperlukan
-    // lagi — dan tidak perlu tertinggal di komputer yang mungkin dipakai
-    // bersama.
-    clearDraft();
-
-    onSuccess?.();
-    window.location.href = response.paymentUrl;
   }
 
   function renderStepIndicator() {
@@ -587,7 +551,12 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} noValidate className="min-w-0 space-y-6">
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      noValidate
+      className="min-w-0 space-y-6"
+    >
       {/*
         Honeypot: hidden from people, tempting to bots. A submission that
         carries a value here is rejected server-side.
@@ -909,7 +878,11 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           })}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => goToStep(1)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+            <button
+              type="button"
+              onClick={() => goToStep(1)}
+              className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50"
+            >
               Kembali
             </button>
 
@@ -932,7 +905,9 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
 
       {step === 3 && (
         <div className="space-y-4">
-          <p className={sectionHeadingVariants()}>Keterangan Lain Tentang Anak</p>
+          <p className={sectionHeadingVariants()}>
+            Keterangan Lain Tentang Anak
+          </p>
 
           <div className="grid gap-5 sm:grid-cols-2">
             {renderText("living_with", {
@@ -984,14 +959,28 @@ export function RegistrationForm({ onSuccess }: RegistrationFormProps) {
           })}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => goToStep(2)} className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50">
+            <button
+              type="button"
+              onClick={() => goToStep(2)}
+              className="rounded-xl border border-brand-200 px-5 py-3.5 font-medium text-brand-700 transition-colors hover:bg-brand-50"
+            >
               Kembali
             </button>
 
-            <button type="submit" disabled={isSubmitting} className={submitButtonVariants()}>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={submitButtonVariants()}
+            >
               {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
 
-              {isSubmitting ? "Mengirim..." : "Kirim Pendaftaran"}
+              {isManual
+                ? isSubmitting
+                  ? "Menyimpan..."
+                  : "Simpan Pendaftaran"
+                : isSubmitting
+                  ? "Mengirim..."
+                  : "Kirim Pendaftaran"}
             </button>
           </div>
         </div>
