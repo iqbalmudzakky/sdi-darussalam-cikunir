@@ -10,9 +10,9 @@ import type {
   RegistrationPayload,
 } from "./entity";
 
-/** Sessions that reached a decision — paid, failed or expired. */
+/* Sesi yang sudah berakhir: lunas, gagal, atau kedaluwarsa. */
 const RATE_LIMIT_MAX_PER_HOUR = 3;
-/** Backstop covering abandoned sessions too, so they cannot be created freely. */
+/* Batas cadangan, termasuk sesi yang ditinggalkan. */
 const RATE_LIMIT_MAX_SESSIONS_PER_HOUR = 15;
 const RATE_LIMIT_WINDOW_MINUTES = 60;
 
@@ -24,12 +24,7 @@ export type StartPaymentResult =
       message: string;
     };
 
-/**
- * Invoice numbers must be unique and stay within 30 characters for the Credit
- * Card channel. `PPDB-` + 8 date digits + `-` + 8 random hex characters is 22,
- * which leaves the date readable in DOKU's dashboard while the random suffix
- * makes collisions implausible.
- */
+/* Maksimal 30 karakter agar diterima channel kartu kredit. */
 function generateInvoiceNumber(now = new Date()): string {
   const date = now.toISOString().slice(0, 10).replace(/-/g, "");
   const suffix = randomBytes(4).toString("hex").toUpperCase();
@@ -41,9 +36,8 @@ export async function startRegistrationPayment(input: {
   ipAddress: string;
   request?: Request;
 }): Promise<StartPaymentResult> {
-  // Manual testing means paying over and over from one machine, which is
-  // exactly the pattern this guard exists to stop. Skipping it in development
-  // keeps the limits intact where they matter, in production.
+  /* Dilewati saat development: menguji pembayaran berarti membayar berulang
+   * dari satu mesin, persis pola yang hendak dicegah. */
   if (process.env.NODE_ENV !== "development") {
     const sessionCount = await withDbLogging("payment.countAllByIpSince", () =>
       repository.countAllByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
@@ -101,8 +95,7 @@ export async function startRegistrationPayment(input: {
   });
 
   if (!result.ok) {
-    // Leave the row as pending: it is the audit trail of the failed attempt,
-    // and the applicant simply submits again.
+    /* Dibiarkan pending sebagai jejak percobaan yang gagal. */
     return { ok: false, reason: "gateway_error", message: result.message };
   }
 
@@ -123,12 +116,9 @@ export type NotificationOutcome =
   | "ignored"
   | "unknown_invoice";
 
-/**
- * Applies a verified DOKU notification.
- *
- * Per the Checkout integration guide, a FAILED status must be ignored: the
- * checkout page lets the customer retry with another method, so a failure on
- * one channel is not final and a later SUCCESS may still arrive.
+/*
+ * Status FAILED sengaja diabaikan: halaman Checkout membolehkan pendaftar
+ * mengganti metode, jadi gagal di satu channel belum tentu final.
  */
 export async function applyNotification(
   requestId: string,

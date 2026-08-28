@@ -13,20 +13,11 @@ type HeroMediaProps = {
 /** Berapa lama tombol suara tampil berlabel sebelum menyusut jadi ikon. */
 const SOUND_LABEL_DURATION_MS = 5000;
 
-/**
- * Hero media: a YouTube video when one is configured, otherwise the photo.
- *
- * There is deliberately no pause control. YouTube always draws the video
- * title, channel avatar and "More videos" whenever playback stops — no embed
- * parameter suppresses that, since `showinfo` and `modestbranding` are both
- * deprecated. A hero video that can never be stopped never reaches that state,
- * which removes the problem instead of covering it up. The video also loops,
- * so it cannot reach the same overlay by ending.
- *
- * Sound is the one control worth offering: browsers refuse to autoplay audio,
- * so the video must start muted, and a two-minute film with narration is worth
- * hearing. The button therefore announces itself before shrinking out of the
- * way.
+/*
+ * Sengaja tanpa tombol jeda: YouTube selalu menampilkan judul, channel, dan
+ * "More videos" begitu video berhenti, dan itu tidak bisa dimatikan lewat
+ * parameter embed. Video yang tidak bisa dihentikan tidak pernah sampai ke
+ * sana. Suara jadi satu-satunya kontrol, karena autoplay wajib tanpa suara.
  */
 export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
   const videoId = videoUrl ? extractYouTubeVideoId(videoUrl) : null;
@@ -35,10 +26,7 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
   const [isMuted, setIsMuted] = useState(true);
   const [showSoundLabel, setShowSoundLabel] = useState(true);
 
-  /**
-   * Talks to the player through the iframe API's postMessage interface, which
-   * avoids pulling in YouTube's script for a couple of commands.
-   */
+  /* Lewat postMessage, supaya tidak perlu memuat skrip YouTube. */
   function command(func: string, args: unknown[] = []) {
     iframeRef.current?.contentWindow?.postMessage(
       JSON.stringify({ event: "command", func, args }),
@@ -49,8 +37,7 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
   useEffect(() => {
     if (!videoId) return;
 
-    // The player only reports state changes once we register as a listener,
-    // and without those the loop below would never fire.
+    /* Player baru mengirim status setelah kita mendaftar sebagai pendengar. */
     const listenTimer = setTimeout(() => {
       iframeRef.current?.contentWindow?.postMessage(
         JSON.stringify({ event: "listening", id: videoId }),
@@ -58,8 +45,7 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
       );
     }, 500);
 
-    // Some browsers still refuse the autoplay; asking again once the frame is
-    // up costs nothing and recovers those cases.
+    /* Sebagian browser menolak autoplay pertama; coba sekali lagi. */
     const playTimer = setTimeout(() => command("playVideo"), 1000);
 
     const labelTimer = setTimeout(
@@ -68,9 +54,8 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
     );
 
     /*
-     * Loops the video by hand. Doing it with `loop=1&playlist=<id>` instead
-     * makes the player treat the video as a playlist and show next/previous
-     * arrows over it. State 0 means the video ended.
+     * Diulang manual. Parameter loop bawaan membuat player menganggapnya
+     * playlist lalu memunculkan panah maju/mundur. Status 0 = video selesai.
      */
     function handleMessage(event: MessageEvent) {
       if (!event.origin.includes("youtube")) return;
@@ -83,7 +68,7 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
           command("playVideo");
         }
       } catch {
-        // Some other message from the player; nothing to do.
+        /* Pesan lain dari player. */
       }
     }
 
@@ -121,8 +106,7 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
         title="Video profil SD Islam Darussalam Cikunir"
         allow="autoplay; encrypted-media"
         referrerPolicy="strict-origin-when-cross-origin"
-        // Blocks every click, drag and hover on the player, so the hero cannot
-        // be paused or opened on YouTube.
+        /* Memblokir klik ke player supaya tidak bisa dibuka di YouTube. */
         className="pointer-events-none h-full w-full border-0"
         aria-hidden="true"
         tabIndex={-1}
@@ -149,10 +133,7 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
           <Volume2 className="h-4 w-4 shrink-0" />
         )}
 
-        {/*
-          Label menyusut lewat max-width, bukan dilepas dari DOM, supaya
-          transisinya mulus dan lebar tombol tidak melompat.
-        */}
+        {/* Menyusut lewat max-width supaya transisinya mulus. */}
         <span
           className={cn(
             "overflow-hidden text-xs font-medium whitespace-nowrap transition-all duration-300",

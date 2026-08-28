@@ -10,10 +10,7 @@ export async function get(): Promise<PaymentSettings | null> {
   return rows[0] ?? null;
 }
 
-/**
- * Updates the single settings row. The table's singleton_guard keeps that row
- * unique, so this needs no id and cannot touch anything else.
- */
+/* Baris pengaturan hanya satu, dijaga singleton_guard, jadi tanpa id. */
 export async function updateFee(fee: number): Promise<PaymentSettings | null> {
   const rows = await sql.unsafe<PaymentSettings[]>(
     `UPDATE payment_settings

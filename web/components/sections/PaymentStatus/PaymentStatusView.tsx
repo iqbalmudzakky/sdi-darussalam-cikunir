@@ -6,11 +6,9 @@ import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react";
 import { getPaymentStatus } from "@/lib/api/payments";
 import type { PaymentStatusView as PaymentStatus } from "@/types/Payment";
 
-/**
- * DOKU redirects the customer back here as soon as they finish paying, but the
- * HTTP Notification that actually settles the registration arrives separately.
- * Polling for a short while covers that gap so the page usually resolves to
- * "lunas" without the parent needing to refresh.
+/*
+ * Pengunjung dialihkan ke sini begitu selesai bayar, tapi notifikasi DOKU yang
+ * menyimpan pendaftaran datang terpisah. Polling singkat menutup jeda itu.
  */
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLLS = 10;

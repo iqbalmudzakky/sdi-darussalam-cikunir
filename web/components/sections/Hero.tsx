@@ -16,11 +16,6 @@ const STATS: HeroStat[] = [
 export default async function Hero() {
   const profile = await getSchoolProfile();
 
-  /*
-   * Bentuk bingkai mengikuti isinya: video YouTube selalu 16:9, sedangkan
-   * foto gedung dipotret 4:3. Memaksa video masuk bingkai 4:3 itulah yang
-   * meninggalkan bilah hitam di atas dan bawah.
-   */
   const hasVideo = Boolean(extractYouTubeVideoId(profile.hero_video_url));
 
   return (
@@ -70,19 +65,11 @@ export default async function Hero() {
             <HeroStats stats={STATS} />
           </div>
 
-          {/*
-            Media hero: video YouTube kalau diatur, selain itu foto gedung.
-
-            Foto merentang setinggi kolom teks supaya kedua kolom berakhir
-            pada garis yang sama. Video tidak bisa begitu tanpa menyisakan
-            bilah hitam, jadi ia memakai tingginya sendiri dan dirata-tengah
-            oleh items-center pada grid.
-          */}
+          {/* Video kalau diatur, selain itu foto gedung. */}
           <div
             className={cn(
               "intro intro-hero-photo relative order-1 lg:order-2",
-              // Foto merentang setinggi kolom teks; video berhenti pada
-              // tingginya sendiri lalu dirata-tengahkan terhadap kolom itu.
+              /* Foto ikut tinggi kolom teks; video pakai rasionya sendiri. */
               !hasVideo && "lg:h-full lg:min-h-[30rem]",
             )}
           >

@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import * as paymentService from "@/modules/payment/service";
 
-/**
- * Public payment status lookup for the post-checkout result page. Returns only
- * what that page renders — never the full biodata held in `payload`.
- */
+/* Hanya mengembalikan yang ditampilkan halaman status, bukan seluruh payload. */
 export async function GET(request: Request) {
   const invoiceNumber = new URL(request.url).searchParams.get("invoice");
 

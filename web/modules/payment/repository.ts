@@ -57,13 +57,8 @@ export async function findByInvoiceNumber(
   return rows[0] ?? null;
 }
 
-/**
- * Counts every checkout session from one IP, abandoned ones included.
- *
- * Backstop for the settled-only limit above: creating sessions is cheap, so
- * without a ceiling someone could open them indefinitely. The cap is set high
- * enough that no genuine applicant reaches it.
- */
+/* Menghitung semua sesi dari satu IP, termasuk yang ditinggalkan. Penjaga
+ * cadangan supaya sesi tidak bisa dibuat tanpa batas. */
 export async function countAllByIpSince(
   ip: string,
   minutesAgo: number,
@@ -78,16 +73,8 @@ export async function countAllByIpSince(
   return rows[0].count;
 }
 
-/**
- * Counts recent checkout attempts from one IP for the spam guard.
- *
- * Abandoned sessions are excluded: opening the DOKU page and deciding not to
- * pay is ordinary behaviour — comparing methods, fetching a card, losing
- * signal — and counting those locked out real applicants after three moments
- * of hesitation. Only sessions that reached a decision (paid, failed, or
- * expired) count against the limit, which still bounds how fast anyone can
- * drive real checkout traffic.
- */
+/* Hanya sesi yang sudah berakhir (lunas/gagal/kedaluwarsa) yang dihitung.
+ * Membuka halaman DOKU lalu batal itu wajar dan tidak boleh mengunci orang. */
 export async function countByIpSince(
   ip: string,
   minutesAgo: number,
@@ -112,7 +99,7 @@ export async function countByIpSince(
  * anak yang berbeda.
  */
 export async function existsPaidDuplicate(nik: string): Promise<boolean> {
-  // The biodata now sits under payload -> 'student', matching the PPDB DTO.
+  /* Biodata ada di payload -> 'student', mengikuti DTO PPDB. */
   const rows = await sql.unsafe(
     `SELECT id
      FROM registration_payments
@@ -136,14 +123,10 @@ export async function markFailed(
   );
 }
 
-/**
- * Promotes a paid submission into the PPDB registration tables and links the
- * payment to it, all in one transaction — so a crash midway can never leave a
- * payment marked success without its registration, or the reverse.
- *
- * Returns null when the payment was already settled: the guard in the UPDATE
- * makes a concurrent duplicate notification a no-op rather than a second
- * registration.
+/*
+ * Memindahkan pendaftaran yang sudah dibayar ke tabel ppdb_* dalam satu
+ * transaksi, supaya tidak ada pembayaran sukses tanpa data pendaftaran.
+ * Mengembalikan null kalau sudah pernah diselesaikan.
  */
 export async function settleAsRegistration(
   payment: RegistrationPayment,
@@ -165,8 +148,7 @@ export async function settleAsRegistration(
 
     if (claimed.length === 0) return null;
 
-    // Reuses the registration module's own insert so the two paths can never
-    // drift apart as the PPDB schema evolves.
+    /* Memakai insert milik modul registration supaya tidak pernah berbeda. */
     const registrationId = await registrationRepository.insertWithin(tx, {
       ...payment.payload,
       ip_address: payment.ip_address ?? "unknown",
@@ -181,11 +163,7 @@ export async function settleAsRegistration(
   });
 }
 
-/**
- * Records a notification for replay protection. Returns false when DOKU's
- * Request-Id has been seen before, in which case the caller should skip
- * processing and simply acknowledge.
- */
+/* Mencatat notifikasi. false berarti Request-Id sudah pernah masuk. */
 export async function recordNotificationEvent(input: {
   requestId: string;
   invoiceNumber: string | null;

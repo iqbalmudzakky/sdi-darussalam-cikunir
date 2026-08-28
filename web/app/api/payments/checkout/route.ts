@@ -8,18 +8,12 @@ function getClientIp(request: Request): string {
   return "unknown";
 }
 
-/**
- * Validates the registration form and opens a DOKU Checkout session for it.
- * The biodata is held in registration_payments until DOKU confirms payment —
- * see modules/db/migrations/20260825_create_registration_payments.sql.
- */
+/* Biodata ditahan di registration_payments sampai DOKU mengonfirmasi bayar. */
 export async function POST(request: Request) {
   const body = await request.json();
 
-  // Honeypot: answer as if accepted so a bot cannot tell it was caught, but
-  // log it — a real applicant tripping this (an autofill extension filling
-  // every field, say) would otherwise fail with nothing in the logs to explain
-  // why they never reached the payment page.
+  /* Honeypot: dijawab seolah diterima supaya bot tidak sadar, tapi tetap
+   * dicatat — pendaftar asli yang terkena autofill sulit dilacak tanpa log. */
   if (body.website) {
     console.warn(
       "[payment] checkout rejected by honeypot; 'website' field was filled",

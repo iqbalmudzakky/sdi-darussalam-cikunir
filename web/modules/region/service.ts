@@ -1,10 +1,6 @@
 const WILAYAH_BASE_URL = "https://wilayah.id/api";
 
-/**
- * Cache duration for region lookups. The administrative list changes a couple
- * of times a year at most, so caching for a day keeps the form responsive and
- * spares wilayah.id a request per keystroke of the enrolment season.
- */
+/* Daftar wilayah jarang berubah, jadi aman di-cache sehari. */
 const CACHE_SECONDS = 60 * 60 * 24;
 
 export type Region = {
@@ -21,12 +17,7 @@ export const REGION_LEVELS: RegionLevel[] = [
   "villages",
 ];
 
-/**
- * Fetches one level of the Indonesian administrative hierarchy.
- *
- * `parentCode` is required for every level except provinces: regencies belong
- * to a province, districts to a regency, villages to a district.
- */
+/* parentCode wajib untuk semua tingkat kecuali provinsi. */
 export async function listRegions(
   level: RegionLevel,
   parentCode?: string,

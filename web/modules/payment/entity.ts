@@ -2,11 +2,7 @@ import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 
 export type PaymentStatus = "pending" | "success" | "failed" | "expired";
 
-/**
- * The validated biodata held in `payload` until the payment succeeds. It is the
- * same shape the registration API accepts, minus ip_address — that is recorded
- * on the payment row and copied across when the registration is created.
- */
+/* Biodata tervalidasi, ditahan sampai pembayaran berhasil. */
 export type RegistrationPayload = Omit<
   CreatePpdbRegistrationRequest,
   "ip_address"
@@ -38,10 +34,7 @@ export type NewRegistrationPayment = {
   ip_address: string | null;
 };
 
-/**
- * The subset of DOKU's HTTP Notification body we act on. Parsed non-strictly —
- * DOKU may add fields at any time and the guide asks clients to ignore them.
- */
+/* Bagian notifikasi DOKU yang dipakai. Field lain sengaja diabaikan. */
 export type DokuNotification = {
   service?: { id?: string };
   acquirer?: { id?: string };

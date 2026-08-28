@@ -124,10 +124,9 @@ export function RegistrationForm({
   }, [isManual]);
 
   /*
-   * Development convenience: fill the form from devPrefill.local.ts if that
-   * file exists, so manual testing does not mean typing 30-odd fields each
-   * time. The file is gitignored and the import is lazy, so this branch is
-   * dead code in production and the data can never ship.
+   * Mengisi form dari devPrefill.local.ts kalau filenya ada, supaya testing
+   * manual tidak berarti mengetik 30-an kolom. File-nya gitignored dan
+   * import-nya lazy, jadi datanya tidak pernah ikut ke produksi.
    */
   useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
@@ -153,7 +152,7 @@ export function RegistrationForm({
         setHasRestoredDraft(false);
       })
       .catch(() => {
-        // No prefill file — the normal case. Leave the form empty.
+        /* Tidak ada file prefill — kondisi normal. Form dibiarkan kosong. */
       });
 
     return () => {
@@ -489,18 +488,14 @@ export function RegistrationForm({
         return;
       }
 
-      // The button stays disabled while the browser navigates to DOKU, so the
-      // form cannot be submitted twice and open a second checkout session. The
-      // fields are deliberately left filled: if the redirect fails the applicant
-      // still has their data.
+      /* Tombol tetap nonaktif selama berpindah ke DOKU supaya tidak terkirim
+       * dua kali. Isian sengaja tidak dikosongkan kalau pengalihan gagal. */
       toast.success(
         "Mengalihkan ke halaman pembayaran",
         "Selesaikan pembayaran untuk menyelesaikan pendaftaran.",
       );
 
-      // Datanya sudah aman di server, jadi salinan lokalnya tidak diperlukan
-      // lagi — dan tidak perlu tertinggal di komputer yang mungkin dipakai
-      // bersama.
+      /* Data sudah aman di server, salinan lokalnya tidak perlu tertinggal. */
       clearDraft();
 
       onSuccess?.();

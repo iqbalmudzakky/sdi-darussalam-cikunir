@@ -23,31 +23,20 @@ export type CreateCheckoutResult =
   | { ok: true; session: CheckoutSession }
   | { ok: false; message: string };
 
-/** The checkout page stays open for one hour, matching DOKU's default. */
+/* Halaman bayar berlaku satu jam, mengikuti default DOKU. */
 const PAYMENT_DUE_DATE_MINUTES = 60;
 
-/**
- * DOKU expects `{calling_code}{number}` with no leading "+", while we store
- * phone numbers in local `08…` form.
- */
+/* DOKU minta format 62…, sedangkan kita menyimpan 08…. */
 function toInternationalPhone(localNumber: string): string {
   return localNumber.replace(/^0/, "62");
 }
 
-/**
- * `customer.name` allows alphabetic characters only, so anything the name
- * validator lets through but DOKU would reject (apostrophes, dots, hyphens)
- * is stripped here rather than risking a 400 from DOKU.
- */
+/* customer.name hanya boleh huruf; tanda baca dibuang agar tidak ditolak. */
 function toCustomerName(fullName: string): string {
   return fullName.replace(/[^\p{L}\s]/gu, "").trim();
 }
 
-/**
- * DOKU wants a single payer. The father's contact details are used when
- * present, falling back to the mother's so a registration listing only one
- * parent still produces a valid request.
- */
+/* DOKU minta satu pembayar: pakai data ayah, jatuh ke ibu kalau kosong. */
 function buildCustomer(payload: RegistrationPayload) {
   const parents = payload.parents ?? [];
   const contact =
@@ -99,8 +88,7 @@ export async function createCheckoutSession(input: {
     },
   };
 
-  // The digest must be taken over the exact bytes we send, so serialise once
-  // and reuse that string for both the signature and the request body.
+  /* Digest harus atas byte yang persis dikirim, jadi diserialisasi sekali. */
   const rawBody = JSON.stringify(requestBody);
   const requestId = randomUUID();
   const requestTimestamp = currentRequestTimestamp();
@@ -138,7 +126,7 @@ export async function createCheckoutSession(input: {
   const text = await response.text();
 
   if (!response.ok) {
-    // DOKU returns its validation errors in a `message` array.
+    /* DOKU mengembalikan error validasinya di array `message`. */
     console.error(
       `[doku] createCheckoutSession returned ${response.status}:`,
       text,

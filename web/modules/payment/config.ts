@@ -1,20 +1,14 @@
-/**
- * DOKU credentials and environment. Read lazily inside functions rather than at
- * module scope so a missing variable surfaces as a clear runtime error on the
- * request that needs it, instead of breaking the whole build.
- */
+/* Dibaca di dalam fungsi supaya variabel yang hilang muncul sebagai error
+ * pada request yang membutuhkannya, bukan menggagalkan build. */
 
 const SANDBOX_BASE_URL = "https://api-sandbox.doku.com";
 const PRODUCTION_BASE_URL = "https://api.doku.com";
 
-/** Path component of the Checkout endpoint — also the Request-Target we sign. */
+/* Path endpoint Checkout, sekaligus Request-Target yang ditandatangani. */
 export const CHECKOUT_REQUEST_TARGET = "/checkout/v1/payment";
 
-/**
- * Our own notification path. DOKU signs its callback with this as
- * Request-Target, so the value here must match the Notification URL configured
- * in the DOKU Back Office exactly.
- */
+/* Harus sama persis dengan Notification URL di DOKU Back Office: nilai ini
+ * ikut ditandatangani. */
 export const NOTIFICATION_REQUEST_TARGET = "/api/payments/doku/notification";
 
 function required(name: string): string {
@@ -36,17 +30,10 @@ export function getDokuConfig() {
   };
 }
 
-/**
- * Public base URL used to build the callback and notification URLs we hand to
- * DOKU.
- *
- * In development the host is taken from the incoming request, so running the
- * app behind a tunnel (cloudflared, ngrok) just works — DOKU calls back to the
- * tunnel rather than to the production domain, with no .env edit or restart.
- *
- * In production the configured NEXT_PUBLIC_SITE_URL always wins. The Host and
- * X-Forwarded-Host headers are attacker-controlled, so trusting them there
- * would let someone point our payment callbacks at a domain of their choosing.
+/*
+ * Saat development host diambil dari request, supaya tunnel langsung jalan
+ * tanpa mengubah .env. Di produksi selalu memakai NEXT_PUBLIC_SITE_URL, karena
+ * header Host bisa dipalsukan pengirim request.
  */
 export function getSiteUrl(request?: Request): string {
   const configured = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(
@@ -60,8 +47,7 @@ export function getSiteUrl(request?: Request): string {
   const host = forwarded ?? request?.headers.get("host");
   if (!host) return configured;
 
-  // A tunnel terminates TLS at its edge and forwards plain HTTP to us, so the
-  // scheme has to come from the forwarding header rather than the connection.
+  /* Tunnel meneruskan HTTP biasa, jadi skema diambil dari header. */
   const proto =
     request?.headers.get("x-forwarded-proto") ??
     (host.startsWith("localhost") || host.startsWith("127.0.0.1")

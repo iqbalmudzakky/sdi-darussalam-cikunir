@@ -2,13 +2,9 @@ import { withDbLogging } from "@/modules/db/errors";
 import * as repository from "./repository";
 import type { PaymentSettings } from "./entity";
 
-/**
- * Reads the fee charged to applicants.
- *
- * Throws when the settings row is missing rather than falling back to a
- * constant: a wrong amount is charged to real people and reconciled against
- * real bank settlements, so failing loudly is far better than quietly billing
- * something nobody chose.
+/*
+ * Melempar error kalau barisnya hilang, bukan memakai nilai cadangan: nominal
+ * ini ditagihkan ke orang sungguhan, jadi lebih baik gagal terang-terangan.
  */
 export async function getRegistrationFee(): Promise<number> {
   const settings = await withDbLogging("paymentSettings.get", () =>

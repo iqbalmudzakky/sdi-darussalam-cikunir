@@ -4,12 +4,9 @@ import { generateDigest, verifySignature } from "@/modules/payment/signature";
 import * as paymentService from "@/modules/payment/service";
 import type { DokuNotification } from "@/modules/payment/entity";
 
-/**
- * DOKU HTTP Notification endpoint.
- *
- * The signature covers the exact bytes DOKU sent, so the body is read as raw
- * text and only parsed after verification. Anything that fails verification is
- * rejected before it can touch the database.
+/*
+ * Tanda tangan mencakup byte persis yang dikirim DOKU, jadi body dibaca
+ * sebagai teks mentah dan baru di-parse setelah lolos verifikasi.
  */
 export async function POST(request: Request) {
   const { clientId, secretKey } = getDokuConfig();
@@ -26,8 +23,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  // Sign with our own configured Client-Id rather than the header value, so a
-  // caller cannot pick the identity their forged signature was built for.
+  /* Memakai Client-Id milik kita, bukan dari header, supaya pengirim tidak
+   * bisa memilih identitas untuk tanda tangan palsunya. */
   if (receivedClientId !== clientId) {
     console.warn("[doku] notification Client-Id mismatch");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -61,8 +58,7 @@ export async function POST(request: Request) {
     const outcome = await paymentService.applyNotification(requestId, body);
     return NextResponse.json({ received: true, outcome });
   } catch (error) {
-    // Answering non-2xx makes DOKU retry, which is what we want for a
-    // transient database failure.
+    /* Jawaban non-2xx membuat DOKU mengulang, dan itu yang diinginkan. */
     console.error("POST /api/payments/doku/notification failed:", error);
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
