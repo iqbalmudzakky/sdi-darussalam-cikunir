@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { getSchoolProfile, updateSchoolProfile } from "@/lib/api/schoolProfile";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminFormSection } from "@/components/admin/AdminFormSection";
+import { extractYouTubeVideoId } from "@/lib/social/youtube";
 import { useToast } from "@/hooks/useToast";
 import type { SchoolProfile } from "@/types/SchoolProfile";
 
@@ -32,6 +33,7 @@ const removeMisiButtonVariants = cva(["rounded-xl shrink-0", "text-red-500 hover
 const EMPTY_PROFILE: SchoolProfile = {
   photo_url: null,
   vision_photo_url: null,
+  hero_video_url: "",
   description: "",
   visi: "",
   misi: [],
@@ -188,6 +190,10 @@ export default function AdminAboutPage() {
     }
   }
 
+  // Dihitung ulang tiap render supaya admin langsung tahu tautannya terbaca
+  // atau tidak, tanpa harus menyimpan dulu.
+  const heroVideoId = extractYouTubeVideoId(draft.hero_video_url.trim());
+
   return (
     <div className="mx-auto max-w-4xl">
       <AdminPageHeader title="Profil Sekolah" description="Deskripsi, visi, misi, foto, dan info kontak yang dipakai di section Tentang, Visi & Misi, Kontak, dan Footer." />
@@ -219,6 +225,36 @@ export default function AdminAboutPage() {
               )}
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+
+            {/*
+              Kalau diisi, video menggantikan foto di Hero. Fotonya tetap
+              tersimpan, jadi mengosongkan kolom ini mengembalikan tampilan
+              semula tanpa perlu unggah ulang.
+            */}
+            <div className="space-y-1.5">
+              <Label htmlFor="about-hero-video">Video Hero (YouTube, opsional)</Label>
+
+              <Input
+                id="about-hero-video"
+                value={draft.hero_video_url}
+                onChange={(e) => updateDraft({ hero_video_url: e.target.value })}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="rounded-lg"
+              />
+
+              {draft.hero_video_url.trim() && !heroVideoId ? (
+                <p className="text-sm text-red-600">
+                  Tautan YouTube tidak dikenali. Hero akan tetap menampilkan foto sampai tautannya benar.
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  {heroVideoId
+                    ? "Video diputar otomatis tanpa suara di Hero, menggantikan foto. Kosongkan untuk kembali memakai foto."
+                    : "Biarkan kosong untuk menampilkan foto gedung."}
+                </p>
+              )}
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="about-description">Deskripsi (pisahkan paragraf dengan baris kosong)</Label>
               <Textarea id="about-description" value={draft.description} onChange={(e) => updateDraft({ description: e.target.value })} className="min-h-32 rounded-lg" />

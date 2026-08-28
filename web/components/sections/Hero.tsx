@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import RegistrationDialog from "@/components/sections/RegistrationDialog";
 import HeroStats, { type HeroStat } from "@/components/sections/HeroStats";
+import { HeroMedia } from "@/components/sections/HeroMedia";
 
 const STATS: HeroStat[] = [
   { value: 683, display: "683", label: "Siswa aktif" },
@@ -61,7 +62,7 @@ export default async function Hero() {
           </div>
 
           {/*
-            Foto sekolah.
+            Media hero: video YouTube kalau diatur, selain itu foto gedung.
 
             Di desktop tingginya mengikuti kolom teks di
             sebelahnya, sehingga kedua kolom berakhir pada
@@ -69,13 +70,10 @@ export default async function Hero() {
           */}
           <div className="intro intro-hero-photo relative order-1 lg:order-2 lg:h-full lg:min-h-[30rem]">
             <div className="aspect-4/3 overflow-hidden rounded-sm bg-brand-100 lg:absolute lg:inset-0 lg:aspect-auto">
-              {profile.photo_url ? (
-                <img src={profile.photo_url} alt="Gedung SD Islam Darussalam Cikunir" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center px-6 text-center">
-                  <p className="text-sm text-brand-700">Foto gedung sekolah belum diunggah</p>
-                </div>
-              )}
+              <HeroMedia
+                photoUrl={profile.photo_url}
+                videoUrl={profile.hero_video_url}
+              />
             </div>
           </div>
         </div>
