@@ -2,12 +2,8 @@ import { EMPTY_FORM, type FormFields } from "./config";
 
 const STORAGE_KEY = "ppdb-registration-draft";
 
-/**
- * Drafts hold a child's and both parents' personal data — name, NIK, address,
- * phone numbers — so they are not kept indefinitely on a possibly shared
- * computer. A week covers "I got interrupted and came back", which is the case
- * this exists for.
- */
+/* Draft berisi data pribadi anak dan orang tua, jadi tidak disimpan
+ * selamanya di komputer yang mungkin dipakai bersama. */
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 type StoredDraft = {
@@ -22,11 +18,7 @@ export type LoadedDraft = {
   savedAt: number;
 };
 
-/**
- * Reads a saved draft, or null when there is none, it has expired, or storage
- * is unavailable. Private windows and browsers with site data disabled throw
- * on access rather than returning empty, so every call is guarded.
- */
+/* null kalau tidak ada, kedaluwarsa, atau storage diblokir browser. */
 export function loadDraft(): LoadedDraft | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -41,8 +33,7 @@ export function loadDraft(): LoadedDraft | null {
     }
 
     return {
-      // Merged onto EMPTY_FORM so a draft saved before a field was added still
-      // loads, with the new field simply empty.
+      /* Digabung ke EMPTY_FORM supaya draft lama tetap bisa dimuat. */
       form: { ...EMPTY_FORM, ...parsed.form },
       step: parsed.step >= 1 && parsed.step <= 3 ? parsed.step : 1,
       savedAt: parsed.savedAt,
@@ -54,8 +45,8 @@ export function loadDraft(): LoadedDraft | null {
 
 export function saveDraft(form: FormFields, step: number): void {
   try {
-    // The honeypot is never restored: a value there marks the submission as a
-    // bot, and reloading one would lock the applicant out of their own form.
+    /* Honeypot tidak ikut disimpan: memulihkannya membuat pendaftar
+     * dianggap bot. */
     const { website: _website, ...rest } = form;
 
     const draft: StoredDraft = {
@@ -66,7 +57,7 @@ export function saveDraft(form: FormFields, step: number): void {
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
   } catch {
-    // Storage full or blocked — the form still works, it just will not resume.
+    /* Storage penuh atau diblokir; form tetap jalan, hanya tidak tersimpan. */
   }
 }
 
@@ -74,13 +65,13 @@ export function clearDraft(): void {
   try {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // Nothing to do; the draft expires on its own.
+    /* Draft akan kedaluwarsa sendiri. */
   }
 }
 
 export function isDraftMeaningful(form: FormFields): boolean {
-  // Citizenship fields default to "Indonesia", so comparing against the empty
-  // form avoids saving a draft for someone who only opened the dialog.
+  /* Dibandingkan dengan form kosong supaya dialog yang cuma dibuka tidak
+   * ikut tersimpan. */
   return Object.keys(EMPTY_FORM).some((key) => {
     const field = key as keyof FormFields;
     if (field === "website") return false;

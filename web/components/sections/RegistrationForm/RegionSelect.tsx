@@ -9,22 +9,17 @@ type RegionSelectProps = {
   id: string;
   label: string;
   level: RegionLevel;
-  /** Code of the selected parent region; undefined only for provinces. */
+  /* Kode wilayah induk; undefined hanya untuk provinsi. */
   parentCode?: string;
-  /** The selected region's name — what we store, since that is what forms print. */
+  /* Nama wilayah — itu yang disimpan, karena itu yang dicetak di berkas. */
   value: string;
   onChange: (name: string, code: string) => void;
   onBlur?: () => void;
   error?: string;
 };
 
-/**
- * One level of the province → regency → district → village cascade.
- *
- * The list reloads whenever the parent changes, and the control disables
- * itself until a parent is chosen so the order of selection is obvious
- * without needing instructions.
- */
+/* Satu tingkat dari provinsi → kabupaten → kecamatan → kelurahan. Nonaktif
+ * sampai induknya dipilih, supaya urutannya jelas tanpa perlu petunjuk. */
 export function RegionSelect({
   id,
   label,
@@ -47,8 +42,7 @@ export function RegionSelect({
 
     let cancelled = false;
 
-    // Kicked off in a microtask so the effect body itself does not call
-    // setState synchronously, which would cascade an extra render.
+    /* Ditunda satu microtask supaya effect tidak memanggil setState langsung. */
     void Promise.resolve().then(() => {
       if (cancelled) return;
       setIsLoading(true);
@@ -71,8 +65,7 @@ export function RegionSelect({
     };
   }, [level, parentCode, isDisabled]);
 
-  // While no parent is chosen there is nothing to offer; deriving this rather
-  // than clearing state in the effect keeps the render pure.
+  /* Selama induknya belum dipilih, tidak ada pilihan yang bisa ditawarkan. */
   const options = (isDisabled ? [] : regions).map((region) => ({
     value: region.name,
     label: region.name,

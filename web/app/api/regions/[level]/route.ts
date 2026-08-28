@@ -5,11 +5,9 @@ import {
   type RegionLevel,
 } from "@/modules/region/service";
 
-/**
- * Proxies wilayah.id so the browser never talks to it directly. That keeps the
- * upstream host out of our CSP surface, lets Next cache responses across every
- * visitor instead of per browser, and means a change of provider is a one-file
- * edit rather than a client rewrite.
+/*
+ * Memproksi wilayah.id supaya respons bisa di-cache untuk semua pengunjung
+ * sekaligus, dan mengganti penyedia cukup mengubah satu file.
  */
 export async function GET(
   request: Request,
@@ -24,8 +22,7 @@ export async function GET(
     );
   }
 
-  // Provinces are the root of the hierarchy, so any parent sent alongside them
-  // is meaningless — ignore it rather than rejecting an otherwise valid call.
+  /* Provinsi adalah akar, jadi parent yang ikut terkirim diabaikan saja. */
   const parentCode =
     level === "provinces"
       ? null
@@ -38,8 +35,7 @@ export async function GET(
     );
   }
 
-  // Codes are dotted numerics ("32.75.01"); reject anything else rather than
-  // interpolating a caller-supplied string into the upstream URL.
+  /* Kode selalu angka bertitik; selain itu ditolak agar tidak masuk URL. */
   if (parentCode && !/^[0-9]{2}(\.[0-9]{2}){0,2}$/.test(parentCode)) {
     return NextResponse.json(
       { error: "Kode wilayah tidak valid." },

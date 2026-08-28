@@ -1,18 +1,12 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
-/**
- * DOKU non-SNAP (Checkout) signature scheme.
- *
- * Both directions — our request to DOKU and DOKU's HTTP Notification back to
- * us — use the same symmetric HMAC-SHA256 construction over a fixed component
- * string. The only thing that differs is Request-Target: our own API path when
- * we call DOKU, and our Notification URL path when DOKU calls us.
- *
- * The RSA keypair DOKU asks for elsewhere belongs to the SNAP (asymmetric)
- * APIs only and plays no part here.
+/*
+ * Tanda tangan DOKU non-SNAP (Checkout). Dua arah — request kita ke DOKU dan
+ * notifikasi DOKU ke kita — memakai HMAC-SHA256 yang sama; yang berbeda hanya
+ * Request-Target. Keypair RSA hanya untuk API SNAP, tidak dipakai di sini.
  */
 
-/** Encoded (base64) value of the SHA-256 hash of the raw JSON body. */
+/* SHA-256 dari body JSON mentah, dikodekan base64. */
 export function generateDigest(rawJsonBody: string): string {
   return createHash("sha256").update(rawJsonBody, "utf8").digest("base64");
 }
@@ -21,9 +15,9 @@ type SignatureComponents = {
   clientId: string;
   requestId: string;
   requestTimestamp: string;
-  /** Path only, e.g. "/checkout/v1/payment" — never the full URL. */
+  /* Hanya path, mis. "/checkout/v1/payment", bukan URL lengkap. */
   requestTarget: string;
-  /** Omitted for GET/DELETE, which carry no body. */
+  /* Tidak dipakai untuk GET/DELETE yang tanpa body. */
   digest?: string;
 };
 
@@ -50,7 +44,7 @@ export function buildComponentSignature({
   return lines.join("\n");
 }
 
-/** Returns the full header value, including the `HMACSHA256=` prefix. */
+/* Nilai header lengkap, termasuk awalan `HMACSHA256=`. */
 export function generateSignature(
   components: SignatureComponents,
   secretKey: string,
@@ -62,11 +56,7 @@ export function generateSignature(
   return `HMACSHA256=${signature}`;
 }
 
-/**
- * Verifies the Signature header on an incoming DOKU HTTP Notification.
- * Compared in constant time so a mismatch leaks nothing about the expected
- * value through timing.
- */
+/* Dibandingkan dalam waktu tetap supaya selisihnya tidak bocor lewat timing. */
 export function verifySignature(
   components: SignatureComponents,
   secretKey: string,
@@ -82,10 +72,7 @@ export function verifySignature(
   return timingSafeEqual(expected, received);
 }
 
-/**
- * Request-Timestamp must be ISO8601 in UTC+0 with second precision and no
- * milliseconds — `2020-08-11T08:45:42Z`.
- */
+/* ISO8601 UTC+0 tanpa milidetik: `2020-08-11T08:45:42Z`. */
 export function currentRequestTimestamp(date = new Date()): string {
   return `${date.toISOString().slice(0, 19)}Z`;
 }

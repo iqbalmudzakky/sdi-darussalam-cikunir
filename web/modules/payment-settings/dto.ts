@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-/**
- * Upper bound is a sanity check, not a business rule: it catches a slipped
- * digit (15500000 instead of 155000) before an applicant is shown a bill for
- * fifteen million rupiah.
- */
+/* Batas atas untuk menangkap salah ketik digit, bukan aturan bisnis. */
 const MAX_REGISTRATION_FEE = 10_000_000;
 
 export const SavePaymentSettingsRequestSchema = z.object({
