@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cva } from "class-variance-authority";
-import { Check, Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { Check, Image as ImageIcon, Loader2, Plus, Trash2, Upload, Video } from "lucide-react";
 import { uploadPhoto } from "@/lib/api/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { cn } from "@/lib/utils";
@@ -55,6 +55,14 @@ export default function AdminAboutPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  /*
+   * Mode disimpan terpisah, bukan diturunkan dari ada/tidaknya tautan video.
+   * Kalau diturunkan, menekan "Video YouTube" saat tautannya masih kosong
+   * akan langsung terpental balik ke mode foto dan kolomnya tidak pernah
+   * sempat muncul.
+   */
+  const [heroMode, setHeroMode] = useState<"photo" | "video">("photo");
   const [isUploading, setIsUploading] = useState(false);
   const [isPreparingPhoto, setIsPreparingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +80,8 @@ export default function AdminAboutPage() {
     try {
       const data = await getSchoolProfile();
       setDraft(data);
+      // Buka pada mode yang sedang dipakai sekolah, bukan selalu mode foto.
+      setHeroMode(data.hero_video_url.trim() ? "video" : "photo");
     } catch (error) {
       console.error("Failed to load school profile:", error);
       setLoadError(true);
@@ -190,6 +200,20 @@ export default function AdminAboutPage() {
     }
   }
 
+  /*
+   * Beralih ke foto langsung mengosongkan tautan video — itulah yang membuat
+   * Hero memakai foto lagi, dan menjawab "cara hapus videonya bagaimana"
+   * tanpa admin perlu menebak. Fotonya sendiri tidak pernah dihapus, jadi
+   * berpindah mode bolak-balik tidak menghilangkan apa pun.
+   */
+  function handleHeroModeChange(mode: "photo" | "video") {
+    setHeroMode(mode);
+
+    if (mode === "photo") {
+      updateDraft({ hero_video_url: "" });
+    }
+  }
+
   // Dihitung ulang tiap render supaya admin langsung tahu tautannya terbaca
   // atau tidak, tanpa harus menyimpan dulu.
   const heroVideoId = extractYouTubeVideoId(draft.hero_video_url.trim());
@@ -208,7 +232,47 @@ export default function AdminAboutPage() {
         </div>
       ) : (
         <div className="space-y-6 pb-24">
-          <AdminFormSection title="Identitas sekolah" description="Foto gedung dan deskripsi yang tampil di section Hero dan Tentang.">
+          <AdminFormSection
+            title="Tampilan Hero"
+            description="Bagian paling atas halaman utama. Pilih satu: foto gedung atau video YouTube."
+          >
+            {/*
+              Pilihan dibuat eksplisit. Sebelumnya kolom foto dan kolom video
+              tampil bersamaan padahal hanya salah satu yang dipakai, sehingga
+              admin tidak punya cara tahu mana yang sedang aktif — atau cara
+              mematikan video selain mengosongkan kolomnya.
+            */}
+            <div className="grid grid-cols-2 gap-3">
+              {(
+                [
+                  { mode: "photo", label: "Foto gedung", icon: ImageIcon },
+                  { mode: "video", label: "Video YouTube", icon: Video },
+                ] as const
+              ).map((option) => {
+                const isActive = heroMode === option.mode;
+
+                return (
+                  <button
+                    key={option.mode}
+                    type="button"
+                    onClick={() => handleHeroModeChange(option.mode)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      "flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors",
+                      isActive
+                        ? "border-brand-500 bg-brand-50 text-brand-800"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50",
+                    )}
+                  >
+                    <option.icon className="h-4 w-4" />
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {heroMode === "photo" ? (
+              <>
             <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploading || isPreparingPhoto} className={photoButtonVariants()}>
               {draft.photo_url ? <img src={draft.photo_url} alt="Foto profil sekolah" className="w-full h-full object-cover" /> : <span className="text-gray-500 font-medium px-4 text-center">Foto Profil Sekolah</span>}
 
@@ -226,35 +290,40 @@ export default function AdminAboutPage() {
             </button>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
 
-            {/*
-              Kalau diisi, video menggantikan foto di Hero. Fotonya tetap
-              tersimpan, jadi mengosongkan kolom ini mengembalikan tampilan
-              semula tanpa perlu unggah ulang.
-            */}
-            <div className="space-y-1.5">
-              <Label htmlFor="about-hero-video">Video Hero (YouTube, opsional)</Label>
-
-              <Input
-                id="about-hero-video"
-                value={draft.hero_video_url}
-                onChange={(e) => updateDraft({ hero_video_url: e.target.value })}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="rounded-lg"
-              />
-
-              {draft.hero_video_url.trim() && !heroVideoId ? (
-                <p className="text-sm text-red-600">
-                  Tautan YouTube tidak dikenali. Hero akan tetap menampilkan foto sampai tautannya benar.
+                <p className="text-center text-sm text-gray-500">
+                  Klik gambar untuk mengganti foto.
                 </p>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  {heroVideoId
-                    ? "Video diputar otomatis tanpa suara di Hero, menggantikan foto. Kosongkan untuk kembali memakai foto."
-                    : "Biarkan kosong untuk menampilkan foto gedung."}
-                </p>
-              )}
-            </div>
+              </>
+            ) : (
+              <div className="space-y-1.5">
+                <Label htmlFor="about-hero-video">Tautan video YouTube</Label>
 
+                <Input
+                  id="about-hero-video"
+                  value={draft.hero_video_url}
+                  onChange={(e) => updateDraft({ hero_video_url: e.target.value })}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="rounded-lg"
+                />
+
+                {draft.hero_video_url.trim() && !heroVideoId ? (
+                  <p className="text-sm text-red-600">
+                    Tautan tidak dikenali. Salin tautan dari tombol Bagikan di YouTube.
+                  </p>
+                ) : heroVideoId ? (
+                  <p className="text-sm text-gray-500">
+                    Video diputar otomatis tanpa suara dan berulang. Pengunjung bisa menyalakan suaranya.
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Tempel tautan videonya. Foto gedung tetap tersimpan dan dipakai lagi kalau Anda kembali ke mode foto.
+                  </p>
+                )}
+              </div>
+            )}
+          </AdminFormSection>
+
+          <AdminFormSection title="Identitas sekolah" description="Deskripsi sekolah yang tampil di section Tentang.">
             <div className="space-y-1.5">
               <Label htmlFor="about-description">Deskripsi (pisahkan paragraf dengan baris kosong)</Label>
               <Textarea id="about-description" value={draft.description} onChange={(e) => updateDraft({ description: e.target.value })} className="min-h-32 rounded-lg" />
