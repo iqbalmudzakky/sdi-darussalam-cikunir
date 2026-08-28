@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import InfiniteScroll from "react-infinite-scroll-component";
 import { cva } from "class-variance-authority";
 import {
   ArrowDown,
@@ -56,8 +55,8 @@ import type {
   RegistrationStatus,
 } from "@/types/Registration";
 
-const PAGE_SIZE = 20;
-const SEARCH_DEBOUNCE_MS = 1000;
+const PAGE_SIZE = 10;
+const SEARCH_DEBOUNCE_MS = 600;
 const STATUS_OPTIONS: {
   value: RegistrationStatus;
   label: string;
@@ -79,14 +78,14 @@ const STATUS_OPTIONS: {
   {
     value: "not_registered",
     label: "Tidak Jadi",
-    icon: CheckCircle2,
-    activeClassName: "bg-gray-100 text-gray-700",
+    icon: XCircle,
+    activeClassName: "bg-rose-100 text-rose-700",
   },
   {
     value: "registered",
     label: "Sudah Daftar",
     icon: CheckCircle2,
-    activeClassName: "bg-brand-100 text-brand-700",
+    activeClassName: "bg-brand-200 text-brand-800",
   },
 ];
 const PRIMARY_STATUS_OPTIONS = STATUS_OPTIONS.filter(
@@ -184,6 +183,8 @@ export default function AdminRegistrationsPage() {
   const [exportStatuses, setExportStatuses] = useState<RegistrationStatus[]>(
     [],
   );
+  const isLoadingMoreRef = useRef(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(
@@ -230,7 +231,23 @@ export default function AdminRegistrationsPage() {
     };
   }, [search, statusFilter, sort]);
 
+  useEffect(() => {
+    const sentinel = loadMoreRef.current;
+    if (!sentinel || !hasMore) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) handleLoadMore();
+    });
+
+    observer.observe(sentinel);
+
+    return () => observer.disconnect();
+  }, [hasMore, items.length, search, statusFilter, sort]);
+
   async function handleLoadMore() {
+    if (isLoadingMoreRef.current) return;
+    isLoadingMoreRef.current = true;
+
     try {
       const page = await listRegistrations({
         search,
@@ -246,6 +263,8 @@ export default function AdminRegistrationsPage() {
       console.error("Failed to load more registrations:", error);
       setHasMore(false);
       toast.error("Gagal memuat data berikutnya", "Coba refresh halaman.");
+    } finally {
+      isLoadingMoreRef.current = false;
     }
   }
 
@@ -453,24 +472,11 @@ export default function AdminRegistrationsPage() {
           }
         />
       ) : (
-        <InfiniteScroll
-          dataLength={items.length}
-          next={handleLoadMore}
-          hasMore={hasMore}
+        <div
           className={cn(
             "transition-opacity",
             isRefreshing && "pointer-events-none opacity-50",
           )}
-          loader={
-            <div className="flex justify-center py-6">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-            </div>
-          }
-          endMessage={
-            <p className="py-6 text-center text-xs text-gray-400">
-              Semua {total} pendaftar sudah ditampilkan.
-            </p>
-          }
         >
           {viewMode === "card" ? (
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -646,6 +652,8 @@ export default function AdminRegistrationsPage() {
                         const activeFinalOption = FINAL_STATUS_OPTIONS.find(
                           (option) => option.value === item.status,
                         );
+                        const FinalIcon =
+                          activeFinalOption?.icon ?? CheckCircle2;
                         return (
                           <button
                             type="button"
@@ -665,7 +673,7 @@ export default function AdminRegistrationsPage() {
                                 : "text-gray-400 hover:bg-gray-100",
                             )}
                           >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            <FinalIcon className="h-3.5 w-3.5" />
                           </button>
                         );
                       })()}
@@ -699,7 +707,17 @@ export default function AdminRegistrationsPage() {
               </div>
             </div>
           )}
-        </InfiniteScroll>
+
+          {hasMore ? (
+            <div ref={loadMoreRef} className="flex justify-center py-6">
+              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+            </div>
+          ) : (
+            <p className="py-6 text-center text-xs text-gray-400">
+              Semua {total} pendaftar sudah ditampilkan.
+            </p>
+          )}
+        </div>
       )}
 
       <RegistrationDetailDialog

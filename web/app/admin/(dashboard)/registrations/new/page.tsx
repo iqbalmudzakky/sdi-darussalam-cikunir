@@ -1,9 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RegistrationForm } from "@/components/sections/RegistrationForm/RegistrationForm";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 export default function AdminNewRegistrationPage() {
+  const router = useRouter();
+
   return (
     <div className="mx-auto max-w-3xl">
       <AdminPageHeader
@@ -20,7 +25,10 @@ export default function AdminNewRegistrationPage() {
         }
       />
 
-      <RegistrationForm mode="manual" />
+      <RegistrationForm
+        mode="manual"
+        onSuccess={() => router.push("/admin/registrations")}
+      />
     </div>
   );
 }

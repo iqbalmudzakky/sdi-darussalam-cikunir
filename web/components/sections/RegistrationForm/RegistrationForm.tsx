@@ -465,11 +465,6 @@ export function RegistrationForm({
           "Data sudah masuk ke daftar pendaftar.",
         );
 
-        setForm(EMPTY_FORM);
-        setErrors({});
-        setTouched({});
-        setStep(1);
-
         onSuccess?.();
         return;
       }
