@@ -12,7 +12,10 @@ import { listPrograms } from "@/lib/actions/programs";
 import { listFacilities } from "@/lib/actions/facilities";
 import { listActivities } from "@/lib/actions/activities";
 import { listAchievements } from "@/lib/actions/achievements";
-import { listRegistrations } from "@/lib/actions/registrations";
+import {
+  listRegistrations,
+  countPendingRegistrations,
+} from "@/lib/actions/registrations";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSession } from "@/lib/auth/session";
 
@@ -56,6 +59,7 @@ export default async function AdminDashboardPage() {
     activities,
     achievements,
     registrations,
+    pendingCount,
   ] = await Promise.all([
     getSession(),
     getSchoolProfile(),
@@ -63,14 +67,17 @@ export default async function AdminDashboardPage() {
     listFacilities(),
     listActivities(),
     listAchievements(),
-    listRegistrations(),
+    listRegistrations({
+      search: "",
+      statuses: [],
+      sort: "desc",
+      limit: 5,
+      offset: 0,
+    }),
+    countPendingRegistrations(),
   ]);
 
-  const pendingCount = registrations.filter(
-    (item) => item.status === "pending",
-  ).length;
-
-  const recentRegistrations = registrations.slice(0, 5);
+  const recentRegistrations = registrations.items;
 
   const stats = [
     {
@@ -197,7 +204,7 @@ export default async function AdminDashboardPage() {
               Pendaftar terakhir
             </h2>
 
-            {registrations.length > 0 && (
+            {registrations.total > 0 && (
               <Link
                 href="/admin/registrations"
                 className="text-sm text-brand-600 transition-colors hover:text-brand-700"

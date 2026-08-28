@@ -13,6 +13,7 @@ export const SaveSchoolProfileRequestSchema = z.object({
     .nullable()
     .optional()
     .transform((value) => value || null),
+  hero_video_url: z.string().trim().default(""),
   description: z.string().trim().default(""),
   visi: z.string().trim().default(""),
   misi: z.array(z.string()).default([]),
@@ -35,6 +36,7 @@ export type SaveSchoolProfileRequest = z.infer<
 export type SchoolProfileResponse = {
   photo_url: string | null;
   vision_photo_url: string | null;
+  hero_video_url: string;
   description: string;
   visi: string;
   misi: string[];

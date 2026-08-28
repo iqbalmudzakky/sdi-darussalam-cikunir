@@ -2,7 +2,7 @@ import { sql } from "@/modules/db/postgres";
 import type { NewSchoolProfile, SchoolProfile } from "./entity";
 
 const COLUMNS = `
-  id, photo_url, vision_photo_url, description, visi, misi, alamat, telepon,
+  id, photo_url, vision_photo_url, hero_video_url, description, visi, misi, alamat, telepon,
   whatsapp, whatsapp_message, email, jam_operasional, facebook, instagram,
   tiktok, youtube, created_at, updated_at
 `;
@@ -20,6 +20,7 @@ export async function upsert(input: NewSchoolProfile): Promise<SchoolProfile> {
   const values = [
     input.photo_url,
     input.vision_photo_url,
+    input.hero_video_url,
     input.description,
     input.visi,
     input.misi,
@@ -38,12 +39,13 @@ export async function upsert(input: NewSchoolProfile): Promise<SchoolProfile> {
   if (existing) {
     const rows = await sql.unsafe<SchoolProfile[]>(
       `UPDATE school_profiles
-       SET photo_url = $1, vision_photo_url = $2, description = $3, visi = $4,
-           misi = $5, alamat = $6, telepon = $7, whatsapp = $8,
-           whatsapp_message = $9, email = $10, jam_operasional = $11,
-           facebook = $12, instagram = $13, tiktok = $14, youtube = $15,
+       SET photo_url = $1, vision_photo_url = $2, hero_video_url = $3,
+           description = $4, visi = $5, misi = $6, alamat = $7, telepon = $8,
+           whatsapp = $9, whatsapp_message = $10, email = $11,
+           jam_operasional = $12, facebook = $13, instagram = $14,
+           tiktok = $15, youtube = $16,
            updated_at = now()
-       WHERE id = $16
+       WHERE id = $17
        RETURNING ${COLUMNS}`,
       [...values, existing.id],
     );
@@ -52,12 +54,12 @@ export async function upsert(input: NewSchoolProfile): Promise<SchoolProfile> {
 
   const rows = await sql.unsafe<SchoolProfile[]>(
     `INSERT INTO school_profiles (
-       photo_url, vision_photo_url, description, visi, misi, alamat, telepon,
-       whatsapp, whatsapp_message, email, jam_operasional, facebook, instagram,
-       tiktok, youtube
+       photo_url, vision_photo_url, hero_video_url, description, visi, misi,
+       alamat, telepon, whatsapp, whatsapp_message, email, jam_operasional,
+       facebook, instagram, tiktok, youtube
      )
      VALUES (
-       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+       $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
      )
      RETURNING ${COLUMNS}`,
     values,

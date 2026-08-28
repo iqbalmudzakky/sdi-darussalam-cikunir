@@ -228,3 +228,14 @@ export type PpdbRegistrationExportItem = PpdbRegistrationOverviewBase &
     nik: string;
     address: string;
   };
+
+export type RegistrationFilter = {
+  search: string;
+  statuses: PpdbRegistrationStatus[];
+};
+
+export type ListRegistrationsInput = RegistrationFilter & {
+  sortDirection: "asc" | "desc";
+  limit: number;
+  offset: number;
+};

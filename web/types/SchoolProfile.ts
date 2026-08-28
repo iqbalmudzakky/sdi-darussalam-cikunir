@@ -1,6 +1,7 @@
 export type SchoolProfile = {
   photo_url: string | null;
   vision_photo_url: string | null;
+  hero_video_url: string;
   description: string;
   visi: string;
   misi: string[];

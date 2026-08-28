@@ -2,6 +2,8 @@ export type SchoolProfile = {
   id: string;
   photo_url: string | null;
   vision_photo_url: string | null;
+  /** Tautan YouTube untuk hero. Kalau diisi, video menggantikan photo_url. */
+  hero_video_url: string;
   description: string;
   visi: string;
   misi: string[];

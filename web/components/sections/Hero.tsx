@@ -1,7 +1,10 @@
 import { ArrowRight } from "lucide-react";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
+import { extractYouTubeVideoId } from "@/lib/social/youtube";
+import { cn } from "@/lib/utils";
 import RegistrationDialog from "@/components/sections/RegistrationDialog";
 import HeroStats, { type HeroStat } from "@/components/sections/HeroStats";
+import { HeroMedia } from "@/components/sections/HeroMedia";
 
 const STATS: HeroStat[] = [
   { value: 683, display: "683", label: "Siswa aktif" },
@@ -13,10 +16,17 @@ const STATS: HeroStat[] = [
 export default async function Hero() {
   const profile = await getSchoolProfile();
 
+  /*
+   * Bentuk bingkai mengikuti isinya: video YouTube selalu 16:9, sedangkan
+   * foto gedung dipotret 4:3. Memaksa video masuk bingkai 4:3 itulah yang
+   * meninggalkan bilah hitam di atas dan bawah.
+   */
+  const hasVideo = Boolean(extractYouTubeVideoId(profile.hero_video_url));
+
   return (
     <section className="relative bg-paper pt-16 sm:pt-[72px]">
       <div className="page-container pt-14 pb-16 sm:pt-20 sm:pb-20 lg:pt-28 lg:pb-24">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_1fr] lg:items-stretch lg:gap-16">
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-12">
           {/*
             Teks utama.
 
@@ -61,21 +71,33 @@ export default async function Hero() {
           </div>
 
           {/*
-            Foto sekolah.
+            Media hero: video YouTube kalau diatur, selain itu foto gedung.
 
-            Di desktop tingginya mengikuti kolom teks di
-            sebelahnya, sehingga kedua kolom berakhir pada
-            garis yang sama.
+            Foto merentang setinggi kolom teks supaya kedua kolom berakhir
+            pada garis yang sama. Video tidak bisa begitu tanpa menyisakan
+            bilah hitam, jadi ia memakai tingginya sendiri dan dirata-tengah
+            oleh items-center pada grid.
           */}
-          <div className="intro intro-hero-photo relative order-1 lg:order-2 lg:h-full lg:min-h-[30rem]">
-            <div className="aspect-4/3 overflow-hidden rounded-sm bg-brand-100 lg:absolute lg:inset-0 lg:aspect-auto">
-              {profile.photo_url ? (
-                <img src={profile.photo_url} alt="Gedung SD Islam Darussalam Cikunir" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center px-6 text-center">
-                  <p className="text-sm text-brand-700">Foto gedung sekolah belum diunggah</p>
-                </div>
+          <div
+            className={cn(
+              "intro intro-hero-photo relative order-1 lg:order-2",
+              // Foto merentang setinggi kolom teks; video berhenti pada
+              // tingginya sendiri lalu dirata-tengahkan terhadap kolom itu.
+              !hasVideo && "lg:h-full lg:min-h-[30rem]",
+            )}
+          >
+            <div
+              className={cn(
+                "overflow-hidden rounded-sm bg-brand-100",
+                hasVideo
+                  ? "aspect-video"
+                  : "aspect-4/3 lg:absolute lg:inset-0 lg:aspect-auto",
               )}
+            >
+              <HeroMedia
+                photoUrl={profile.photo_url}
+                videoUrl={profile.hero_video_url}
+              />
             </div>
           </div>
         </div>

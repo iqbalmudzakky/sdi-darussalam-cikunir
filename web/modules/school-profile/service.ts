@@ -8,6 +8,7 @@ const PHOTO_BUCKET = "school-profile-photos";
 const DEFAULT_SCHOOL_PROFILE_RESPONSE: SchoolProfileResponse = {
   photo_url: null,
   vision_photo_url: null,
+  hero_video_url: "",
   description: "",
   visi: "",
   misi: [],
@@ -33,6 +34,7 @@ export async function getSchoolProfile(): Promise<SchoolProfileResponse> {
   const response: SchoolProfileResponse = {
     photo_url: profile.photo_url,
     vision_photo_url: profile.vision_photo_url,
+    hero_video_url: profile.hero_video_url,
     description: profile.description,
     visi: profile.visi,
     misi: profile.misi,
@@ -83,6 +85,7 @@ export async function saveSchoolProfile(
   const response: SchoolProfileResponse = {
     photo_url: saved.photo_url,
     vision_photo_url: saved.vision_photo_url,
+    hero_video_url: saved.hero_video_url,
     description: saved.description,
     visi: saved.visi,
     misi: saved.misi,
