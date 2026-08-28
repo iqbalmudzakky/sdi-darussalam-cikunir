@@ -39,13 +39,46 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
     );
   }
 
-  // Some browsers still refuse the autoplay; asking again once the frame is up
-  // costs nothing and recovers those cases.
   useEffect(() => {
     if (!videoId) return;
 
-    const timer = setTimeout(() => command("playVideo"), 1000);
-    return () => clearTimeout(timer);
+    // Player hanya mengirim perubahan status setelah kita mendaftar sebagai
+    // pendengar; tanpa ini, pengulangan di bawah tidak akan terpicu.
+    const listenTimer = setTimeout(() => {
+      iframeRef.current?.contentWindow?.postMessage(
+        JSON.stringify({ event: "listening", id: videoId }),
+        "*",
+      );
+    }, 500);
+
+    // Some browsers still refuse the autoplay; asking again once the frame is
+    // up costs nothing and recovers those cases.
+    const playTimer = setTimeout(() => command("playVideo"), 1000);
+
+    // Mengulang video sendiri, menggantikan parameter loop bawaan yang
+    // memunculkan kontrol playlist. Status 0 berarti video selesai.
+    function handleMessage(event: MessageEvent) {
+      if (!event.origin.includes("youtube")) return;
+
+      try {
+        const data =
+          typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+
+        if (data?.event === "onStateChange" && data.info === 0) {
+          command("playVideo");
+        }
+      } catch {
+        // Pesan lain dari player; tidak ada yang perlu dilakukan.
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      clearTimeout(listenTimer);
+      clearTimeout(playTimer);
+      window.removeEventListener("message", handleMessage);
+    };
   }, [videoId]);
 
   if (!videoId) {
@@ -65,12 +98,14 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
   }
 
   return (
-    <div className="group relative h-full w-full bg-brand-100">
+    <div className="relative h-full w-full bg-brand-100">
       <iframe
         ref={iframeRef}
-        // enablejsapi lets the buttons below drive the player; playlist+loop
-        // is YouTube's documented way of looping a single video.
-        src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1`}
+        // Tanpa loop/playlist: parameter itu membuat player memperlakukan
+        // video sebagai playlist, lalu memunculkan panah maju/mundur dan
+        // "More videos" begitu video dijeda. Pengulangan ditangani sendiri
+        // lewat iframe API di bawah.
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&disablekb=1&fs=0&iv_load_policy=3&enablejsapi=1`}
         title="Video profil SD Islam Darussalam Cikunir"
         allow="autoplay; encrypted-media"
         referrerPolicy="strict-origin-when-cross-origin"
@@ -81,7 +116,19 @@ export function HeroMedia({ photoUrl, videoUrl }: HeroMediaProps) {
         tabIndex={-1}
       />
 
-      <div className="absolute right-3 bottom-3 flex gap-2">
+      {/*
+        Saat dijeda, YouTube menampilkan judul video, nama channel, tombol
+        tautan, dan "More videos" — tidak ada parameter embed yang bisa
+        mematikannya. Lapisan ini menutupinya sampai video diputar lagi.
+      */}
+      {!isPlaying && (
+        <div
+          className="absolute inset-0 bg-ink-900/45 backdrop-blur-[3px]"
+          aria-hidden="true"
+        />
+      )}
+
+      <div className="absolute right-3 bottom-3 z-10 flex gap-2">
         <button
           type="button"
           onClick={() => {
