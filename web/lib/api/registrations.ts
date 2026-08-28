@@ -1,13 +1,38 @@
 import type {
-  Registration,
+  ListRegistrationsParams,
+  RegistrationListPage,
+  RegistrationStatus,
   SubmitRegistrationInput,
   UpdateRegistrationStatusInput,
 } from "@/types/Registration";
 
-export async function listRegistrations(): Promise<Registration[]> {
-  const res = await fetch("/api/registrations");
+function buildStatusQuery(statuses: RegistrationStatus[]): URLSearchParams {
+  const query = new URLSearchParams();
+  for (const status of statuses) query.append("status", status);
+  return query;
+}
+
+export async function listRegistrations(
+  params: ListRegistrationsParams,
+): Promise<RegistrationListPage> {
+  const query = buildStatusQuery(params.statuses);
+  query.set("search", params.search);
+  query.set("sort", params.sort);
+  query.set("limit", String(params.limit));
+  query.set("offset", String(params.offset));
+
+  const res = await fetch(`/api/registrations?${query.toString()}`);
   if (!res.ok) throw new Error(`Failed to list registrations (${res.status})`);
   return res.json();
+}
+
+export function buildRegistrationsExportUrl(
+  statuses: RegistrationStatus[],
+): string {
+  const query = buildStatusQuery(statuses).toString();
+  return query
+    ? `/api/registrations/export?${query}`
+    : "/api/registrations/export";
 }
 
 export async function deleteRegistration(id: string): Promise<void> {
@@ -15,7 +40,7 @@ export async function deleteRegistration(id: string): Promise<void> {
   if (!res.ok) throw new Error(`Failed to delete registration (${res.status})`);
 }
 
-export async function submitRegistration(
+export async function createManualRegistration(
   input: SubmitRegistrationInput,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const res = await fetch("/api/registrations", {
@@ -26,7 +51,7 @@ export async function submitRegistration(
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    return { ok: false, error: data.error ?? "Gagal mengirim pendaftaran." };
+    return { ok: false, error: data.error ?? "Gagal menyimpan pendaftaran." };
   }
 
   return { ok: true };
@@ -35,7 +60,7 @@ export async function submitRegistration(
 export async function updateRegistrationStatus(
   id: string,
   input: UpdateRegistrationStatusInput,
-): Promise<Registration> {
+): Promise<void> {
   const res = await fetch(`/api/registrations/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -43,7 +68,6 @@ export async function updateRegistrationStatus(
   });
   if (!res.ok)
     throw new Error(`Failed to update registration status (${res.status})`);
-  return res.json();
 }
 
 export async function getPendingFollowUpCount(): Promise<number> {

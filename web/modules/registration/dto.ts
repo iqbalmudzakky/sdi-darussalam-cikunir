@@ -183,7 +183,7 @@ export type CreatePpdbRegistrationResult =
     }
   | {
       ok: false;
-      reason: "rate_limited" | "duplicate";
+      reason: "duplicate";
       message: string;
     };
 
@@ -195,6 +195,28 @@ const REGISTRATION_STATUSES: [
 export const UpdatePpdbRegistrationStatusRequestSchema = z.object({
   status: z.enum(REGISTRATION_STATUSES),
 });
+
+const SORT_DIRECTION_VALUES = ["asc", "desc"] as const;
+
+export const ListRegistrationsQuerySchema = z.object({
+  search: z.string().trim().max(100).default(""),
+  statuses: z.array(z.enum(REGISTRATION_STATUSES)).default([]),
+  sort: z.enum(SORT_DIRECTION_VALUES).default("desc"),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export type ListRegistrationsQuery = z.infer<
+  typeof ListRegistrationsQuerySchema
+>;
+
+export const ExportRegistrationsQuerySchema = z.object({
+  statuses: z.array(z.enum(REGISTRATION_STATUSES)).default([]),
+});
+
+export type ExportRegistrationsQuery = z.infer<
+  typeof ExportRegistrationsQuerySchema
+>;
 
 export type UpdatePpdbRegistrationStatusRequest = z.infer<
   typeof UpdatePpdbRegistrationStatusRequestSchema
@@ -240,4 +262,10 @@ export type RegistrationListItemResponse = {
   payment_amount: number | null;
   paid_at: string | null;
   invoice_number: string | null;
+};
+
+export type RegistrationListResponse = {
+  items: RegistrationListItemResponse[];
+  total: number;
+  has_more: boolean;
 };

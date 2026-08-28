@@ -1,9 +1,14 @@
 import { randomBytes } from "node:crypto";
 import { withDbLogging } from "@/modules/db/errors";
 import * as repository from "./repository";
+import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
 import { getRegistrationFee } from "@/modules/payment-settings/service";
-import type { DokuNotification, PaymentStatus, RegistrationPayload } from "./entity";
+import type {
+  DokuNotification,
+  PaymentStatus,
+  RegistrationPayload,
+} from "./entity";
 
 /** Sessions that reached a decision — paid, failed or expired. */
 const RATE_LIMIT_MAX_PER_HOUR = 3;
@@ -58,18 +63,21 @@ export async function startRegistrationPayment(input: {
     }
   }
 
-  const isDuplicate = await withDbLogging("payment.existsPaidDuplicate", () =>
-    repository.existsPaidDuplicate(
-      input.payload.student.full_name,
-      input.payload.student.date_of_birth,
+  const nik = input.payload.student.nik;
+
+  const [isPaidDuplicate, isAlreadyRegistered] = await Promise.all([
+    withDbLogging("payment.existsPaidDuplicate", () =>
+      repository.existsPaidDuplicate(nik),
     ),
-  );
-  if (isDuplicate) {
+    registrationService.existsDuplicateByNik(nik),
+  ]);
+
+  if (isPaidDuplicate || isAlreadyRegistered) {
     return {
       ok: false,
       reason: "duplicate",
       message:
-        "Pendaftaran atas nama ini sudah terbayar. Silakan hubungi kami jika ada kendala.",
+        "Pendaftaran dengan NIK ini sudah terdaftar. Silakan hubungi kami jika ada kendala.",
     };
   }
 
@@ -146,12 +154,14 @@ export async function applyNotification(
   );
   if (!payment) return "unknown_invoice";
 
-  const registrationId = await withDbLogging("payment.settleAsRegistration", () =>
-    repository.settleAsRegistration(payment, {
-      paymentMethod: body.channel?.id ?? body.service?.id ?? null,
-      acquirer: body.acquirer?.id ?? null,
-      paidAt: body.transaction?.date ?? new Date().toISOString(),
-    }),
+  const registrationId = await withDbLogging(
+    "payment.settleAsRegistration",
+    () =>
+      repository.settleAsRegistration(payment, {
+        paymentMethod: body.channel?.id ?? body.service?.id ?? null,
+        acquirer: body.acquirer?.id ?? null,
+        paidAt: body.transaction?.date ?? new Date().toISOString(),
+      }),
   );
 
   return registrationId ? "settled" : "duplicate";

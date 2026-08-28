@@ -1,3 +1,0 @@
-export const RATE_LIMIT_MAX_PER_HOUR = 3;
-export const RATE_LIMIT_WINDOW_MINUTES = 60;
-export const DUPLICATE_WINDOW_HOURS = 24;

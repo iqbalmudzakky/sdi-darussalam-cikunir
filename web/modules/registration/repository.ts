@@ -1,10 +1,12 @@
 import { sql } from "@/modules/db/postgres";
 import type { TransactionSql } from "postgres";
 import type {
+  ListRegistrationsInput,
   PpdbRegistration,
   PpdbRegistrationExportItem,
   PpdbRegistrationListItem,
   PpdbRegistrationStatus,
+  RegistrationFilter,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest } from "./dto";
 
@@ -263,48 +265,25 @@ export async function insert(
   return sql.begin((tx) => insertWithin(tx, input));
 }
 
-export async function countByIpSince(
-  ip: string,
-  minutesAgo: number,
-): Promise<number> {
-  const rows = await sql.unsafe<{ count: number }[]>(
-    `
-    SELECT COUNT(*)::int AS count
-    FROM ppdb_registrations
-    WHERE ip_address = $1
-      AND created_at >
-        now() - ($2 || ' minutes')::interval
-    `,
-    [ip, minutesAgo],
-  );
-
-  return rows[0].count;
-}
-
-export async function existsRecentDuplicate(
-  fullName: string,
-  dateOfBirth: string,
-  hoursAgo: number,
-): Promise<boolean> {
+export async function existsDuplicateByNik(nik: string): Promise<boolean> {
   const rows = await sql.unsafe(
     `
-    SELECT prs.id
-    FROM ppdb_registration_students prs
-    JOIN ppdb_registrations pr
-      ON pr.id = prs.registration_id
-    WHERE lower(prs.full_name) = lower($1)
-      AND prs.date_of_birth = $2
-      AND pr.created_at >
-        now() - ($3 || ' hours')::interval
+    SELECT id
+    FROM ppdb_registration_students
+    WHERE nik = $1
     LIMIT 1
     `,
-    [fullName, dateOfBirth, hoursAgo],
+    [nik],
   );
 
   return rows.length > 0;
 }
 
-export async function list(): Promise<PpdbRegistrationListItem[]> {
+export async function list(
+  input: ListRegistrationsInput,
+): Promise<PpdbRegistrationListItem[]> {
+  const direction = input.sortDirection === "asc" ? "ASC" : "DESC";
+
   return sql.unsafe<PpdbRegistrationListItem[]>(
     `
     SELECT
@@ -364,9 +343,46 @@ export async function list(): Promise<PpdbRegistrationListItem[]> {
     LEFT JOIN registration_payments payment
       ON payment.registration_id = pr.id
 
-    ORDER BY pr.created_at DESC
+    WHERE ($1 = '' OR ps.full_name ILIKE '%' || $1 || '%')
+      AND ($2 = '' OR pr.status = ANY(string_to_array($2, ',')))
+
+    ORDER BY pr.created_at ${direction}
+
+    LIMIT $3
+    OFFSET $4
     `,
+    [input.search, input.statuses.join(","), input.limit, input.offset],
   );
+}
+
+export async function count(filter: RegistrationFilter): Promise<number> {
+  const rows = await sql.unsafe<{ count: number }[]>(
+    `
+    SELECT COUNT(*)::int AS count
+
+    FROM ppdb_registrations pr
+
+    JOIN ppdb_registration_students ps
+      ON ps.registration_id = pr.id
+
+    LEFT JOIN ppdb_registration_parents father
+      ON father.registration_id = pr.id
+      AND father.parent_type = 'father'
+
+    LEFT JOIN ppdb_registration_parents mother
+      ON mother.registration_id = pr.id
+      AND mother.parent_type = 'mother'
+
+    LEFT JOIN registration_payments payment
+      ON payment.registration_id = pr.id
+
+    WHERE ($1 = '' OR ps.full_name ILIKE '%' || $1 || '%')
+      AND ($2 = '' OR pr.status = ANY(string_to_array($2, ',')))
+    `,
+    [filter.search, filter.statuses.join(",")],
+  );
+
+  return rows[0].count;
 }
 
 export async function remove(id: string): Promise<void> {
@@ -413,7 +429,9 @@ export async function countByStatus(
   return rows[0].count;
 }
 
-export async function exportList(): Promise<PpdbRegistrationExportItem[]> {
+export async function exportList(
+  statuses: PpdbRegistrationStatus[],
+): Promise<PpdbRegistrationExportItem[]> {
   return sql.unsafe<PpdbRegistrationExportItem[]>(
     `
     SELECT
@@ -474,7 +492,10 @@ export async function exportList(): Promise<PpdbRegistrationExportItem[]> {
     LEFT JOIN registration_payments payment
       ON payment.registration_id = pr.id
 
+    WHERE ($1 = '' OR pr.status = ANY(string_to_array($1, ',')))
+
     ORDER BY pr.created_at DESC
     `,
+    [statuses.join(",")],
   );
 }

@@ -1,4 +1,8 @@
-export type RegistrationStatus = "pending" | "in_progress" | "not_registered" | "registered";
+export type RegistrationStatus =
+  | "pending"
+  | "in_progress"
+  | "not_registered"
+  | "registered";
 
 export type RegistrationType = "siswa_baru" | "pindahan";
 
@@ -234,4 +238,20 @@ export type SubmitRegistrationInput = SubmitPpdbRegistrationInput;
 
 export type UpdateRegistrationStatusInput = {
   status: RegistrationStatus;
+};
+
+export type RegistrationSortDirection = "asc" | "desc";
+
+export type ListRegistrationsParams = {
+  search: string;
+  statuses: RegistrationStatus[];
+  sort: RegistrationSortDirection;
+  limit: number;
+  offset: number;
+};
+
+export type RegistrationListPage = {
+  items: Registration[];
+  total: number;
+  has_more: boolean;
 };
