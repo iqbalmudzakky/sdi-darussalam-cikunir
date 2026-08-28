@@ -136,9 +136,21 @@ export function RegistrationForm({
 
     import("./devPrefill.local")
       .then((module) => {
-        if (!cancelled) {
-          setForm((prev) => ({ ...prev, ...module.DEV_PREFILL }));
-        }
+        if (cancelled) return;
+
+        const prefill = module.DEV_PREFILL;
+        if (!prefill || Object.keys(prefill).length === 0) return;
+
+        /*
+         * Menimpa draft, bukan digabung di belakangnya.
+         *
+         * Draft dipulihkan lebih dulu, jadi tanpa ini hasil percobaan
+         * sebelumnya — termasuk formulir yang sengaja dikosongkan — akan
+         * menang atas data prefill, dan formulir terbuka kosong justru saat
+         * kita ingin mengujinya.
+         */
+        setForm({ ...EMPTY_FORM, ...prefill });
+        setHasRestoredDraft(false);
       })
       .catch(() => {
         // No prefill file — the normal case. Leave the form empty.
