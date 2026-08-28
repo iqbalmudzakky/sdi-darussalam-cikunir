@@ -27,15 +27,13 @@ type PaymentStatusViewProps = {
 
 export function PaymentStatusView({ invoiceNumber }: PaymentStatusViewProps) {
   const [status, setStatus] = useState<PaymentStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  /* Tanpa nomor invoice tidak ada yang perlu dimuat, jadi jangan mulai dari
+   * keadaan memuat — dihitung saat render, bukan lewat effect. */
+  const [isLoading, setIsLoading] = useState(Boolean(invoiceNumber));
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!invoiceNumber) {
-      setIsLoading(false);
-      setNotFound(true);
-      return;
-    }
+    if (!invoiceNumber) return;
 
     let cancelled = false;
     let attempts = 0;
