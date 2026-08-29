@@ -1,20 +1,47 @@
+"use client";
+
+import { useState } from "react";
 import { cva } from "class-variance-authority";
+import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { parseDateOnly, toDateOnly, formatDate } from "@/lib/formatDate";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 const fieldLabelVariants = cva(["mb-2 block text-sm font-medium text-ink-700"]);
 
-export const fieldInputVariants = cva(["w-full rounded-xl border bg-white", "px-3.5 py-3", "text-[15px] text-ink-900", "placeholder:text-ink-500/70", "outline-none", "transition-colors duration-200"], {
-  variants: {
-    invalid: {
-      true: "border-red-400 focus:border-red-500",
-      false: "border-brand-200 focus:border-brand-500",
+export const fieldInputVariants = cva(
+  [
+    "w-full rounded-xl border bg-white",
+    "px-3.5 py-3",
+    "text-[15px] text-ink-900",
+    "placeholder:text-ink-500/70",
+    "outline-none",
+    "transition-colors duration-200",
+  ],
+  {
+    variants: {
+      invalid: {
+        true: "border-red-400 focus:border-red-500",
+        false: "border-brand-200 focus:border-brand-500",
+      },
+    },
+    defaultVariants: {
+      invalid: false,
     },
   },
-  defaultVariants: {
-    invalid: false,
-  },
-});
+);
 
 type FieldWrapperProps = {
   id: string;
@@ -24,7 +51,13 @@ type FieldWrapperProps = {
   children: React.ReactNode;
 };
 
-function FieldWrapper({ id, label, optional, error, children }: FieldWrapperProps) {
+function FieldWrapper({
+  id,
+  label,
+  optional,
+  error,
+  children,
+}: FieldWrapperProps) {
   return (
     <div className="min-w-0">
       <label htmlFor={id} className={fieldLabelVariants()}>
@@ -57,7 +90,20 @@ type TextFieldProps = {
   maxLength?: number;
 };
 
-export function TextField({ id, label, value, onChange, onBlur, error, optional, type = "text", placeholder, autoComplete, inputMode, maxLength }: TextFieldProps) {
+export function TextField({
+  id,
+  label,
+  value,
+  onChange,
+  onBlur,
+  error,
+  optional,
+  type = "text",
+  placeholder,
+  autoComplete,
+  inputMode,
+  maxLength,
+}: TextFieldProps) {
   return (
     <FieldWrapper id={id} label={label} optional={optional} error={error}>
       <input
@@ -88,7 +134,15 @@ type SelectFieldProps = {
   options: { value: string; label: string }[];
 };
 
-export function SelectField({ id, label, value, onChange, onBlur, error, options }: SelectFieldProps) {
+export function SelectField({
+  id,
+  label,
+  value,
+  onChange,
+  onBlur,
+  error,
+  options,
+}: SelectFieldProps) {
   return (
     <FieldWrapper id={id} label={label} error={error}>
       <Select
@@ -99,18 +153,108 @@ export function SelectField({ id, label, value, onChange, onBlur, error, options
           if (!open) onBlur?.();
         }}
       >
-        <SelectTrigger id={id} aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-error` : undefined} className={cn(fieldInputVariants({ invalid: Boolean(error) }), "h-auto justify-between")}>
+        <SelectTrigger
+          id={id}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={cn(
+            fieldInputVariants({ invalid: Boolean(error) }),
+            "h-auto justify-between",
+          )}
+        >
           <SelectValue placeholder="Pilih" />
         </SelectTrigger>
 
         <SelectContent className="rounded-xl border-brand-200">
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value} className="data-highlighted:bg-brand-50 data-highlighted:text-brand-900">
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              className="data-highlighted:bg-brand-50 data-highlighted:text-brand-900"
+            >
               {option.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+    </FieldWrapper>
+  );
+}
+
+type DateFieldProps = {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  error?: string;
+  defaultMonth?: Date;
+  startMonth?: Date;
+  endMonth?: Date;
+};
+
+export function DateField({
+  id,
+  label,
+  value,
+  onChange,
+  onBlur,
+  error,
+  defaultMonth,
+  startMonth,
+  endMonth,
+}: DateFieldProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const selected = parseDateOnly(value);
+
+  return (
+    <FieldWrapper id={id} label={label} error={error}>
+      <Popover
+        open={isOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open);
+
+          if (!open) onBlur?.();
+        }}
+      >
+        <PopoverTrigger
+          id={id}
+          type="button"
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={cn(
+            fieldInputVariants({ invalid: Boolean(error) }),
+            "flex cursor-pointer items-center justify-between gap-2 text-left",
+          )}
+        >
+          <span className={cn("truncate", !selected && "text-ink-500/70")}>
+            {selected ? formatDate(selected) : "Pilih tanggal"}
+          </span>
+
+          <CalendarDays
+            className="h-4 w-4 shrink-0 text-ink-500"
+            aria-hidden="true"
+          />
+        </PopoverTrigger>
+
+        <PopoverContent className="border-brand-200">
+          <Calendar
+            mode="single"
+            captionLayout="dropdown"
+            selected={selected}
+            defaultMonth={selected ?? defaultMonth}
+            startMonth={startMonth}
+            endMonth={endMonth}
+            disabled={endMonth ? { after: endMonth } : undefined}
+            onSelect={(date) => {
+              onChange(date ? toDateOnly(date) : "");
+
+              if (date) setIsOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
     </FieldWrapper>
   );
 }
@@ -126,7 +270,16 @@ type TextareaFieldProps = {
   rows?: number;
 };
 
-export function TextareaField({ id, label, value, onChange, onBlur, error, placeholder, rows = 3 }: TextareaFieldProps) {
+export function TextareaField({
+  id,
+  label,
+  value,
+  onChange,
+  onBlur,
+  error,
+  placeholder,
+  rows = 3,
+}: TextareaFieldProps) {
   return (
     <FieldWrapper id={id} label={label} error={error}>
       <textarea
@@ -137,7 +290,10 @@ export function TextareaField({ id, label, value, onChange, onBlur, error, place
         onBlur={onBlur}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : undefined}
-        className={cn(fieldInputVariants({ invalid: Boolean(error) }), "resize-none")}
+        className={cn(
+          fieldInputVariants({ invalid: Boolean(error) }),
+          "resize-none",
+        )}
         placeholder={placeholder}
       />
     </FieldWrapper>
