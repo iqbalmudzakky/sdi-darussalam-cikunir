@@ -13,7 +13,7 @@ import {
   PARENT_RELATIONSHIP_OPTIONS,
   RELIGION_OPTIONS,
 } from "@/lib/registrationOptions";
-import { TextField, SelectField, TextareaField } from "./fields";
+import { TextField, SelectField, TextareaField, DateField } from "./fields";
 import { RegionSelect } from "./RegionSelect";
 import { clearDraft, isDraftMeaningful, loadDraft, saveDraft } from "./draft";
 import { buildRegistrationPayload } from "./payload";
@@ -78,6 +78,20 @@ export type RegistrationFormMode = "public" | "manual";
 type RegistrationFormProps = {
   onSuccess?: () => void;
   mode?: RegistrationFormMode;
+};
+
+const TODAY = new Date();
+
+const STUDENT_BIRTH_RANGE = {
+  startMonth: new Date(TODAY.getFullYear() - 25, 0),
+  endMonth: TODAY,
+  defaultMonth: new Date(TODAY.getFullYear() - 7, 0),
+};
+
+const PARENT_BIRTH_RANGE = {
+  startMonth: new Date(TODAY.getFullYear() - 80, 0),
+  endMonth: TODAY,
+  defaultMonth: new Date(TODAY.getFullYear() - 35, 0),
 };
 
 const DIGITS_ONLY_FIELDS: FieldName[] = [
@@ -303,6 +317,29 @@ export function RegistrationForm({
         onBlur={() => handleBlur(field)}
         error={fieldError(field)}
         options={options}
+      />
+    );
+  }
+
+  function renderDate(
+    field: FieldName,
+    range: {
+      startMonth: Date;
+      endMonth: Date;
+      defaultMonth: Date;
+    },
+  ) {
+    return (
+      <DateField
+        id={fieldId(field)}
+        label={FIELD_LABELS[field]}
+        value={form[field]}
+        onChange={(value) => updateField(field, value)}
+        onBlur={() => handleBlur(field)}
+        error={fieldError(field)}
+        startMonth={range.startMonth}
+        endMonth={range.endMonth}
+        defaultMonth={range.defaultMonth}
       />
     );
   }
@@ -652,9 +689,7 @@ export function RegistrationForm({
               placeholder: "Tempat lahir",
             })}
 
-            {renderText("date_of_birth", {
-              type: "date",
-            })}
+            {renderDate("date_of_birth", STUDENT_BIRTH_RANGE)}
           </div>
 
           {/*
@@ -772,9 +807,7 @@ export function RegistrationForm({
               placeholder: "Tempat lahir ayah",
             })}
 
-            {renderText("father_date_of_birth", {
-              type: "date",
-            })}
+            {renderDate("father_date_of_birth", PARENT_BIRTH_RANGE)}
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -833,9 +866,7 @@ export function RegistrationForm({
               placeholder: "Tempat lahir ibu",
             })}
 
-            {renderText("mother_date_of_birth", {
-              type: "date",
-            })}
+            {renderDate("mother_date_of_birth", PARENT_BIRTH_RANGE)}
           </div>
 
           <div className="grid gap-5 sm:grid-cols-2">
