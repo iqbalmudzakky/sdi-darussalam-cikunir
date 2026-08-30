@@ -3,6 +3,7 @@
 import * as registrationService from "@/modules/registration/service";
 import type {
   ListRegistrationsQuery,
+  RegistrantRegion,
   RegistrationListResponse,
 } from "@/modules/registration/dto";
 
@@ -26,5 +27,17 @@ export async function countPendingRegistrations(): Promise<number> {
       error,
     );
     return 0;
+  }
+}
+
+export async function getRegistrantRegions(): Promise<RegistrantRegion[]> {
+  try {
+    return await registrationService.getRegistrantRegions();
+  } catch (error) {
+    console.error(
+      "lib/actions/registrations.getRegistrantRegions failed:",
+      error,
+    );
+    return [];
   }
 }

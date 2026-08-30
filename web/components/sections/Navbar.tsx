@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { RegistrationFormDialog, RegistrationTrigger } from "@/components/sections/RegistrationDialog";
+import {
+  RegistrationFormDialog,
+  RegistrationTrigger,
+} from "@/components/sections/RegistrationDialog";
 
 const NAV_LINKS = [
   { href: "#tentang", label: "Tentang" },
@@ -101,13 +104,25 @@ export default function Navbar() {
       <div className="page-container relative z-10">
         <div className="flex h-16 items-center justify-between sm:h-[72px]">
           {/* Logo + identitas sekolah */}
-          <a href="#" className="flex min-w-0 cursor-pointer items-center gap-3" onClick={() => setIsMenuOpen(false)}>
-            <img src="/logo.png" alt="Logo SD Islam Darussalam Cikunir" className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10" />
+          <a
+            href="#"
+            className="flex min-w-0 cursor-pointer items-center gap-3"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <img
+              src="/logo.png"
+              alt="Logo SD Islam Darussalam Cikunir"
+              className="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10"
+            />
 
             <div className="min-w-0">
-              <p className="font-display truncate text-[15px] leading-tight font-semibold text-ink-900 sm:text-base">SD Islam Darussalam Cikunir</p>
+              <p className="font-display truncate text-[15px] leading-tight font-semibold text-ink-900 sm:text-base">
+                SD Islam Darussalam Cikunir
+              </p>
 
-              <p className="mt-0.5 truncate text-[11px] leading-tight tracking-wide text-ink-500 uppercase">Jaka Mulya, Bekasi Selatan</p>
+              <p className="mt-0.5 truncate text-[11px] leading-tight tracking-wide text-ink-500 uppercase">
+                Jaka Mulya, Bekasi Selatan
+              </p>
             </div>
           </a>
 
@@ -127,7 +142,10 @@ export default function Navbar() {
               </a>
             ))}
 
-            <RegistrationTrigger variant="compact" onClick={() => setIsRegistrationOpen(true)}>
+            <RegistrationTrigger
+              variant="compact"
+              onClick={() => setIsRegistrationOpen(true)}
+            >
               Pendaftaran
             </RegistrationTrigger>
           </div>
@@ -196,13 +214,25 @@ export default function Navbar() {
             Latar gelap menutupi halaman di belakang menu,
             sekaligus menjadi area tap untuk menutup.
           */}
-          <button type="button" aria-label="Tutup menu" onClick={() => setIsMenuOpen(false)} className="mobile-menu-backdrop fixed inset-0 top-16 z-0 cursor-default bg-ink-900/30 backdrop-blur-[2px] sm:top-[72px] lg:hidden" />
+          <button
+            type="button"
+            aria-label="Tutup menu"
+            onClick={() => setIsMenuOpen(false)}
+            className="mobile-menu-backdrop fixed inset-0 top-16 z-0 cursor-default bg-ink-900/30 backdrop-blur-[2px] sm:top-[72px] lg:hidden"
+          />
 
-          <div id="mobile-navigation" className="mobile-menu-panel relative z-10 border-t border-brand-100 bg-paper shadow-sm lg:hidden">
+          <div
+            id="mobile-navigation"
+            className="mobile-menu-panel relative z-10 border-t border-brand-100 bg-paper shadow-sm lg:hidden"
+          >
             <div className="page-container pt-2 pb-6">
               <ul>
                 {NAV_LINKS.map((link, index) => (
-                  <li key={link.href} className="mobile-menu-item" style={{ animationDelay: `${60 + index * 45}ms` }}>
+                  <li
+                    key={link.href}
+                    className="mobile-menu-item"
+                    style={{ animationDelay: `${60 + index * 45}ms` }}
+                  >
                     <a
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
@@ -215,7 +245,9 @@ export default function Navbar() {
                         hover:text-brand-700
                       "
                     >
-                      <span className="font-display font-medium">{link.label}</span>
+                      <span className="font-display font-medium">
+                        {link.label}
+                      </span>
 
                       <ArrowUpRight
                         className="
@@ -247,7 +279,9 @@ export default function Navbar() {
                   Pendaftaran
                 </RegistrationTrigger>
 
-                <p className="mt-3 text-center text-xs text-ink-500">Penerimaan siswa baru tahun ajaran 2026/2027</p>
+                <p className="mt-3 text-center text-xs text-ink-500">
+                  Penerimaan siswa baru tahun ajaran 2027/2028
+                </p>
               </div>
             </div>
           </div>
@@ -258,7 +292,10 @@ export default function Navbar() {
         Dialog berada di luar panel menu supaya tetap hidup
         ketika menu mobile ditutup.
       */}
-      <RegistrationFormDialog open={isRegistrationOpen} onOpenChange={setIsRegistrationOpen} />
+      <RegistrationFormDialog
+        open={isRegistrationOpen}
+        onOpenChange={setIsRegistrationOpen}
+      />
     </nav>
   );
 }

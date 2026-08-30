@@ -13,7 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
-import { formatDate } from "@/lib/formatDate";
+import { formatDate } from "@/lib/date";
 import type { AdminItem, UpdateAdminInput } from "@/types/Admin";
 
 type ActionResult = { ok: boolean; error?: string };

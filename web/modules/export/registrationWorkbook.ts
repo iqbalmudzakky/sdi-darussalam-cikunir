@@ -1,4 +1,5 @@
 import ExcelJS from "exceljs";
+import { jakartaDateKey } from "@/modules/shared/jakartaDate";
 import type { PpdbRegistrationExportItem } from "@/modules/registration/entity";
 
 const REGISTRATION_TYPE_LABELS: Record<string, string> = {
@@ -58,18 +59,7 @@ function formatDateTime(value: string): string {
 }
 
 export function getRegistrationsExportFilename(): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jakarta",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-
-  const year = parts.find((part) => part.type === "year")?.value;
-  const month = parts.find((part) => part.type === "month")?.value;
-  const day = parts.find((part) => part.type === "day")?.value;
-
-  return `data-pendaftar-${year}-${month}-${day}.xlsx`;
+  return `data-pendaftar-${jakartaDateKey(new Date())}.xlsx`;
 }
 
 export async function buildRegistrationsWorkbookBuffer(
