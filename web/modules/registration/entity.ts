@@ -239,3 +239,9 @@ export type ListRegistrationsInput = RegistrationFilter & {
   limit: number;
   offset: number;
 };
+
+export type RegistrantRegionRow = {
+  city: string;
+  province: string;
+  total: number;
+};

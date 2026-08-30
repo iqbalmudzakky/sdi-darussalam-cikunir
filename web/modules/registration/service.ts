@@ -17,6 +17,7 @@ import type {
   CreatePpdbRegistrationResult,
   ExportRegistrationsQuery,
   ListRegistrationsQuery,
+  RegistrantRegion,
   RegistrationListItemResponse,
   RegistrationListResponse,
 } from "./dto";
@@ -141,6 +142,14 @@ export async function existsDuplicateByNik(nik: string): Promise<boolean> {
 export async function countPendingFollowUp(): Promise<number> {
   return withDbLogging("registration.countByStatus", () =>
     repository.countByStatus("pending"),
+  );
+}
+
+export async function getRegistrantRegions(
+  limit = 8,
+): Promise<RegistrantRegion[]> {
+  return withDbLogging("registration.listRegistrantRegions", () =>
+    repository.listRegistrantRegions(limit),
   );
 }
 

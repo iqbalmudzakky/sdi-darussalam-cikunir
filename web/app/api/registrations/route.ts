@@ -6,16 +6,7 @@ import {
   ListRegistrationsQuerySchema,
 } from "@/modules/registration/dto";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
-
-function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0].trim();
-  }
-
-  return "unknown";
-}
+import { getClientIp } from "@/modules/shared/clientIp";
 
 export async function GET(request: Request) {
   const user = await requireUser();

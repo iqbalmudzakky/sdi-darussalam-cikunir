@@ -41,7 +41,7 @@ import {
   buildRegistrationsExportUrl,
 } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
-import { formatDateTime } from "@/lib/formatDate";
+import { formatDateTime } from "@/lib/date";
 import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";

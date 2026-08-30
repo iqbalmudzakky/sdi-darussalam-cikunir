@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cva } from "class-variance-authority";
 import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { parseDateOnly, toDateOnly, formatDate } from "@/lib/formatDate";
+import { parseDateOnly, toDateOnly, formatDate } from "@/lib/date";
 import {
   Select,
   SelectTrigger,
