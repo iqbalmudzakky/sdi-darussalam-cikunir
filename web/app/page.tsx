@@ -9,12 +9,14 @@ import Hero from "@/components/sections/Hero";
 import Navbar from "@/components/sections/Navbar";
 import Program from "@/components/sections/Program";
 import Vision from "@/components/sections/Vision";
+import { VisitTracker } from "@/components/analytics/VisitTracker";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
 const SITE_DESCRIPTION_FALLBACK =
   "SD Islam Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jakamulya, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlak karimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
-const SITE_TITLE = "Yayasan Pembangunan Umat Islam Darussalam - Perguruan Islam Darussalam";
+const SITE_TITLE =
+  "Yayasan Pembangunan Umat Islam Darussalam - Perguruan Islam Darussalam";
 const SITE_NAME = "Yayasan Pembangunan Umat Islam Darussalam";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -73,7 +75,12 @@ export default async function Home() {
   const profile = await getSchoolProfile();
   const siteUrl = getSiteUrl();
 
-  const sameAs = [profile.facebook, profile.instagram, profile.tiktok, profile.youtube].filter(Boolean);
+  const sameAs = [
+    profile.facebook,
+    profile.instagram,
+    profile.tiktok,
+    profile.youtube,
+  ].filter(Boolean);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -96,7 +103,12 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <VisitTracker />
 
       {/* Navigation */}
       <Navbar />

@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { CreatePpdbRegistrationRequestSchema } from "@/modules/registration/dto";
 import * as paymentService from "@/modules/payment/service";
-
-function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0].trim();
-  return "unknown";
-}
+import { getClientIp } from "@/modules/shared/clientIp";
 
 /* Biodata ditahan di registration_payments sampai DOKU mengonfirmasi bayar. */
 export async function POST(request: Request) {

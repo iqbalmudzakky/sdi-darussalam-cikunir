@@ -269,3 +269,9 @@ export type RegistrationListResponse = {
   total: number;
   has_more: boolean;
 };
+
+export type RegistrantRegion = {
+  city: string;
+  province: string;
+  total: number;
+};

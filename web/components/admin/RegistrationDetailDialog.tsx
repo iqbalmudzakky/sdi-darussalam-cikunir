@@ -7,7 +7,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
-import { formatDateTime, parseDateOnly, formatDate } from "@/lib/formatDate";
+import { formatDateTime, parseDateOnly, formatDate } from "@/lib/date";
 import {
   REGISTRATION_TYPE_OPTIONS,
   GENDER_OPTIONS,

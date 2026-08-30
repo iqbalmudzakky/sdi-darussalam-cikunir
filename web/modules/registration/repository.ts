@@ -6,6 +6,7 @@ import type {
   PpdbRegistrationExportItem,
   PpdbRegistrationListItem,
   PpdbRegistrationStatus,
+  RegistrantRegionRow,
   RegistrationFilter,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest } from "./dto";
@@ -497,5 +498,23 @@ export async function exportList(
     ORDER BY pr.created_at DESC
     `,
     [statuses.join(",")],
+  );
+}
+
+export async function listRegistrantRegions(
+  limit: number,
+): Promise<RegistrantRegionRow[]> {
+  return sql.unsafe<RegistrantRegionRow[]>(
+    `SELECT
+       COALESCE(NULLIF(TRIM(ps.city), ''), 'Tidak diisi') AS city,
+       COALESCE(NULLIF(TRIM(ps.province), ''), '') AS province,
+       COUNT(*)::int AS total
+     FROM ppdb_registrations pr
+     JOIN ppdb_registration_students ps
+       ON ps.registration_id = pr.id
+     GROUP BY 1, 2
+     ORDER BY total DESC, city ASC
+     LIMIT $1`,
+    [limit],
   );
 }

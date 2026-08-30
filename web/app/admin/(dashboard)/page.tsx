@@ -4,9 +4,13 @@ import {
   BookOpen,
   Building2,
   CalendarDays,
+  Clock,
+  Eye,
   Inbox,
+  MapPin,
   Trophy,
   TriangleAlert,
+  Users,
 } from "lucide-react";
 import { listPrograms } from "@/lib/actions/programs";
 import { listFacilities } from "@/lib/actions/facilities";
@@ -15,9 +19,12 @@ import { listAchievements } from "@/lib/actions/achievements";
 import {
   listRegistrations,
   countPendingRegistrations,
+  getRegistrantRegions,
 } from "@/lib/actions/registrations";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
+import { getVisitSummary } from "@/lib/actions/analytics";
 import { getSession } from "@/lib/auth/session";
+import { formatDuration } from "@/lib/date";
 
 /*
  * Selalu ambil data terbaru. Dashboard ini dipakai untuk
@@ -60,6 +67,8 @@ export default async function AdminDashboardPage() {
     achievements,
     registrations,
     pendingCount,
+    visitSummary,
+    registrantRegions,
   ] = await Promise.all([
     getSession(),
     getSchoolProfile(),
@@ -75,9 +84,40 @@ export default async function AdminDashboardPage() {
       offset: 0,
     }),
     countPendingRegistrations(),
+    getVisitSummary(),
+    getRegistrantRegions(),
   ]);
 
   const recentRegistrations = registrations.items;
+
+  const visitStats = [
+    {
+      label: "Total kunjungan",
+      value: visitSummary.total_visits.toLocaleString("id-ID"),
+      caption: `${visitSummary.visits_30d.toLocaleString("id-ID")} dalam 30 hari terakhir`,
+      icon: Eye,
+    },
+    {
+      label: "Pengunjung unik",
+      value: visitSummary.unique_visitors.toLocaleString("id-ID"),
+      caption: `${visitSummary.unique_visitors_30d.toLocaleString("id-ID")} dalam 30 hari terakhir`,
+      icon: Users,
+    },
+    {
+      label: "Rata-rata kunjungan",
+      value: formatDuration(visitSummary.avg_duration_ms),
+      caption:
+        visitSummary.measured_visits > 0
+          ? `Terukur dari ${visitSummary.measured_visits.toLocaleString("id-ID")} kunjungan`
+          : "Belum ada yang terukur",
+      icon: Clock,
+    },
+  ];
+
+  const largestRegionTotal = Math.max(
+    1,
+    ...registrantRegions.map((region) => region.total),
+  );
 
   const stats = [
     {
@@ -196,6 +236,39 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
+      {/* Kunjungan situs */}
+      <div className="mt-8">
+        <div className="mb-4 flex items-baseline justify-between gap-3">
+          <h2 className="text-sm font-semibold text-gray-900">
+            Kunjungan situs
+          </h2>
+
+          <p className="text-xs text-gray-400">
+            Halaman utama saja, tanpa halaman admin
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          {visitStats.map(({ label, value, caption, icon: Icon }) => (
+            <div
+              key={label}
+              className="rounded-xl border border-gray-100 bg-white p-5"
+            >
+              <div className="flex items-center gap-2 text-gray-500">
+                <Icon className="h-4 w-4" />
+                <span className="text-sm">{label}</span>
+              </div>
+
+              <p className="mt-3 text-3xl font-bold text-gray-900 tabular-nums">
+                {value}
+              </p>
+
+              <p className="mt-1 text-xs text-gray-400">{caption}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         {/* Pendaftar terakhir */}
         <div className="rounded-xl border border-gray-100 bg-white">
@@ -292,6 +365,63 @@ export default async function AdminDashboardPage() {
             </ul>
           )}
         </div>
+      </div>
+
+      {/* Asal pendaftar */}
+      <div className="mt-6 rounded-xl border border-gray-100 bg-white">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-gray-100 px-5 py-4">
+          <h2 className="text-sm font-semibold text-gray-900">
+            Asal pendaftar
+          </h2>
+
+          <p className="text-xs text-gray-400">
+            Dari alamat yang diisi di formulir pendaftaran
+          </p>
+        </div>
+
+        {registrantRegions.length === 0 ? (
+          <p className="px-5 py-10 text-center text-sm text-gray-500">
+            Belum ada pendaftar yang masuk.
+          </p>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {registrantRegions.map((region) => (
+              <li
+                key={`${region.province}-${region.city}`}
+                className="px-5 py-3.5"
+              >
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-gray-900">
+                      {region.city}
+                    </p>
+
+                    {region.province && (
+                      <p className="truncate text-xs text-gray-400">
+                        {region.province}
+                      </p>
+                    )}
+                  </div>
+
+                  <span className="shrink-0 text-sm font-semibold text-gray-900 tabular-nums">
+                    {region.total}
+                  </span>
+                </div>
+
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className="h-full rounded-full bg-brand-500"
+                    style={{
+                      width: `${(region.total / largestRegionTotal) * 100}%`,
+                    }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
