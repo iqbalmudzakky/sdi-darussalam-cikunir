@@ -15,6 +15,9 @@ export async function GET(request: Request) {
   try {
     const status = await paymentService.getPaymentStatus(invoiceNumber);
     if (!status) {
+      console.warn(
+        `GET /api/payments/status: invoice tidak ditemukan (${invoiceNumber})`,
+      );
       return NextResponse.json(
         { error: "Data pembayaran tidak ditemukan." },
         { status: 404 },
