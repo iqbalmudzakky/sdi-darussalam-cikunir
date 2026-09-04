@@ -2,9 +2,12 @@ import { sql } from "@/modules/db/postgres";
 import type { CheckoutSession } from "./doku";
 import type {
   DokuNotification,
+  ListPaymentsInput,
   NewRegistrationPayment,
+  PaymentFilter,
   PaymentStatus,
   RegistrationPayment,
+  RegistrationPaymentListItem,
 } from "./entity";
 import * as registrationRepository from "@/modules/registration/repository";
 
@@ -55,6 +58,73 @@ export async function findByInvoiceNumber(
     [invoiceNumber],
   );
   return rows[0] ?? null;
+}
+
+export async function list(
+  input: ListPaymentsInput,
+): Promise<RegistrationPaymentListItem[]> {
+  const direction = input.sortDirection === "asc" ? "ASC" : "DESC";
+
+  return sql.unsafe<RegistrationPaymentListItem[]>(
+    `
+    SELECT
+      p.id,
+      p.invoice_number,
+      p.amount,
+      p.status,
+      p.registration_id,
+      p.payment_method,
+      p.acquirer,
+      p.paid_at,
+      p.expired_date,
+      p.created_at,
+
+      p.payload -> 'student' ->> 'full_name' AS full_name,
+      p.payload -> 'student' ->> 'nik'       AS student_nik,
+      p.payload ->> 'parent_email'           AS parent_email,
+
+      (SELECT parent ->> 'phone'
+         FROM jsonb_array_elements(COALESCE(p.payload -> 'parents', '[]'::jsonb)) AS parent
+        WHERE parent ->> 'parent_type' = 'father'
+        LIMIT 1) AS father_phone,
+
+      (SELECT parent ->> 'phone'
+         FROM jsonb_array_elements(COALESCE(p.payload -> 'parents', '[]'::jsonb)) AS parent
+        WHERE parent ->> 'parent_type' = 'mother'
+        LIMIT 1) AS mother_phone
+
+    FROM registration_payments p
+
+    WHERE ($1 = '' OR p.invoice_number ILIKE '%' || $1 || '%'
+                   OR p.payload -> 'student' ->> 'full_name' ILIKE '%' || $1 || '%'
+                   OR p.payload -> 'student' ->> 'nik' ILIKE '%' || $1 || '%')
+      AND ($2 = '' OR p.status::text = ANY(string_to_array($2, ',')))
+
+    ORDER BY p.created_at ${direction}
+
+    LIMIT $3
+    OFFSET $4
+    `,
+    [input.search, input.statuses.join(","), input.limit, input.offset],
+  );
+}
+
+export async function count(filter: PaymentFilter): Promise<number> {
+  const rows = await sql.unsafe<{ count: number }[]>(
+    `
+    SELECT COUNT(*)::int AS count
+
+    FROM registration_payments p
+
+    WHERE ($1 = '' OR p.invoice_number ILIKE '%' || $1 || '%'
+                   OR p.payload -> 'student' ->> 'full_name' ILIKE '%' || $1 || '%'
+                   OR p.payload -> 'student' ->> 'nik' ILIKE '%' || $1 || '%')
+      AND ($2 = '' OR p.status::text = ANY(string_to_array($2, ',')))
+    `,
+    [filter.search, filter.statuses.join(",")],
+  );
+
+  return rows[0].count;
 }
 
 /* Menghitung semua sesi dari satu IP, termasuk yang ditinggalkan. Penjaga

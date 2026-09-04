@@ -6,9 +6,17 @@ import { createCheckoutSession } from "./doku";
 import { getRegistrationFee } from "@/modules/payment-settings/service";
 import type {
   DokuNotification,
+  ListPaymentsInput,
+  PaymentFilter,
   PaymentStatus,
   RegistrationPayload,
+  RegistrationPaymentListItem,
 } from "./entity";
+import type {
+  ListPaymentsRequest,
+  PaymentListItemResponse,
+  PaymentListResponse,
+} from "./dto";
 
 /* Sesi yang sudah berakhir: lunas, gagal, atau kedaluwarsa. */
 const RATE_LIMIT_MAX_PER_HOUR = 3;
@@ -177,5 +185,56 @@ export async function getPaymentStatus(
     status: payment.status,
     amount: payment.amount,
     full_name: payment.payload.student.full_name,
+  };
+}
+
+function toPaymentListItemResponse(
+  item: RegistrationPaymentListItem,
+): PaymentListItemResponse {
+  return {
+    id: item.id,
+    invoice_number: item.invoice_number,
+    amount: item.amount,
+    status: item.status,
+    payment_method: item.payment_method,
+    acquirer: item.acquirer,
+    paid_at: item.paid_at,
+    expired_date: item.expired_date,
+    created_at: item.created_at,
+
+    full_name: item.full_name,
+    student_nik: item.student_nik,
+    parent_email: item.parent_email,
+    father_phone: item.father_phone,
+    mother_phone: item.mother_phone,
+
+    is_settled: item.registration_id !== null,
+  };
+}
+
+export async function listPayments(
+  params: ListPaymentsRequest,
+): Promise<PaymentListResponse> {
+  const filter: PaymentFilter = {
+    search: params.search,
+    statuses: params.statuses,
+  };
+
+  const listInput: ListPaymentsInput = {
+    ...filter,
+    sortDirection: params.sort,
+    limit: params.limit,
+    offset: params.offset,
+  };
+
+  const [items, total] = await Promise.all([
+    withDbLogging("payment.list", () => repository.list(listInput)),
+    withDbLogging("payment.count", () => repository.count(filter)),
+  ]);
+
+  return {
+    items: items.map(toPaymentListItemResponse),
+    total,
+    has_more: params.offset + items.length < total,
   };
 }

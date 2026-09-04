@@ -100,7 +100,7 @@ function DialogContent({
           {children}
         </div>
         {showCloseButton && (
-          <DialogPrimitive.Close className="absolute top-3 right-3 z-10 cursor-pointer rounded-full bg-white/85 p-1.5 text-gray-600 shadow-sm outline-none backdrop-blur-sm transition-colors hover:bg-white hover:text-gray-900">
+          <DialogPrimitive.Close className="absolute top-3 right-3 z-10 cursor-pointer rounded-full bg-gray-100 p-1.5 text-gray-500 outline-none transition-colors hover:bg-gray-200 hover:text-gray-900">
             <X className="h-4 w-4" />
             <span className="sr-only">Tutup</span>
           </DialogPrimitive.Close>
