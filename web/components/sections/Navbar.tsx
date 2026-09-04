@@ -1,55 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import {
   RegistrationFormDialog,
   RegistrationTrigger,
 } from "@/components/sections/RegistrationDialog";
-
-/* TEMPORARY: tombol untuk memverifikasi DOKU production. Hapus bersama
- * app/api/payments/doku/test-checkout setelah production dipastikan jalan. */
-function TestPaymentButton({ className }: { className?: string }) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function handleClick() {
-    setIsLoading(true);
-    try {
-      const res = await fetch("/api/payments/doku/test-checkout", { method: "POST" });
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data.payment_url) {
-        alert(data.error ?? "Gagal membuat sesi tes pembayaran.");
-        return;
-      }
-
-      window.location.href = data.payment_url;
-    } catch {
-      alert("Tidak dapat menghubungi server.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={isLoading}
-      className={`
-        flex cursor-pointer items-center justify-center gap-1.5
-        rounded-lg border border-dashed border-amber-400 bg-amber-50 px-3 py-2
-        text-[13px] font-medium text-amber-700
-        transition-colors hover:bg-amber-100
-        disabled:cursor-not-allowed disabled:opacity-60
-        ${className ?? ""}
-      `}
-    >
-      {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-      Tes Bayar Rp15.000
-    </button>
-  );
-}
 
 const NAV_LINKS = [
   { href: "#tentang", label: "Tentang" },
@@ -192,8 +148,6 @@ export default function Navbar() {
             >
               Pendaftaran
             </RegistrationTrigger>
-
-            <TestPaymentButton />
           </div>
 
           {/*
@@ -328,8 +282,6 @@ export default function Navbar() {
                 <p className="mt-3 text-center text-xs text-ink-500">
                   Penerimaan siswa baru tahun ajaran 2027/2028
                 </p>
-
-                <TestPaymentButton className="mt-3 w-full" />
               </div>
             </div>
           </div>
