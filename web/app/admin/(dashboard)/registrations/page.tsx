@@ -45,6 +45,7 @@ import { formatDateTime } from "@/lib/date";
 import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
 import {
   REGISTRATION_TYPE_OPTIONS,
   getOptionLabel,
@@ -95,31 +96,6 @@ const FINAL_STATUS_OPTIONS = STATUS_OPTIONS.filter(
   (option) =>
     option.value === "not_registered" || option.value === "registered",
 );
-const PAYMENT_BADGES: Record<
-  NonNullable<Registration["payment_status"]>,
-  { label: string; icon: typeof Clock; className: string }
-> = {
-  success: {
-    label: "Lunas",
-    icon: CheckCircle2,
-    className: "bg-green-100 text-green-700",
-  },
-  pending: {
-    label: "Belum Bayar",
-    icon: Clock,
-    className: "bg-amber-100 text-amber-700",
-  },
-  failed: {
-    label: "Gagal Bayar",
-    icon: XCircle,
-    className: "bg-red-100 text-red-700",
-  },
-  expired: {
-    label: "Kedaluwarsa",
-    icon: XCircle,
-    className: "bg-gray-100 text-gray-600",
-  },
-};
 const actionButtonVariants = cva(
   "flex items-center justify-center font-medium transition-colors disabled:opacity-60",
   {
@@ -503,7 +479,10 @@ export default function AdminRegistrationsPage() {
                     <p className="text-xs text-gray-400">
                       {formatDateTime(item.created_at)}
                     </p>
-                    <PaymentBadge item={item} />
+                    <PaymentStatusBadge
+                      status={item.payment_status}
+                      title={item.invoice_number ?? undefined}
+                    />
                   </div>
 
                   <div className="flex gap-2">
@@ -608,7 +587,10 @@ export default function AdminRegistrationsPage() {
                     </p>
 
                     <div className="w-24 shrink-0">
-                      <PaymentBadge item={item} />
+                      <PaymentStatusBadge
+                        status={item.payment_status}
+                        title={item.invoice_number ?? undefined}
+                      />
                     </div>
 
                     <button
@@ -920,30 +902,5 @@ export default function AdminRegistrationsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-/**
- * Payment state shown alongside the follow-up status, never merged into it:
- * `status` is what the admin is doing about the applicant, this is whether the
- * fee has been paid. Registrations created before the payment flow have no
- * payment row, so nothing is shown for them.
- */
-function PaymentBadge({ item }: { item: Registration }) {
-  if (!item.payment_status) return null;
-
-  const badge = PAYMENT_BADGES[item.payment_status];
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-        badge.className,
-      )}
-      title={item.invoice_number ?? undefined}
-    >
-      <badge.icon className="h-3 w-3" />
-      {badge.label}
-    </span>
   );
 }

@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Receipt,
   ShieldCheck,
   Wallet,
   type LucideIcon,
@@ -23,16 +24,25 @@ import {
 import { logout } from "@/lib/api/auth";
 import { getPendingFollowUpCount } from "@/lib/api/registrations";
 
-const sidebarNavLinkVariants = cva(["flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium", "transition-colors"], {
-  variants: {
-    active: {
-      true: "bg-brand-50 text-brand-700",
-      false: "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+const sidebarNavLinkVariants = cva(
+  [
+    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+    "transition-colors",
+  ],
+  {
+    variants: {
+      active: {
+        true: "bg-brand-50 text-brand-700",
+        false: "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+      },
     },
   },
-});
+);
 
-const sidebarPendingBadgeVariants = cva(["ml-auto flex h-5 min-w-5 items-center justify-center rounded-full", "bg-red-500 px-1.5 text-xs font-semibold text-white"]);
+const sidebarPendingBadgeVariants = cva([
+  "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full",
+  "bg-red-500 px-1.5 text-xs font-semibold text-white",
+]);
 
 /*
  * Menu dikelompokkan supaya daftar panjang tetap terbaca:
@@ -68,7 +78,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Masuk",
-    items: [{ href: "/admin/registrations", label: "Pendaftar", icon: Inbox }],
+    items: [
+      { href: "/admin/registrations", label: "Pendaftar", icon: Inbox },
+      { href: "/admin/transactions", label: "Transaksi", icon: Receipt },
+    ],
   },
   {
     label: "Administrasi",
@@ -161,11 +174,20 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
 
   const header = (
     <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-5">
-      <img src="/logo.png" alt="" aria-hidden="true" className="h-9 w-9 shrink-0 object-contain" />
+      <img
+        src="/logo.png"
+        alt=""
+        aria-hidden="true"
+        className="h-9 w-9 shrink-0 object-contain"
+      />
 
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-gray-900">Admin Panel</p>
-        <p className="truncate text-xs text-gray-500">SD Islam Darussalam Cikunir</p>
+        <p className="truncate text-sm font-semibold text-gray-900">
+          Admin Panel
+        </p>
+        <p className="truncate text-xs text-gray-500">
+          SD Islam Darussalam Cikunir
+        </p>
       </div>
     </div>
   );
@@ -220,12 +242,21 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
 
   const footer = (
     <div className="space-y-1 border-t border-gray-100 px-3 py-4">
-      <a href="/" target="_blank" rel="noopener noreferrer" className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+      <a
+        href="/"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+      >
         <ExternalLink className="h-4 w-4 shrink-0" />
         Lihat Website
       </a>
 
-      <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600">
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
+      >
         <LogOut className="h-4 w-4 shrink-0" />
         Keluar
       </button>
@@ -236,17 +267,33 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
     <>
       {/* Bilah atas khusus layar kecil */}
       <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-3 border-b border-gray-100 bg-white px-4 lg:hidden">
-        <button type="button" onClick={() => setIsOpen(true)} aria-label="Buka menu" aria-expanded={isOpen} className="-ml-2 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-50">
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-label="Buka menu"
+          aria-expanded={isOpen}
+          className="-ml-2 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-50"
+        >
           <Menu className="h-5 w-5" />
         </button>
 
         <div className="flex min-w-0 items-center gap-2.5">
-          <img src="/logo.png" alt="" aria-hidden="true" className="h-7 w-7 shrink-0 object-contain" />
-          <p className="truncate text-sm font-semibold text-gray-900">Admin Panel</p>
+          <img
+            src="/logo.png"
+            alt=""
+            aria-hidden="true"
+            className="h-7 w-7 shrink-0 object-contain"
+          />
+          <p className="truncate text-sm font-semibold text-gray-900">
+            Admin Panel
+          </p>
         </div>
 
         {pendingCount > 0 && (
-          <Link href="/admin/registrations" className="ml-auto flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600">
+          <Link
+            href="/admin/registrations"
+            className="ml-auto flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600"
+          >
             <Inbox className="h-3.5 w-3.5" />
             {pendingCount}
           </Link>
@@ -263,7 +310,12 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
       {/* Laci geser di layar kecil */}
       {isOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <button type="button" aria-label="Tutup menu" onClick={() => setIsOpen(false)} className="admin-drawer-backdrop absolute inset-0 cursor-default bg-gray-900/40" />
+          <button
+            type="button"
+            aria-label="Tutup menu"
+            onClick={() => setIsOpen(false)}
+            className="admin-drawer-backdrop absolute inset-0 cursor-default bg-gray-900/40"
+          />
 
           <aside className="admin-drawer absolute inset-y-0 left-0 flex w-72 max-w-[85%] flex-col bg-white shadow-xl">
             <div className="relative">

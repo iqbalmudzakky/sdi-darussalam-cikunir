@@ -34,6 +34,36 @@ export type NewRegistrationPayment = {
   ip_address: string | null;
 };
 
+export type PaymentFilter = {
+  search: string;
+  statuses: PaymentStatus[];
+};
+
+export type ListPaymentsInput = PaymentFilter & {
+  sortDirection: "asc" | "desc";
+  limit: number;
+  offset: number;
+};
+
+export type RegistrationPaymentListItem = {
+  id: string;
+  invoice_number: string;
+  amount: number;
+  status: PaymentStatus;
+  registration_id: string | null;
+  payment_method: string | null;
+  acquirer: string | null;
+  paid_at: string | null;
+  expired_date: string | null;
+  created_at: string;
+
+  full_name: string | null;
+  student_nik: string | null;
+  parent_email: string | null;
+  father_phone: string | null;
+  mother_phone: string | null;
+};
+
 /* Bagian notifikasi DOKU yang dipakai. Field lain sengaja diabaikan. */
 export type DokuNotification = {
   service?: { id?: string };
