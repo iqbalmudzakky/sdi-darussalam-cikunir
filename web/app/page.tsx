@@ -13,6 +13,8 @@ import { VisitTracker } from "@/components/analytics/VisitTracker";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
+export const revalidate = 300;
+
 const SITE_DESCRIPTION_FALLBACK =
   "SD Islam Darussalam Cikunir adalah Sekolah Dasar Islam unggulan di Jakamulya, Bekasi Selatan, yang membentuk generasi cerdas dan berakhlak karimah. Info pendaftaran, program, fasilitas, dan kegiatan sekolah.";
 const SITE_TITLE =
