@@ -6,6 +6,7 @@ import type { VisitSummary } from "@/modules/analytics/dto";
 const EMPTY_SUMMARY: VisitSummary = {
   total_visits: 0,
   unique_visitors: 0,
+  unique_visitors_today: 0,
   visits_30d: 0,
   unique_visitors_30d: 0,
   avg_duration_ms: null,
