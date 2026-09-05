@@ -1,0 +1,1 @@
+export const COUNT_UP_ANIMATION_DURATION_MS = 1500;
