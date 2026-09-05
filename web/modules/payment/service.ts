@@ -150,9 +150,16 @@ export async function applyNotification(
       body,
     }),
   );
-  if (!isNew) return "duplicate";
 
-  if (transactionStatus !== "SUCCESS" || !invoiceNumber) return "ignored";
+  if (!isNew && transactionStatus === "SUCCESS") {
+    console.warn(
+      `[doku] notification SUCCESS diulang untuk invoice ${invoiceNumber} (request ${requestId})`,
+    );
+  }
+
+  if (transactionStatus !== "SUCCESS" || !invoiceNumber) {
+    return isNew ? "ignored" : "duplicate";
+  }
 
   const payment = await withDbLogging("payment.findByInvoiceNumber", () =>
     repository.findByInvoiceNumber(invoiceNumber),

@@ -338,7 +338,8 @@ export async function list(
     LEFT JOIN registration_payments payment
       ON payment.registration_id = pr.id
 
-    WHERE ($1 = '' OR ps.full_name ILIKE '%' || $1 || '%')
+    WHERE ($1 = '' OR ps.full_name ILIKE '%' || $1 || '%'
+                   OR ps.nik ILIKE '%' || $1 || '%')
       AND ($2 = '' OR pr.status = ANY(string_to_array($2, ',')))
 
     ORDER BY pr.created_at ${direction}
@@ -371,7 +372,8 @@ export async function count(filter: RegistrationFilter): Promise<number> {
     LEFT JOIN registration_payments payment
       ON payment.registration_id = pr.id
 
-    WHERE ($1 = '' OR ps.full_name ILIKE '%' || $1 || '%')
+    WHERE ($1 = '' OR ps.full_name ILIKE '%' || $1 || '%'
+                   OR ps.nik ILIKE '%' || $1 || '%')
       AND ($2 = '' OR pr.status = ANY(string_to_array($2, ',')))
     `,
     [filter.search, filter.statuses.join(",")],
