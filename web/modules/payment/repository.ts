@@ -3,6 +3,7 @@ import type { CheckoutSession } from "./doku";
 import type {
   DokuNotification,
   ListPaymentsInput,
+  NewManualPayment,
   NewRegistrationPayment,
   PaymentFilter,
   PaymentStatus,
@@ -12,9 +13,10 @@ import type {
 import * as registrationRepository from "@/modules/registration/repository";
 
 const COLUMNS = `
-  id, invoice_number, amount, status, payload, registration_id,
+  id, invoice_number, amount, status, source, payload, registration_id,
   session_id, token_id, payment_url, expired_date,
-  payment_method, acquirer, paid_at, ip_address, created_at, updated_at
+  payment_method, acquirer, receipt_number, paid_at, ip_address,
+  created_at, updated_at
 `;
 
 export async function insert(
@@ -72,9 +74,11 @@ export async function list(
       p.invoice_number,
       p.amount,
       p.status,
+      p.source,
       p.registration_id,
       p.payment_method,
       p.acquirer,
+      p.receipt_number,
       p.paid_at,
       p.expired_date,
       p.created_at,
@@ -230,6 +234,37 @@ export async function settleAsRegistration(
     );
 
     return registrationId;
+  });
+}
+
+export async function insertManual(
+  input: NewManualPayment,
+): Promise<{ registrationId: string; payment: RegistrationPayment }> {
+  return sql.begin(async (tx) => {
+    const registrationId = await registrationRepository.insertWithin(tx, {
+      ...input.payload,
+      ip_address: input.ipAddress ?? "unknown",
+    });
+
+    const rows = await tx.unsafe<RegistrationPayment[]>(
+      `INSERT INTO registration_payments
+         (invoice_number, amount, status, source, payload, registration_id,
+          payment_method, receipt_number, paid_at, ip_address)
+       VALUES ($1, $2, 'success', 'manual', $3, $4, $5, $6, $7, $8)
+       RETURNING ${COLUMNS}`,
+      [
+        input.invoiceNumber,
+        input.amount,
+        input.payload,
+        registrationId,
+        input.paymentMethod,
+        input.receiptNumber,
+        input.paidAt,
+        input.ipAddress,
+      ],
+    );
+
+    return { registrationId, payment: rows[0] };
   });
 }
 

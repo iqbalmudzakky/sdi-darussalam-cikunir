@@ -162,7 +162,7 @@ export default function AdminTransactionsPage() {
     <div className="mx-auto max-w-6xl">
       <AdminPageHeader
         title="Transaksi"
-        description="Setiap pembayaran lewat sistem online, termasuk yang belum selesai. Pendaftaran yang dibayar tunai lewat Input Manual belum tercatat di sini."
+        description="Semua pembayaran pendaftaran, online maupun tunai."
         count={isLoading || loadError ? undefined : total}
       />
 
@@ -335,6 +335,7 @@ function TransactionRow({
         </p>
         <p className="truncate text-xs text-gray-400 capitalize">
           {formatMethod(item.payment_method)}
+          {item.source === "manual" && " · Manual"}
         </p>
       </div>
 

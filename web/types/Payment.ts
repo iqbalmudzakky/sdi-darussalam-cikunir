@@ -1,5 +1,9 @@
 export type PaymentStatus = "pending" | "success" | "failed" | "expired";
 
+export type PaymentSource = "online" | "manual";
+
+export type ManualPaymentMethod = "CASH" | "TRANSFER";
+
 export type PaymentStatusView = {
   invoice_number: string;
   status: PaymentStatus;
@@ -14,8 +18,10 @@ export type Payment = {
   invoice_number: string;
   amount: number;
   status: PaymentStatus;
+  source: PaymentSource;
   payment_method: string | null;
   acquirer: string | null;
+  receipt_number: string | null;
   paid_at: string | null;
   expired_date: string | null;
   created_at: string;
@@ -27,6 +33,13 @@ export type Payment = {
   mother_phone: string | null;
 
   is_settled: boolean;
+};
+
+export type ManualPaymentInput = {
+  amount: number;
+  paymentMethod: ManualPaymentMethod;
+  receiptNumber: string | null;
+  paidAt: string;
 };
 
 export type ListPaymentsParams = {

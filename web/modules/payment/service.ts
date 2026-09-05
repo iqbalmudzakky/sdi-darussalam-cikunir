@@ -4,16 +4,20 @@ import * as repository from "./repository";
 import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
 import { getRegistrationFee } from "@/modules/payment-settings/service";
+import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 import type {
   DokuNotification,
   ListPaymentsInput,
+  NewManualPayment,
   PaymentFilter,
   PaymentStatus,
   RegistrationPayload,
   RegistrationPaymentListItem,
 } from "./entity";
 import type {
+  CreateManualRegistrationWithPaymentResult,
   ListPaymentsRequest,
+  ManualPaymentRequest,
   PaymentListItemResponse,
   PaymentListResponse,
 } from "./dto";
@@ -33,10 +37,13 @@ export type StartPaymentResult =
     };
 
 /* Maksimal 30 karakter agar diterima channel kartu kredit. */
-function generateInvoiceNumber(now = new Date()): string {
+function generateInvoiceNumber(
+  prefix: "PPDB" | "MANUAL",
+  now = new Date(),
+): string {
   const date = now.toISOString().slice(0, 10).replace(/-/g, "");
   const suffix = randomBytes(4).toString("hex").toUpperCase();
-  return `PPDB-${date}-${suffix}`;
+  return `${prefix}-${date}-${suffix}`;
 }
 
 export async function startRegistrationPayment(input: {
@@ -84,7 +91,7 @@ export async function startRegistrationPayment(input: {
   }
 
   const amount = await getRegistrationFee();
-  const invoiceNumber = generateInvoiceNumber();
+  const invoiceNumber = generateInvoiceNumber("PPDB");
 
   const payment = await withDbLogging("payment.insert", () =>
     repository.insert({
@@ -196,8 +203,10 @@ function toPaymentListItemResponse(
     invoice_number: item.invoice_number,
     amount: item.amount,
     status: item.status,
+    source: item.source,
     payment_method: item.payment_method,
     acquirer: item.acquirer,
+    receipt_number: item.receipt_number,
     paid_at: item.paid_at,
     expired_date: item.expired_date,
     created_at: item.created_at,
@@ -210,6 +219,40 @@ function toPaymentListItemResponse(
 
     is_settled: item.registration_id !== null,
   };
+}
+
+export async function createManualRegistrationWithPayment(
+  registrationInput: CreatePpdbRegistrationRequest,
+  paymentInput: ManualPaymentRequest,
+): Promise<CreateManualRegistrationWithPaymentResult> {
+  const nik = registrationInput.student.nik;
+
+  const isDuplicate = await registrationService.existsDuplicateByNik(nik);
+  if (isDuplicate) {
+    return {
+      ok: false,
+      reason: "duplicate",
+      message: "NIK ini sudah terdaftar atas nama pendaftar lain.",
+    };
+  }
+
+  const { ip_address, ...payload } = registrationInput;
+
+  const insertInput: NewManualPayment = {
+    invoiceNumber: generateInvoiceNumber("MANUAL"),
+    amount: paymentInput.amount,
+    payload,
+    ipAddress: ip_address,
+    paymentMethod: paymentInput.payment_method,
+    receiptNumber: paymentInput.receipt_number,
+    paidAt: paymentInput.paid_at,
+  };
+
+  const { registrationId } = await withDbLogging("payment.insertManual", () =>
+    repository.insertManual(insertInput),
+  );
+
+  return { ok: true, registration_id: registrationId };
 }
 
 export async function listPayments(
