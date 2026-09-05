@@ -13,39 +13,12 @@ import type {
   RegistrationFilter,
 } from "./entity";
 import type {
-  CreatePpdbRegistrationRequest,
-  CreatePpdbRegistrationResult,
   ExportRegistrationsQuery,
   ListRegistrationsQuery,
   RegistrantRegion,
   RegistrationListItemResponse,
   RegistrationListResponse,
 } from "./dto";
-
-export async function createManualRegistration(
-  input: CreatePpdbRegistrationRequest,
-): Promise<CreatePpdbRegistrationResult> {
-  const nik = input.student.nik;
-
-  const isDuplicate = await existsDuplicateByNik(nik);
-
-  if (isDuplicate) {
-    return {
-      ok: false,
-      reason: "duplicate",
-      message: "NIK ini sudah terdaftar atas nama pendaftar lain.",
-    };
-  }
-
-  const registrationId = await withDbLogging("registration.insert", () =>
-    repository.insert(input),
-  );
-
-  return {
-    ok: true,
-    registration_id: registrationId,
-  };
-}
 
 function toRegistrationListItemResponse(
   item: PpdbRegistrationListItem,

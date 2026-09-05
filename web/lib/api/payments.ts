@@ -1,11 +1,13 @@
 import type { SubmitRegistrationInput } from "@/types/Registration";
-import type { PaymentStatusView } from "@/types/Payment";
+import type {
+  ListPaymentsParams,
+  PaymentListPage,
+  PaymentStatusView,
+} from "@/types/Payment";
 
 export async function startRegistrationPayment(
   input: SubmitRegistrationInput,
-): Promise<
-  { ok: true; paymentUrl: string } | { ok: false; error: string }
-> {
+): Promise<{ ok: true; paymentUrl: string } | { ok: false; error: string }> {
   const res = await fetch("/api/payments/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -23,6 +25,21 @@ export async function startRegistrationPayment(
   }
 
   return { ok: true, paymentUrl: data.payment_url };
+}
+
+export async function listPayments(
+  params: ListPaymentsParams,
+): Promise<PaymentListPage> {
+  const query = new URLSearchParams();
+  for (const status of params.statuses) query.append("status", status);
+  query.set("search", params.search);
+  query.set("sort", params.sort);
+  query.set("limit", String(params.limit));
+  query.set("offset", String(params.offset));
+
+  const res = await fetch(`/api/payments?${query.toString()}`);
+  if (!res.ok) throw new Error(`Failed to list payments (${res.status})`);
+  return res.json();
 }
 
 export async function getPaymentStatus(

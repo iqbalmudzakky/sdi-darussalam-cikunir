@@ -4,11 +4,23 @@ import * as repository from "./repository";
 import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
 import { getRegistrationFee } from "@/modules/payment-settings/service";
+import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 import type {
   DokuNotification,
+  ListPaymentsInput,
+  NewManualPayment,
+  PaymentFilter,
   PaymentStatus,
   RegistrationPayload,
+  RegistrationPaymentListItem,
 } from "./entity";
+import type {
+  CreateManualRegistrationWithPaymentResult,
+  ListPaymentsRequest,
+  ManualPaymentRequest,
+  PaymentListItemResponse,
+  PaymentListResponse,
+} from "./dto";
 
 /* Sesi yang sudah berakhir: lunas, gagal, atau kedaluwarsa. */
 const RATE_LIMIT_MAX_PER_HOUR = 3;
@@ -25,10 +37,13 @@ export type StartPaymentResult =
     };
 
 /* Maksimal 30 karakter agar diterima channel kartu kredit. */
-function generateInvoiceNumber(now = new Date()): string {
+function generateInvoiceNumber(
+  prefix: "PPDB" | "MANUAL",
+  now = new Date(),
+): string {
   const date = now.toISOString().slice(0, 10).replace(/-/g, "");
   const suffix = randomBytes(4).toString("hex").toUpperCase();
-  return `PPDB-${date}-${suffix}`;
+  return `${prefix}-${date}-${suffix}`;
 }
 
 export async function startRegistrationPayment(input: {
@@ -76,7 +91,7 @@ export async function startRegistrationPayment(input: {
   }
 
   const amount = await getRegistrationFee();
-  const invoiceNumber = generateInvoiceNumber();
+  const invoiceNumber = generateInvoiceNumber("PPDB");
 
   const payment = await withDbLogging("payment.insert", () =>
     repository.insert({
@@ -135,9 +150,16 @@ export async function applyNotification(
       body,
     }),
   );
-  if (!isNew) return "duplicate";
 
-  if (transactionStatus !== "SUCCESS" || !invoiceNumber) return "ignored";
+  if (!isNew && transactionStatus === "SUCCESS") {
+    console.warn(
+      `[doku] notification SUCCESS diulang untuk invoice ${invoiceNumber} (request ${requestId})`,
+    );
+  }
+
+  if (transactionStatus !== "SUCCESS" || !invoiceNumber) {
+    return isNew ? "ignored" : "duplicate";
+  }
 
   const payment = await withDbLogging("payment.findByInvoiceNumber", () =>
     repository.findByInvoiceNumber(invoiceNumber),
@@ -177,5 +199,92 @@ export async function getPaymentStatus(
     status: payment.status,
     amount: payment.amount,
     full_name: payment.payload.student.full_name,
+  };
+}
+
+function toPaymentListItemResponse(
+  item: RegistrationPaymentListItem,
+): PaymentListItemResponse {
+  return {
+    id: item.id,
+    invoice_number: item.invoice_number,
+    amount: item.amount,
+    status: item.status,
+    source: item.source,
+    payment_method: item.payment_method,
+    acquirer: item.acquirer,
+    receipt_number: item.receipt_number,
+    paid_at: item.paid_at,
+    expired_date: item.expired_date,
+    created_at: item.created_at,
+
+    full_name: item.full_name,
+    student_nik: item.student_nik,
+    parent_email: item.parent_email,
+    father_phone: item.father_phone,
+    mother_phone: item.mother_phone,
+
+    is_settled: item.registration_id !== null,
+  };
+}
+
+export async function createManualRegistrationWithPayment(
+  registrationInput: CreatePpdbRegistrationRequest,
+  paymentInput: ManualPaymentRequest,
+): Promise<CreateManualRegistrationWithPaymentResult> {
+  const nik = registrationInput.student.nik;
+
+  const isDuplicate = await registrationService.existsDuplicateByNik(nik);
+  if (isDuplicate) {
+    return {
+      ok: false,
+      reason: "duplicate",
+      message: "NIK ini sudah terdaftar atas nama pendaftar lain.",
+    };
+  }
+
+  const { ip_address, ...payload } = registrationInput;
+
+  const insertInput: NewManualPayment = {
+    invoiceNumber: generateInvoiceNumber("MANUAL"),
+    amount: paymentInput.amount,
+    payload,
+    ipAddress: ip_address,
+    paymentMethod: paymentInput.payment_method,
+    receiptNumber: paymentInput.receipt_number,
+    paidAt: paymentInput.paid_at,
+  };
+
+  const { registrationId } = await withDbLogging("payment.insertManual", () =>
+    repository.insertManual(insertInput),
+  );
+
+  return { ok: true, registration_id: registrationId };
+}
+
+export async function listPayments(
+  params: ListPaymentsRequest,
+): Promise<PaymentListResponse> {
+  const filter: PaymentFilter = {
+    search: params.search,
+    statuses: params.statuses,
+  };
+
+  const listInput: ListPaymentsInput = {
+    ...filter,
+    sortDirection: params.sort,
+    limit: params.limit,
+    offset: params.offset,
+  };
+
+  const [items, total] = await Promise.all([
+    withDbLogging("payment.list", () => repository.list(listInput)),
+    withDbLogging("payment.count", () => repository.count(filter)),
+  ]);
+
+  return {
+    items: items.map(toPaymentListItemResponse),
+    total,
+    has_more: params.offset + items.length < total,
   };
 }

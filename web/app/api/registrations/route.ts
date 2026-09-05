@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/session";
 import * as registrationService from "@/modules/registration/service";
+import * as paymentService from "@/modules/payment/service";
 import {
   CreatePpdbRegistrationRequestSchema,
   ListRegistrationsQuerySchema,
 } from "@/modules/registration/dto";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
+import { ManualPaymentRequestSchema } from "@/modules/payment/dto";
 import { getClientIp } from "@/modules/shared/clientIp";
 
 export async function GET(request: Request) {
@@ -68,13 +70,29 @@ export async function POST(request: Request) {
     );
   }
 
+  const paymentParsed = ManualPaymentRequestSchema.safeParse(body.payment);
+
+  if (!paymentParsed.success) {
+    return NextResponse.json(
+      {
+        error:
+          paymentParsed.error.issues[0]?.message ??
+          "Data pembayaran tidak valid.",
+      },
+      { status: 400 },
+    );
+  }
+
   const input: CreatePpdbRegistrationRequest = {
     ...parsed.data,
     ip_address: getClientIp(request),
   };
 
   try {
-    const result = await registrationService.createManualRegistration(input);
+    const result = await paymentService.createManualRegistrationWithPayment(
+      input,
+      paymentParsed.data,
+    );
 
     if (!result.ok) {
       return NextResponse.json({ error: result.message }, { status: 409 });

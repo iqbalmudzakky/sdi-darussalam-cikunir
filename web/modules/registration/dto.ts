@@ -176,17 +176,6 @@ export type CreatePpdbRegistrationRequest = z.infer<
   ip_address: string;
 };
 
-export type CreatePpdbRegistrationResult =
-  | {
-      ok: true;
-      registration_id: string;
-    }
-  | {
-      ok: false;
-      reason: "duplicate";
-      message: string;
-    };
-
 const REGISTRATION_STATUSES: [
   PpdbRegistrationStatus,
   ...PpdbRegistrationStatus[],
