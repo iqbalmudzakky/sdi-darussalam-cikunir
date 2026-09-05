@@ -5,24 +5,26 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RegistrationForm } from "@/components/sections/RegistrationForm/RegistrationForm";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { Button } from "@/components/ui/button";
 
 export default function AdminNewRegistrationPage() {
   const router = useRouter();
 
   return (
     <div className="mx-auto max-w-3xl">
+      <Button
+        variant="outline"
+        size="sm"
+        render={<Link href="/admin/registrations" />}
+        className="mb-3"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Daftar Pendaftar
+      </Button>
+
       <AdminPageHeader
         title="Input Pendaftar Manual"
-        description="Untuk calon siswa yang mendaftar lewat formulir kertas di sekolah. Data langsung tersimpan tanpa proses pembayaran online."
-        action={
-          <Link
-            href="/admin/registrations"
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Kembali
-          </Link>
-        }
+        description="Untuk calon siswa yang mendaftar dan membayar tunai/transfer langsung di sekolah."
       />
 
       <RegistrationForm

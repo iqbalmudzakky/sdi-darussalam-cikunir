@@ -260,12 +260,6 @@ export async function insertWithin(
   }
 }
 
-export async function insert(
-  input: CreatePpdbRegistrationRequest,
-): Promise<string> {
-  return sql.begin((tx) => insertWithin(tx, input));
-}
-
 export async function existsDuplicateByNik(nik: string): Promise<boolean> {
   const rows = await sql.unsafe(
     `

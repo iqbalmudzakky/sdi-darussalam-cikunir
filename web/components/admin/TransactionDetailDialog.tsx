@@ -55,11 +55,16 @@ export function TransactionDetailDialog({
 
             <DetailSection title="Pembayaran">
               <DetailRow
+                label="Sumber"
+                value={item.source === "manual" ? "Manual" : "Online (DOKU)"}
+              />
+              <DetailRow
                 label="Metode"
                 value={formatMethod(item.payment_method)}
                 className="capitalize"
               />
               <DetailRow label="Acquirer" value={item.acquirer} />
+              <DetailRow label="Nomor Kwitansi" value={item.receipt_number} />
               <DetailRow
                 label="Dibuat"
                 value={formatDateTime(item.created_at)}

@@ -5,6 +5,7 @@ import type {
   SubmitRegistrationInput,
   UpdateRegistrationStatusInput,
 } from "@/types/Registration";
+import type { ManualPaymentInput } from "@/types/Payment";
 
 function buildStatusQuery(statuses: RegistrationStatus[]): URLSearchParams {
   const query = new URLSearchParams();
@@ -42,11 +43,22 @@ export async function deleteRegistration(id: string): Promise<void> {
 
 export async function createManualRegistration(
   input: SubmitRegistrationInput,
+  payment: ManualPaymentInput,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  const body = {
+    ...input,
+    payment: {
+      amount: payment.amount,
+      payment_method: payment.paymentMethod,
+      receipt_number: payment.receiptNumber,
+      paid_at: payment.paidAt,
+    },
+  };
+
   const res = await fetch("/api/registrations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {

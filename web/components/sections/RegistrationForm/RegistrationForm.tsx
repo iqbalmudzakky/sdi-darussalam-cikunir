@@ -5,7 +5,9 @@ import { cva } from "class-variance-authority";
 import { Check, Loader2 } from "lucide-react";
 import { startRegistrationPayment } from "@/lib/api/payments";
 import { createManualRegistration } from "@/lib/api/registrations";
+import { getPaymentSettings } from "@/lib/api/paymentSettings";
 import { useToast } from "@/hooks/useToast";
+import { toDateOnly } from "@/lib/date";
 import {
   REGISTRATION_TYPE_OPTIONS,
   GENDER_OPTIONS,
@@ -17,6 +19,7 @@ import { TextField, SelectField, TextareaField, DateField } from "./fields";
 import { RegionSelect } from "./RegionSelect";
 import { clearDraft, isDraftMeaningful, loadDraft, saveDraft } from "./draft";
 import { buildRegistrationPayload } from "./payload";
+import type { ManualPaymentInput, ManualPaymentMethod } from "@/types/Payment";
 import {
   EMPTY_FORM,
   FIELD_LABELS,
@@ -49,6 +52,13 @@ const submitButtonVariants = cva([
   "hover:bg-brand-700",
   "disabled:cursor-not-allowed disabled:opacity-60",
 ]);
+
+/* Sticky footer, dinonaktifkan — terasa aneh secara alur.
+ * const stickyFooterVariants = cva([
+ *   "sticky bottom-0 border-t border-brand-100 bg-white/95 pt-4",
+ *   "backdrop-blur-sm",
+ * ]);
+ */
 
 const stepVariants = cva(
   [
@@ -185,6 +195,42 @@ export function RegistrationForm({
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] =
+    useState<ManualPaymentMethod>("CASH");
+  const [paymentReceiptNumber, setPaymentReceiptNumber] = useState("");
+  const [paymentPaidAt, setPaymentPaidAt] = useState(() =>
+    toDateOnly(new Date()),
+  );
+  const [paymentErrors, setPaymentErrors] = useState<{
+    amount?: string;
+    paidAt?: string;
+  }>({});
+
+  async function loadDefaultPaymentAmount(isCancelled: () => boolean) {
+    try {
+      const settings = await getPaymentSettings();
+      if (isCancelled()) return;
+      setPaymentAmount((prev) => prev || String(settings.registration_fee));
+    } catch (error) {
+      if (isCancelled()) return;
+      /* Non-fatal: admin tetap bisa mengisi nominal secara manual. */
+      console.error("Failed to load default payment amount:", error);
+    }
+  }
+
+  useEffect(() => {
+    if (!isManual) return;
+
+    let cancelled = false;
+
+    loadDefaultPaymentAmount(() => cancelled);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isManual]);
 
   /*
    * Menyimpan isian setiap kali berubah, ditunda sebentar supaya tidak menulis
@@ -406,6 +452,26 @@ export function RegistrationForm({
     return validateFields(fields);
   }
 
+  function validatePayment() {
+    const nextErrors: { amount?: string; paidAt?: string } = {};
+
+    const parsedAmount = Number(paymentAmount);
+    if (
+      !paymentAmount ||
+      !Number.isInteger(parsedAmount) ||
+      parsedAmount <= 0
+    ) {
+      nextErrors.amount = "Nominal harus angka bulat lebih dari 0.";
+    }
+
+    if (!paymentPaidAt) {
+      nextErrors.paidAt = "Tanggal bayar wajib diisi.";
+    }
+
+    setPaymentErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
+
   function validateFields(fields: FieldName[]) {
     const nextErrors: FieldErrors = {};
 
@@ -493,13 +559,26 @@ export function RegistrationForm({
       return;
     }
 
+    if (isManual && !validatePayment()) {
+      setStep(3);
+      setTimeout(scrollToError, 100);
+      return;
+    }
+
     setIsSubmitting(true);
 
     const payload = buildRegistrationPayload(form);
 
     try {
       if (isManual) {
-        const result = await createManualRegistration(payload);
+        const payment: ManualPaymentInput = {
+          amount: Number(paymentAmount),
+          paymentMethod,
+          receiptNumber: paymentReceiptNumber.trim() || null,
+          paidAt: paymentPaidAt,
+        };
+
+        const result = await createManualRegistration(payload, payment);
 
         setIsSubmitting(false);
 
@@ -768,6 +847,7 @@ export function RegistrationForm({
             {renderText("previous_school")}
           </div>
 
+          {/* <div className={stickyFooterVariants()}> */}
           <button
             type="button"
             onClick={() => {
@@ -781,6 +861,7 @@ export function RegistrationForm({
           >
             Selanjutnya
           </button>
+          {/* </div> */}
         </div>
       )}
 
@@ -910,6 +991,7 @@ export function RegistrationForm({
             placeholder: "nama@email.com",
           })}
 
+          {/* <div className={stickyFooterVariants()}> */}
           <div className="grid gap-3 sm:grid-cols-2">
             <button
               type="button"
@@ -933,6 +1015,7 @@ export function RegistrationForm({
               Selanjutnya
             </button>
           </div>
+          {/* </div> */}
         </div>
       )}
 
@@ -991,6 +1074,60 @@ export function RegistrationForm({
             maxLength: 3,
           })}
 
+          {isManual && (
+            <div className="space-y-4">
+              <p className={sectionHeadingVariants()}>Informasi Pembayaran</p>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <TextField
+                  id="reg-payment-amount"
+                  label="Nominal Dibayar"
+                  value={paymentAmount}
+                  onChange={(value) =>
+                    setPaymentAmount(value.replace(/\D/g, ""))
+                  }
+                  error={paymentErrors.amount}
+                  inputMode="numeric"
+                  placeholder="155000"
+                />
+
+                <SelectField
+                  id="reg-payment-method"
+                  label="Metode Pembayaran"
+                  value={paymentMethod}
+                  onChange={(value) =>
+                    setPaymentMethod(value as ManualPaymentMethod)
+                  }
+                  options={[
+                    { value: "CASH", label: "Cash" },
+                    { value: "TRANSFER", label: "Transfer" },
+                  ]}
+                />
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <DateField
+                  id="reg-payment-paid-at"
+                  label="Tanggal Bayar"
+                  value={paymentPaidAt}
+                  onChange={setPaymentPaidAt}
+                  error={paymentErrors.paidAt}
+                  endMonth={TODAY}
+                />
+
+                <TextField
+                  id="reg-payment-receipt-number"
+                  label="Nomor Kwitansi"
+                  value={paymentReceiptNumber}
+                  onChange={setPaymentReceiptNumber}
+                  optional
+                  placeholder="Opsional"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* <div className={stickyFooterVariants()}> */}
           <div className="grid gap-3 sm:grid-cols-2">
             <button
               type="button"
@@ -1016,6 +1153,7 @@ export function RegistrationForm({
                   : "Kirim Pendaftaran"}
             </button>
           </div>
+          {/* </div> */}
         </div>
       )}
     </form>
