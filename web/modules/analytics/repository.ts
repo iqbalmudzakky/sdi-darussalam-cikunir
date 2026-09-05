@@ -37,6 +37,11 @@ export async function getSummary(): Promise<VisitSummaryRow> {
           WHERE visited_at >= now() - interval '30 days'
         ))::int AS unique_visitors_30d,
 
+       (COUNT(DISTINCT visitor_hash) FILTER (
+          WHERE (visited_at AT TIME ZONE 'Asia/Jakarta')::date
+              = (now() AT TIME ZONE 'Asia/Jakarta')::date
+        ))::int AS unique_visitors_today,
+
        ROUND(AVG(duration_ms))::int AS avg_duration_ms,
 
        (COUNT(*) FILTER (WHERE duration_ms IS NOT NULL))::int AS measured_visits

@@ -16,6 +16,7 @@ export type RecordDurationRequest = z.infer<typeof RecordDurationRequestSchema>;
 export type VisitSummary = {
   total_visits: number;
   unique_visitors: number;
+  unique_visitors_today: number;
   visits_30d: number;
   unique_visitors_30d: number;
   avg_duration_ms: number | null;
