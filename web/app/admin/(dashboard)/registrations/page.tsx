@@ -359,8 +359,8 @@ export default function AdminRegistrationsPage() {
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Cari nama siswa..."
-              aria-label="Cari nama siswa"
+              placeholder="Cari nama atau NIK siswa..."
+              aria-label="Cari nama atau NIK siswa"
               className="h-9 pr-8 pl-8"
             />
 

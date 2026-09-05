@@ -12,9 +12,9 @@ export const DEV_PREFILL: Partial<FormFields> = {};
 //   registration_type: "siswa_baru",
 //   parent_email: "orangtua.test@example.com",
 
-//   full_name: "Ahmad Dzakky B",
-//   nickname: "Dzakky B",
-//   student_nik: "3275042107980039",
+//   full_name: "Ahmad Dzakky F",
+//   nickname: "Dzakky F",
+//   student_nik: "3275042107980043",
 //   nisn: "0123456791",
 //   gender: "laki_laki",
 //   place_of_birth: "Bekasi",

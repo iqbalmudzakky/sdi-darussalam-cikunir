@@ -36,14 +36,14 @@ function toCustomerName(fullName: string): string {
   return fullName.replace(/[^\p{L}\s]/gu, "").trim();
 }
 
-/* DOKU minta satu pembayar: pakai data ayah, jatuh ke ibu kalau kosong. */
+/* Nama pakai nama anak, bukan ayah/ibu — pembayarnya bisa siapa saja. */
 function buildCustomer(payload: RegistrationPayload) {
   const parents = payload.parents ?? [];
   const contact =
     parents.find((parent) => parent.parent_type === "father") ?? parents[0];
 
   return {
-    name: toCustomerName(contact?.name ?? payload.student.full_name),
+    name: toCustomerName(payload.student.full_name),
     email: payload.parent_email ?? undefined,
     phone: contact ? toInternationalPhone(contact.phone) : undefined,
     country: "ID",
@@ -120,7 +120,10 @@ export async function createCheckoutSession(input: {
     });
   } catch (error) {
     console.error("[doku] createCheckoutSession request failed:", error);
-    return { ok: false, message: "Tidak dapat menghubungi layanan pembayaran." };
+    return {
+      ok: false,
+      message: "Tidak dapat menghubungi layanan pembayaran.",
+    };
   }
 
   const text = await response.text();
@@ -149,7 +152,10 @@ export async function createCheckoutSession(input: {
 
   const payment = parsed.response?.payment;
   if (!payment?.url || !payment.token_id) {
-    console.error("[doku] createCheckoutSession response missing payment url:", text);
+    console.error(
+      "[doku] createCheckoutSession response missing payment url:",
+      text,
+    );
     return { ok: false, message: "Gagal membuat sesi pembayaran." };
   }
 
