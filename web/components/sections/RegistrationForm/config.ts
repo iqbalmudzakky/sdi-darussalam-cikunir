@@ -190,11 +190,30 @@ const NON_NEGATIVE_INTEGER_PATTERN = /^\d+$/;
 
 const POSITIVE_INTEGER_PATTERN = /^[1-9]\d*$/;
 
-export function validateField(field: FieldName, value: string): string | undefined {
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// isManual: cuma dipakai parent_email — wajib online, opsional Input Manual.
+export function validateField(
+  field: FieldName,
+  value: string,
+  context?: { isManual?: boolean },
+): string | undefined {
   const trimmed = value.trim();
   const label = FIELD_LABELS[field];
 
   switch (field) {
+    case "parent_email": {
+      if (context?.isManual) return undefined;
+
+      if (!trimmed) return "Wajib diisi";
+
+      if (!EMAIL_PATTERN.test(trimmed)) {
+        return "Format email tidak valid.";
+      }
+
+      return undefined;
+    }
+
     case "full_name":
     case "father_name":
     case "mother_name": {

@@ -298,7 +298,7 @@ export function RegistrationForm({
     if (touched[field]) {
       setErrors((prev) => ({
         ...prev,
-        [field]: validateField(field, value),
+        [field]: validateField(field, value, { isManual }),
       }));
     }
   }
@@ -447,6 +447,9 @@ export function RegistrationForm({
       "mother_position",
       "mother_phone",
       "mother_income",
+
+      // Wajib hanya di pendaftaran online — lihat validateField.
+      "parent_email",
     ];
 
     return validateFields(fields);
@@ -476,7 +479,7 @@ export function RegistrationForm({
     const nextErrors: FieldErrors = {};
 
     for (const field of fields) {
-      const error = validateField(field, form[field]);
+      const error = validateField(field, form[field], { isManual });
 
       if (error) {
         nextErrors[field] = error;
@@ -987,7 +990,7 @@ export function RegistrationForm({
 
           {renderText("parent_email", {
             type: "email",
-            optional: true,
+            optional: isManual,
             placeholder: "nama@email.com",
           })}
 
