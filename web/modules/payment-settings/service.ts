@@ -1,6 +1,7 @@
 import { withDbLogging } from "@/modules/db/errors";
+import { jakartaDateKey } from "@/modules/shared/jakartaDate";
 import * as repository from "./repository";
-import type { PaymentSettings } from "./entity";
+import type { PaymentSettings, PaymentSettingsUpdateInput } from "./entity";
 
 /*
  * Melempar error kalau barisnya hilang, bukan memakai nilai cadangan: nominal
@@ -24,10 +25,27 @@ export async function getPaymentSettings(): Promise<PaymentSettings | null> {
   return withDbLogging("paymentSettings.get", () => repository.get());
 }
 
-export async function saveRegistrationFee(
-  fee: number,
+export async function saveSettings(
+  input: PaymentSettingsUpdateInput,
 ): Promise<PaymentSettings | null> {
-  return withDbLogging("paymentSettings.updateFee", () =>
-    repository.updateFee(fee),
+  return withDbLogging("paymentSettings.update", () =>
+    repository.update(input),
   );
+}
+
+/* Ditutup kalau salah satu tanggal belum diatur admin. */
+export async function isRegistrationOpen(): Promise<boolean> {
+  const settings = await withDbLogging("paymentSettings.get", () =>
+    repository.get(),
+  );
+
+  if (!settings?.registration_opens_on || !settings.registration_closes_on) {
+    return false;
+  }
+
+  const today = jakartaDateKey(new Date());
+  const opensOn = jakartaDateKey(new Date(settings.registration_opens_on));
+  const closesOn = jakartaDateKey(new Date(settings.registration_closes_on));
+
+  return today >= opensOn && today <= closesOn;
 }

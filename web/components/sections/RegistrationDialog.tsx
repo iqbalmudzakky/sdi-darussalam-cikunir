@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import {
   Dialog,
@@ -10,10 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { RegistrationForm } from "@/components/sections/RegistrationForm/RegistrationForm";
 import { useToast } from "@/hooks/useToast";
+import { fetchRegistrationOpen } from "@/lib/api/registrationWindow";
 import { cn } from "@/lib/utils";
-
-/* Ganti ke true saat pendaftaran resmi dibuka. */
-const REGISTRATION_OPEN = false;
 
 const triggerVariants = cva(
   [
@@ -92,9 +90,17 @@ export function RegistrationTrigger({
   onClick,
 }: RegistrationTriggerProps) {
   const toast = useToast();
+  const isCheckingRef = useRef(false);
 
-  const handleClick = () => {
-    if (!REGISTRATION_OPEN) {
+  const handleClick = async () => {
+    if (isCheckingRef.current) return;
+    isCheckingRef.current = true;
+
+    const isOpen = await fetchRegistrationOpen();
+
+    isCheckingRef.current = false;
+
+    if (!isOpen) {
       toast.error(
         "Pendaftaran belum dibuka",
         "Nantikan pengumuman jadwal pendaftaran dari kami.",

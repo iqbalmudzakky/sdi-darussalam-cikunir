@@ -20,6 +20,8 @@ export async function GET() {
 
     return NextResponse.json({
       registration_fee: settings.registration_fee,
+      registration_opens_on: settings.registration_opens_on,
+      registration_closes_on: settings.registration_closes_on,
       updated_at: settings.updated_at,
     });
   } catch (error) {
@@ -48,9 +50,12 @@ export async function PUT(request: Request) {
   }
 
   try {
-    const settings = await paymentSettingsService.saveRegistrationFee(
-      parsed.data.registration_fee,
-    );
+    const input = {
+      registrationFee: parsed.data.registration_fee,
+      registrationOpensOn: parsed.data.registration_opens_on,
+      registrationClosesOn: parsed.data.registration_closes_on,
+    };
+    const settings = await paymentSettingsService.saveSettings(input);
     if (!settings) {
       return NextResponse.json(
         { error: "Pengaturan pembayaran belum tersedia." },
@@ -60,6 +65,8 @@ export async function PUT(request: Request) {
 
     return NextResponse.json({
       registration_fee: settings.registration_fee,
+      registration_opens_on: settings.registration_opens_on,
+      registration_closes_on: settings.registration_closes_on,
       updated_at: settings.updated_at,
     });
   } catch (error) {

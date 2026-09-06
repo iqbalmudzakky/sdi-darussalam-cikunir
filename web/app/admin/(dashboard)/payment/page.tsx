@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminFormSection } from "@/components/admin/AdminFormSection";
+import { DateField } from "@/components/sections/RegistrationForm/fields";
 import { useToast } from "@/hooks/useToast";
-import { getPaymentSettings, savePaymentSettings } from "@/lib/api/paymentSettings";
+import {
+  getPaymentSettings,
+  savePaymentSettings,
+} from "@/lib/api/paymentSettings";
 
 /*
  * DOKU memotong MDR dari uang yang masuk, dan nominal dikunci sebelum
@@ -42,23 +46,30 @@ export default function AdminPaymentPage() {
   const toast = useToast();
 
   const [fee, setFee] = useState("");
+  const [opensOn, setOpensOn] = useState("");
+  const [closesOn, setClosesOn] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  async function loadSettings(isCancelled: () => boolean) {
+    try {
+      const settings = await getPaymentSettings();
+      if (isCancelled()) return;
+      setFee(String(settings.registration_fee));
+      setOpensOn(settings.registration_opens_on ?? "");
+      setClosesOn(settings.registration_closes_on ?? "");
+    } catch {
+      if (!isCancelled()) setLoadError(true);
+    } finally {
+      if (!isCancelled()) setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
 
-    getPaymentSettings()
-      .then((settings) => {
-        if (!cancelled) setFee(String(settings.registration_fee));
-      })
-      .catch(() => {
-        if (!cancelled) setLoadError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
+    loadSettings(() => cancelled);
 
     return () => {
       cancelled = true;
@@ -67,6 +78,7 @@ export default function AdminPaymentPage() {
 
   const parsedFee = Number(fee);
   const isValidFee = Number.isInteger(parsedFee) && parsedFee > 0;
+  const isValidWindow = !opensOn || !closesOn || closesOn >= opensOn;
 
   async function handleSave() {
     if (!isValidFee) {
@@ -77,8 +89,21 @@ export default function AdminPaymentPage() {
       return;
     }
 
+    if (!isValidWindow) {
+      toast.error(
+        "Tanggal tidak valid",
+        "Tanggal tutup harus sama atau setelah tanggal buka.",
+      );
+      return;
+    }
+
     setIsSaving(true);
-    const result = await savePaymentSettings(parsedFee);
+    const input = {
+      registrationFee: parsedFee,
+      registrationOpensOn: opensOn || null,
+      registrationClosesOn: closesOn || null,
+    };
+    const result = await savePaymentSettings(input);
     setIsSaving(false);
 
     if (!result.ok) {
@@ -88,7 +113,7 @@ export default function AdminPaymentPage() {
 
     toast.success(
       "Tersimpan",
-      "Nominal baru langsung berlaku untuk pendaftaran berikutnya.",
+      "Pengaturan baru langsung berlaku untuk pendaftaran berikutnya.",
     );
   }
 
@@ -103,7 +128,8 @@ export default function AdminPaymentPage() {
   if (loadError) {
     return (
       <div className="py-20 text-center text-sm text-gray-500">
-        Gagal memuat pengaturan pembayaran. Muat ulang halaman untuk mencoba lagi.
+        Gagal memuat pengaturan pembayaran. Muat ulang halaman untuk mencoba
+        lagi.
       </div>
     );
   }
@@ -134,9 +160,38 @@ export default function AdminPaymentPage() {
 
             <p className="text-sm text-gray-500">
               Tulis angka saja, tanpa titik atau koma. Contoh:{" "}
-              <span className="font-medium text-gray-700">155000</span> untuk Rp155.000.
+              <span className="font-medium text-gray-700">155000</span> untuk
+              Rp155.000.
             </p>
           </div>
+        </AdminFormSection>
+
+        <AdminFormSection title="Jadwal Pendaftaran">
+          <div className="flex flex-wrap gap-4">
+            <div className="max-w-xs">
+              <DateField
+                id="registration-opens-on"
+                label="Tanggal buka"
+                value={opensOn}
+                onChange={setOpensOn}
+              />
+            </div>
+
+            <div className="max-w-xs">
+              <DateField
+                id="registration-closes-on"
+                label="Tanggal tutup"
+                value={closesOn}
+                onChange={setClosesOn}
+              />
+            </div>
+          </div>
+
+          {!isValidWindow && (
+            <p className="mt-2 text-sm text-red-500">
+              Tanggal tutup harus sama atau setelah tanggal buka.
+            </p>
+          )}
         </AdminFormSection>
 
         <AdminFormSection
@@ -186,7 +241,11 @@ export default function AdminPaymentPage() {
         </AdminFormSection>
 
         <div className="flex justify-end">
-          <Button type="button" onClick={handleSave} disabled={isSaving || !isValidFee}>
+          <Button
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving || !isValidFee || !isValidWindow}
+          >
             {isSaving ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
