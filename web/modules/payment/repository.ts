@@ -103,13 +103,22 @@ export async function list(
                    OR p.payload -> 'student' ->> 'full_name' ILIKE '%' || $1 || '%'
                    OR p.payload -> 'student' ->> 'nik' ILIKE '%' || $1 || '%')
       AND ($2 = '' OR p.status::text = ANY(string_to_array($2, ',')))
+      AND ($5 = '' OR (p.paid_at AT TIME ZONE 'Asia/Jakarta')::date >= $5::date)
+      AND ($6 = '' OR (p.paid_at AT TIME ZONE 'Asia/Jakarta')::date <= $6::date)
 
     ORDER BY p.created_at ${direction}
 
     LIMIT $3
     OFFSET $4
     `,
-    [input.search, input.statuses.join(","), input.limit, input.offset],
+    [
+      input.search,
+      input.statuses.join(","),
+      input.limit,
+      input.offset,
+      input.paidFrom,
+      input.paidTo,
+    ],
   );
 }
 
@@ -124,11 +133,36 @@ export async function count(filter: PaymentFilter): Promise<number> {
                    OR p.payload -> 'student' ->> 'full_name' ILIKE '%' || $1 || '%'
                    OR p.payload -> 'student' ->> 'nik' ILIKE '%' || $1 || '%')
       AND ($2 = '' OR p.status::text = ANY(string_to_array($2, ',')))
+      AND ($3 = '' OR (p.paid_at AT TIME ZONE 'Asia/Jakarta')::date >= $3::date)
+      AND ($4 = '' OR (p.paid_at AT TIME ZONE 'Asia/Jakarta')::date <= $4::date)
     `,
-    [filter.search, filter.statuses.join(",")],
+    [filter.search, filter.statuses.join(","), filter.paidFrom, filter.paidTo],
   );
 
   return rows[0].count;
+}
+
+/* Selalu status Lunas saja, lepas dari filter pencarian/status di daftar. */
+export async function sumRevenue(input: {
+  paidFrom: string;
+  paidTo: string;
+}): Promise<{ total_amount: number; count: number }> {
+  const rows = await sql.unsafe<{ total_amount: number; count: number }[]>(
+    `
+    SELECT
+      COALESCE(SUM(amount), 0)::int AS total_amount,
+      COUNT(*)::int AS count
+
+    FROM registration_payments
+
+    WHERE status = 'success'
+      AND ($1 = '' OR (paid_at AT TIME ZONE 'Asia/Jakarta')::date >= $1::date)
+      AND ($2 = '' OR (paid_at AT TIME ZONE 'Asia/Jakarta')::date <= $2::date)
+    `,
+    [input.paidFrom, input.paidTo],
+  );
+
+  return rows[0];
 }
 
 /* Menghitung semua sesi dari satu IP, termasuk yang ditinggalkan. Penjaga

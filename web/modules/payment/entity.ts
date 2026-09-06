@@ -53,6 +53,8 @@ export type NewManualPayment = {
 export type PaymentFilter = {
   search: string;
   statuses: PaymentStatus[];
+  paidFrom: string;
+  paidTo: string;
 };
 
 export type ListPaymentsInput = PaymentFilter & {

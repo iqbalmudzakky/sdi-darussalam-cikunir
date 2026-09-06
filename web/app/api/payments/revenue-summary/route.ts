@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/session";
 import * as paymentService from "@/modules/payment/service";
-import { ListPaymentsRequestSchema } from "@/modules/payment/dto";
+import { RevenueSummaryRequestSchema } from "@/modules/payment/dto";
 
 export async function GET(request: Request) {
   const user = await requireUser();
@@ -12,19 +12,14 @@ export async function GET(request: Request) {
 
   const searchParams = new URL(request.url).searchParams;
 
-  const parsed = ListPaymentsRequestSchema.safeParse({
-    search: searchParams.get("search") ?? undefined,
-    statuses: searchParams.getAll("status"),
-    sort: searchParams.get("sort") ?? undefined,
-    limit: searchParams.get("limit") ?? undefined,
-    offset: searchParams.get("offset") ?? undefined,
+  const parsed = RevenueSummaryRequestSchema.safeParse({
     paid_from: searchParams.get("paid_from") ?? undefined,
     paid_to: searchParams.get("paid_to") ?? undefined,
   });
 
   if (!parsed.success) {
     console.warn(
-      `GET /api/payments: query ditolak (${searchParams.toString()})`,
+      `GET /api/payments/revenue-summary: query ditolak (${searchParams.toString()})`,
       parsed.error.issues,
     );
 
@@ -35,14 +30,14 @@ export async function GET(request: Request) {
   }
 
   try {
-    const payments = await paymentService.listPayments(parsed.data);
+    const summary = await paymentService.getRevenueSummary(parsed.data);
 
-    return NextResponse.json(payments);
+    return NextResponse.json(summary);
   } catch (error) {
-    console.error("GET /api/payments failed:", error);
+    console.error("GET /api/payments/revenue-summary failed:", error);
 
     return NextResponse.json(
-      { error: "Failed to list payments" },
+      { error: "Failed to get revenue summary" },
       { status: 500 },
     );
   }

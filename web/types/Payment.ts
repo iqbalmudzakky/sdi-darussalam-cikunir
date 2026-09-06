@@ -48,10 +48,22 @@ export type ListPaymentsParams = {
   sort: PaymentSortDirection;
   limit: number;
   offset: number;
+  paidFrom: string;
+  paidTo: string;
 };
 
 export type PaymentListPage = {
   items: Payment[];
   total: number;
   has_more: boolean;
+};
+
+export type RevenueSummaryParams = {
+  paidFrom: string;
+  paidTo: string;
+};
+
+export type PaymentRevenueSummary = {
+  totalAmount: number;
+  count: number;
 };

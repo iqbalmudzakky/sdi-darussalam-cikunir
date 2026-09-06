@@ -62,10 +62,10 @@ function FooterDetail({
 }
 
 export default async function Footer() {
-  const [profile, visitSummary] = await Promise.all([
-    getSchoolProfile(),
-    getVisitSummary(),
-  ]);
+  // Sengaja berurutan, bukan Promise.all — dua koneksi DB baru dibuka
+  // bersamaan pernah bikin build "/" macet 60 detik. Lihat riwayat PR.
+  const profile = await getSchoolProfile();
+  const visitSummary = await getVisitSummary();
 
   const uniqueVisitors = visitSummary.unique_visitors;
   const uniqueVisitorsToday = visitSummary.unique_visitors_today;
