@@ -106,10 +106,11 @@ export default async function AdminDashboardPage() {
     {
       label: "Rata-rata kunjungan",
       value: formatDuration(visitSummary.avg_duration_ms),
-      caption:
-        visitSummary.measured_visits > 0
-          ? `Terukur dari ${visitSummary.measured_visits.toLocaleString("id-ID")} kunjungan`
-          : "Belum ada yang terukur",
+      // caption ini sengaja dikomen dulu
+      // caption:
+      //   visitSummary.measured_visits > 0
+      //     ? `Terukur dari ${visitSummary.measured_visits.toLocaleString("id-ID")} kunjungan`
+      //     : "Belum ada yang terukur",
       icon: Clock,
     },
   ];

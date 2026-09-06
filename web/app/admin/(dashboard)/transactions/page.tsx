@@ -6,19 +6,32 @@ import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
+  CalendarDays,
   Inbox,
   Loader2,
   MessageCircle,
   Receipt,
   Search,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
-import { listPayments } from "@/lib/api/payments";
+import { getRevenueSummary, listPayments } from "@/lib/api/payments";
 import { useToast } from "@/hooks/useToast";
-import { formatDateTime } from "@/lib/date";
+import {
+  formatDate,
+  formatDateTime,
+  parseDateOnly,
+  toDateOnly,
+} from "@/lib/date";
 import { formatAmount, formatMethod, isOrphaned } from "@/lib/payment";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
@@ -30,6 +43,7 @@ import { TransactionDetailDialog } from "@/components/admin/TransactionDetailDia
 import type {
   ListPaymentsParams,
   Payment,
+  PaymentRevenueSummary,
   PaymentSortDirection,
   PaymentStatus,
 } from "@/types/Payment";
@@ -59,6 +73,12 @@ export default function AdminTransactionsPage() {
   const [sort, setSort] = useState<PaymentSortDirection>("desc");
   const [detailItem, setDetailItem] = useState<Payment | null>(null);
 
+  const [paidFrom, setPaidFrom] = useState("");
+  const [paidTo, setPaidTo] = useState("");
+  const [revenueSummary, setRevenueSummary] =
+    useState<PaymentRevenueSummary | null>(null);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(true);
+
   const isLoadingMoreRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +92,8 @@ export default function AdminTransactionsPage() {
       sort,
       limit: PAGE_SIZE,
       offset: 0,
+      paidFrom,
+      paidTo,
     };
 
     try {
@@ -91,6 +113,24 @@ export default function AdminTransactionsPage() {
     }
   }
 
+  // Lepas dari pencarian/chip status — total ini selalu status Lunas saja.
+  async function loadRevenueSummary(isCancelled: () => boolean) {
+    setIsSummaryLoading(true);
+
+    try {
+      const summary = await getRevenueSummary({ paidFrom, paidTo });
+      if (isCancelled()) return;
+      setRevenueSummary(summary);
+    } catch (error) {
+      if (isCancelled()) return;
+      console.error("Failed to load revenue summary:", error);
+      setRevenueSummary(null);
+    } finally {
+      if (isCancelled()) return;
+      setIsSummaryLoading(false);
+    }
+  }
+
   useEffect(() => {
     const timer = setTimeout(
       () => setSearch(searchInput.trim()),
@@ -107,7 +147,17 @@ export default function AdminTransactionsPage() {
     return () => {
       cancelled = true;
     };
-  }, [search, statusFilter, sort]);
+  }, [search, statusFilter, sort, paidFrom, paidTo]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadRevenueSummary(() => cancelled);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [paidFrom, paidTo]);
 
   useEffect(() => {
     const sentinel = loadMoreRef.current;
@@ -120,7 +170,7 @@ export default function AdminTransactionsPage() {
     observer.observe(sentinel);
 
     return () => observer.disconnect();
-  }, [hasMore, items.length, search, statusFilter, sort]);
+  }, [hasMore, items.length, search, statusFilter, sort, paidFrom, paidTo]);
 
   async function handleLoadMore() {
     if (isLoadingMoreRef.current) return;
@@ -132,6 +182,8 @@ export default function AdminTransactionsPage() {
       sort,
       limit: PAGE_SIZE,
       offset: items.length,
+      paidFrom,
+      paidTo,
     };
 
     try {
@@ -156,7 +208,14 @@ export default function AdminTransactionsPage() {
     );
   }
 
-  const hasActiveFilter = search !== "" || statusFilter.length > 0;
+  const hasActiveFilter =
+    search !== "" ||
+    statusFilter.length > 0 ||
+    paidFrom !== "" ||
+    paidTo !== "";
+  const hasDateRange = paidFrom !== "" || paidTo !== "";
+  const paidFromDate = parseDateOnly(paidFrom);
+  const paidToDate = parseDateOnly(paidTo);
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -165,6 +224,61 @@ export default function AdminTransactionsPage() {
         description="Semua pembayaran pendaftaran, online maupun tunai."
         count={isLoading || loadError ? undefined : total}
       />
+
+      <div className="mb-5 rounded-xl border border-gray-100 bg-white p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-gray-500">
+              <Wallet className="h-4 w-4" />
+              <span className="text-sm">Total Pemasukan</span>
+            </div>
+
+            <div className="mt-2 flex items-baseline gap-3">
+              {isSummaryLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-gray-900 tabular-nums">
+                    {formatAmount(revenueSummary?.totalAmount ?? 0)}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-end gap-2">
+            <AdminDateField
+              id="paid-from"
+              label="Dari"
+              value={paidFrom}
+              onChange={setPaidFrom}
+              disabled={paidToDate ? { after: paidToDate } : undefined}
+            />
+
+            <AdminDateField
+              id="paid-to"
+              label="Sampai"
+              value={paidTo}
+              onChange={setPaidTo}
+              disabled={paidFromDate ? { before: paidFromDate } : undefined}
+            />
+
+            {hasDateRange && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9"
+                onClick={() => {
+                  setPaidFrom("");
+                  setPaidTo("");
+                }}
+              >
+                Reset
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
 
       <div className="mb-5 flex flex-col gap-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -373,6 +487,57 @@ function TransactionRow({
       >
         <Receipt className="h-4 w-4" />
       </Button>
+    </div>
+  );
+}
+
+function AdminDateField({
+  id,
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: { before: Date } | { after: Date };
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const selected = parseDateOnly(value);
+
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-xs text-gray-500">
+        {label}
+      </label>
+
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger
+          id={id}
+          type="button"
+          className="flex h-9 w-36 cursor-pointer items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-2.5 text-sm text-gray-900 transition-colors hover:border-gray-300"
+        >
+          <span className={cn("truncate", !selected && "text-gray-400")}>
+            {selected ? formatDate(selected) : "Pilih tanggal"}
+          </span>
+          <CalendarDays className="h-4 w-4 shrink-0 text-gray-400" />
+        </PopoverTrigger>
+
+        <PopoverContent>
+          <Calendar
+            mode="single"
+            captionLayout="dropdown"
+            selected={selected}
+            disabled={disabled}
+            onSelect={(date) => {
+              onChange(date ? toDateOnly(date) : "");
+              if (date) setIsOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

@@ -20,6 +20,8 @@ import type {
   ManualPaymentRequest,
   PaymentListItemResponse,
   PaymentListResponse,
+  PaymentRevenueSummaryResponse,
+  RevenueSummaryRequest,
 } from "./dto";
 
 /* Sesi yang sudah berakhir: lunas, gagal, atau kedaluwarsa. */
@@ -268,6 +270,8 @@ export async function listPayments(
   const filter: PaymentFilter = {
     search: params.search,
     statuses: params.statuses,
+    paidFrom: params.paid_from,
+    paidTo: params.paid_to,
   };
 
   const listInput: ListPaymentsInput = {
@@ -287,4 +291,17 @@ export async function listPayments(
     total,
     has_more: params.offset + items.length < total,
   };
+}
+
+export async function getRevenueSummary(
+  params: RevenueSummaryRequest,
+): Promise<PaymentRevenueSummaryResponse> {
+  const filter = {
+    paidFrom: params.paid_from,
+    paidTo: params.paid_to,
+  };
+
+  return withDbLogging("payment.sumRevenue", () =>
+    repository.sumRevenue(filter),
+  );
 }
