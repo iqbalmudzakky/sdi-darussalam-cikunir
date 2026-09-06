@@ -3,7 +3,10 @@ import { withDbLogging } from "@/modules/db/errors";
 import * as repository from "./repository";
 import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
-import { getRegistrationFee } from "@/modules/payment-settings/service";
+import {
+  getRegistrationFee,
+  isRegistrationOpen,
+} from "@/modules/payment-settings/service";
 import { sendPaymentReceiptEmail } from "@/modules/email/email";
 import { buildAdminUrl } from "@/modules/shared/siteUrl";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
@@ -36,7 +39,11 @@ export type StartPaymentResult =
   | { ok: true; paymentUrl: string; invoiceNumber: string }
   | {
       ok: false;
-      reason: "rate_limited" | "duplicate" | "gateway_error";
+      reason:
+        | "registration_closed"
+        | "rate_limited"
+        | "duplicate"
+        | "gateway_error";
       message: string;
     };
 
@@ -55,6 +62,14 @@ export async function startRegistrationPayment(input: {
   ipAddress: string;
   request?: Request;
 }): Promise<StartPaymentResult> {
+  if (!(await isRegistrationOpen())) {
+    return {
+      ok: false,
+      reason: "registration_closed",
+      message: "Pendaftaran belum dibuka.",
+    };
+  }
+
   /* Dilewati saat development: menguji pembayaran berarti membayar berulang
    * dari satu mesin, persis pola yang hendak dicegah. */
   if (process.env.NODE_ENV !== "development") {

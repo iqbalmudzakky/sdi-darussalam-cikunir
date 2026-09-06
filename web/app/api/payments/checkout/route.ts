@@ -32,12 +32,20 @@ export async function POST(request: Request) {
     });
 
     if (!result.ok) {
-      const status =
-        result.reason === "rate_limited"
-          ? 429
-          : result.reason === "duplicate"
-            ? 409
-            : 502;
+      let status = 502;
+
+      switch (result.reason) {
+        case "registration_closed":
+          status = 403;
+          break;
+        case "rate_limited":
+          status = 429;
+          break;
+        case "duplicate":
+          status = 409;
+          break;
+      }
+
       return NextResponse.json({ error: result.message }, { status });
     }
 
