@@ -51,3 +51,11 @@ export function birthDate(label: string) {
     .trim()
     .regex(/^\d{4}-\d{2}-\d{2}$/, `${label} wajib diisi.`);
 }
+
+export function requiredEmail(label: string) {
+  return z
+    .string()
+    .trim()
+    .min(1, `${label} wajib diisi.`)
+    .email(`${label} tidak valid.`);
+}

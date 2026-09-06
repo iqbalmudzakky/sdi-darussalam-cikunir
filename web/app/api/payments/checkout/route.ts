@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { CreatePpdbRegistrationRequestSchema } from "@/modules/registration/dto";
+import { PublicCreatePpdbRegistrationRequestSchema } from "@/modules/registration/dto";
 import * as paymentService from "@/modules/payment/service";
 import { getClientIp } from "@/modules/shared/clientIp";
 
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const parsed = CreatePpdbRegistrationRequestSchema.safeParse(body);
+  const parsed = PublicCreatePpdbRegistrationRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
