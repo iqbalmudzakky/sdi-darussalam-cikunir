@@ -1,4 +1,4 @@
-export const SCHOOL_NAME = "SDI Darussalam Cikunir";
+export const SCHOOL_NAME = "SD Islam Darussalam Cikunir";
 
 /* Salinan hex dari app/globals.css — email tidak baca CSS/Tailwind. */
 export const BRAND_600 = "#3d6749";

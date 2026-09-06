@@ -6,7 +6,7 @@ import {
   SCHOOL_NAME,
 } from "@/modules/shared/constant/email";
 
-const EMAIL_FROM = process.env.EMAIL_FROM!;
+const EMAIL_FROM = `${SCHOOL_NAME} <${process.env.EMAIL_FROM!}>`;
 
 export async function sendInviteEmail(input: {
   to: string;
