@@ -4,6 +4,7 @@ import {
   phoneNumber,
   birthPlace,
   birthDate,
+  requiredEmail,
 } from "@/modules/validation/validators";
 import type { PpdbRegistrationStatus } from "./entity";
 
@@ -169,6 +170,12 @@ export const CreatePpdbRegistrationRequestSchema = z.object({
 
   details: CreatePpdbRegistrationDetailSchema,
 });
+
+// Khusus checkout online: email wajib supaya struk pasti ada tujuannya.
+export const PublicCreatePpdbRegistrationRequestSchema =
+  CreatePpdbRegistrationRequestSchema.extend({
+    parent_email: requiredEmail("Email orang tua"),
+  });
 
 export type CreatePpdbRegistrationRequest = z.infer<
   typeof CreatePpdbRegistrationRequestSchema

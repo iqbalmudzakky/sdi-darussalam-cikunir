@@ -4,6 +4,8 @@ import * as repository from "./repository";
 import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
 import { getRegistrationFee } from "@/modules/payment-settings/service";
+import { sendPaymentReceiptEmail } from "@/modules/email/email";
+import { buildAdminUrl } from "@/modules/shared/siteUrl";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 import type {
   DokuNotification,
@@ -168,15 +170,33 @@ export async function applyNotification(
   );
   if (!payment) return "unknown_invoice";
 
+  const paidAt = body.transaction?.date ?? new Date().toISOString();
+  const paymentMethod = body.channel?.id ?? body.service?.id ?? null;
+
   const registrationId = await withDbLogging(
     "payment.settleAsRegistration",
     () =>
       repository.settleAsRegistration(payment, {
-        paymentMethod: body.channel?.id ?? body.service?.id ?? null,
+        paymentMethod,
         acquirer: body.acquirer?.id ?? null,
-        paidAt: body.transaction?.date ?? new Date().toISOString(),
+        paidAt,
       }),
   );
+
+  // Cuma sekali: retry DOKU untuk pembayaran yang sudah settled tidak dikirim.
+  if (registrationId && payment.payload.parent_email) {
+    const receiptInput = {
+      to: payment.payload.parent_email,
+      studentName: payment.payload.student.full_name,
+      paymentMethod,
+      logoUrl: buildAdminUrl("/logo.png"),
+      invoiceNumber: payment.invoice_number,
+      amount: payment.amount,
+      paidAt,
+    };
+
+    await sendPaymentReceiptEmail(receiptInput);
+  }
 
   return registrationId ? "settled" : "duplicate";
 }
@@ -257,6 +277,7 @@ export async function createManualRegistrationWithPayment(
     paidAt: paymentInput.paid_at,
   };
 
+  // Tidak ada email struk untuk jalur manual — itu khusus pembayaran online.
   const { registrationId } = await withDbLogging("payment.insertManual", () =>
     repository.insertManual(insertInput),
   );
