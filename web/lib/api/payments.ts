@@ -2,7 +2,9 @@ import type { SubmitRegistrationInput } from "@/types/Registration";
 import type {
   ListPaymentsParams,
   PaymentListPage,
+  PaymentRevenueSummary,
   PaymentStatusView,
+  RevenueSummaryParams,
 } from "@/types/Payment";
 
 export async function startRegistrationPayment(
@@ -36,10 +38,26 @@ export async function listPayments(
   query.set("sort", params.sort);
   query.set("limit", String(params.limit));
   query.set("offset", String(params.offset));
+  query.set("paid_from", params.paidFrom);
+  query.set("paid_to", params.paidTo);
 
   const res = await fetch(`/api/payments?${query.toString()}`);
   if (!res.ok) throw new Error(`Failed to list payments (${res.status})`);
   return res.json();
+}
+
+export async function getRevenueSummary(
+  params: RevenueSummaryParams,
+): Promise<PaymentRevenueSummary> {
+  const query = new URLSearchParams();
+  query.set("paid_from", params.paidFrom);
+  query.set("paid_to", params.paidTo);
+
+  const res = await fetch(`/api/payments/revenue-summary?${query.toString()}`);
+  if (!res.ok) throw new Error(`Failed to get revenue summary (${res.status})`);
+
+  const data = await res.json();
+  return { totalAmount: data.total_amount, count: data.count };
 }
 
 export async function getPaymentStatus(
