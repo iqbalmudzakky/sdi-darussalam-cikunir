@@ -244,6 +244,10 @@ export default function AdminTransactionsPage() {
                 </>
               )}
             </div>
+
+            <p className="mt-1 text-xs text-gray-400">
+              Gross — belum dikurangi biaya admin DOKU (MDR).
+            </p>
           </div>
 
           <div className="flex flex-wrap items-end gap-2">
