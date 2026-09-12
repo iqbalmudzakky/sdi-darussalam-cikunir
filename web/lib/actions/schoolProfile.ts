@@ -20,6 +20,8 @@ const DEFAULT_SCHOOL_PROFILE: SchoolProfile = {
   instagram: "",
   tiktok: "",
   youtube: "",
+  active_student_count: null,
+  staff_count: null,
 };
 
 export async function getSchoolProfile(): Promise<SchoolProfile> {
