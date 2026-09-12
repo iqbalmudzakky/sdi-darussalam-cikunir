@@ -12,9 +12,9 @@ export const DEV_PREFILL: Partial<FormFields> = {};
 //   registration_type: "siswa_baru",
 //   parent_email: "iqbalmudzakky@gmail.com",
 
-//   full_name: "Ahmad Dzakky I",
-//   nickname: "Dzakky I",
-//   student_nik: "3275042107980046",
+//   full_name: "Ahmad Dzakky K",
+//   nickname: "Dzakky K",
+//   student_nik: "3275042107980048",
 //   nisn: "0123456791",
 //   gender: "laki_laki",
 //   place_of_birth: "Bekasi",

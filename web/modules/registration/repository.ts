@@ -8,6 +8,7 @@ import type {
   PpdbRegistrationStatus,
   RegistrantRegionRow,
   RegistrationFilter,
+  RegistrationSource,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest } from "./dto";
 
@@ -15,6 +16,8 @@ const REGISTRATION_COLUMNS = `
   id,
   registration_type,
   status,
+  source,
+  academic_year,
   ip_address,
   created_at,
   updated_at
@@ -92,23 +95,57 @@ const DETAIL_COLUMNS = `
  * Takes an existing transaction so callers that must do more work atomically —
  * settling a DOKU payment, for instance — can join this into their own
  * transaction instead of opening a nested one.
+ *
+ * `source` sengaja argumen wajib terpisah, bukan bagian payload: payload berasal
+ * dari isian klien, dan pemanggil yang lupa mengisinya gagal saat build.
  */
+/*
+ * Dibaca di dalam transaksi pemanggil supaya pendaftaran tercap tahun ajaran
+ * yang aktif saat barisnya benar-benar ditulis. null = belum ada tahun aktif.
+ *
+ * Menyentuh tabel registration_stats, bukan ppdb_registrations — dirangkap di
+ * sini karena baru dipakai dari satu tempat; pindah ke modul registration-stats
+ * sendiri begitu modul itu dibangun lengkap (lihat PRD tahap M2).
+ */
+async function findCurrentAcademicYearWithin(
+  tx: TransactionSql,
+): Promise<string | null> {
+  const rows = await tx.unsafe<{ academic_year: string }[]>(
+    `SELECT academic_year
+     FROM registration_stats
+     WHERE is_current
+     LIMIT 1`,
+  );
+  return rows[0]?.academic_year ?? null;
+}
+
 export async function insertWithin(
   tx: TransactionSql,
   input: CreatePpdbRegistrationRequest,
+  source: RegistrationSource,
 ): Promise<string> {
   {
+    const academicYear = await findCurrentAcademicYearWithin(tx);
+
     const registrationRows = await tx.unsafe<{ id: string }[]>(
       `
       INSERT INTO ppdb_registrations (
-  registration_type,
-  ip_address,
-  parent_email
-)
-      VALUES ($1, $2, $3)
+        registration_type,
+        ip_address,
+        parent_email,
+        source,
+        academic_year
+      )
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING id
       `,
-      [input.registration_type, input.ip_address, input.parent_email ?? null],
+      [
+        input.registration_type,
+        input.ip_address,
+        input.parent_email ?? null,
+        source,
+        academicYear,
+      ],
     );
 
     const registrationId = registrationRows[0].id;

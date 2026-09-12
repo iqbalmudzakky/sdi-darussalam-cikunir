@@ -9,6 +9,7 @@ import {
 } from "@/modules/payment-settings/service";
 import { sendPaymentReceiptEmail } from "@/modules/email/email";
 import { buildAdminUrl } from "@/modules/shared/siteUrl";
+import { jakartaMidnight } from "@/modules/shared/jakartaDate";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 import type {
   DokuNotification,
@@ -289,7 +290,7 @@ export async function createManualRegistrationWithPayment(
     ipAddress: ip_address,
     paymentMethod: paymentInput.payment_method,
     receiptNumber: paymentInput.receipt_number,
-    paidAt: paymentInput.paid_at,
+    paidAt: jakartaMidnight(paymentInput.paid_at),
   };
 
   // Tidak ada email struk untuk jalur manual — itu khusus pembayaran online.

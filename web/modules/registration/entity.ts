@@ -6,6 +6,8 @@ export type PpdbRegistrationStatus =
 
 export type RegistrationType = "siswa_baru" | "pindahan";
 
+export type RegistrationSource = "online" | "offline";
+
 export type Gender = "laki_laki" | "perempuan";
 
 export type PhysicalDisability = "tidak_ada" | "ada";
@@ -16,17 +18,13 @@ export type ParentRelationshipStatus = "kandung" | "tiri" | "angkat" | "wali";
 
 export type PpdbRegistration = {
   id: string;
-
   registration_type: RegistrationType;
-
   status: PpdbRegistrationStatus;
-
+  source: RegistrationSource;
+  academic_year: string | null;
   ip_address: string | null;
-
   parent_email: string | null;
-
   created_at: string;
-
   updated_at: string;
 };
 

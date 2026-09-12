@@ -256,11 +256,17 @@ export async function settleAsRegistration(
 
     if (claimed.length === 0) return null;
 
-    /* Memakai insert milik modul registration supaya tidak pernah berbeda. */
-    const registrationId = await registrationRepository.insertWithin(tx, {
+    const registrationInput = {
       ...payment.payload,
       ip_address: payment.ip_address ?? "unknown",
-    });
+    };
+
+    /* Memakai insert milik modul registration supaya tidak pernah berbeda. */
+    const registrationId = await registrationRepository.insertWithin(
+      tx,
+      registrationInput,
+      "online",
+    );
 
     await tx.unsafe(
       `UPDATE registration_payments SET registration_id = $1 WHERE id = $2`,
@@ -275,10 +281,16 @@ export async function insertManual(
   input: NewManualPayment,
 ): Promise<{ registrationId: string; payment: RegistrationPayment }> {
   return sql.begin(async (tx) => {
-    const registrationId = await registrationRepository.insertWithin(tx, {
+    const registrationInput = {
       ...input.payload,
       ip_address: input.ipAddress ?? "unknown",
-    });
+    };
+
+    const registrationId = await registrationRepository.insertWithin(
+      tx,
+      registrationInput,
+      "offline",
+    );
 
     const rows = await tx.unsafe<RegistrationPayment[]>(
       `INSERT INTO registration_payments
