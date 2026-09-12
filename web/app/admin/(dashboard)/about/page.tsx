@@ -72,6 +72,8 @@ const EMPTY_PROFILE: SchoolProfile = {
   instagram: "",
   tiktok: "",
   youtube: "",
+  active_student_count: null,
+  staff_count: null,
 };
 
 export default function AdminAboutPage() {
