@@ -1,4 +1,5 @@
 import { sql } from "@/modules/db/postgres";
+import type { TransactionSql } from "postgres";
 import type { CheckoutSession } from "./doku";
 import type {
   DokuNotification,
@@ -9,8 +10,8 @@ import type {
   PaymentStatus,
   RegistrationPayment,
   RegistrationPaymentListItem,
+  SettlementDetails,
 } from "./entity";
-import * as registrationRepository from "@/modules/registration/repository";
 
 const COLUMNS = `
   id, invoice_number, amount, status, source, payload, registration_id,
@@ -232,86 +233,63 @@ export async function markFailed(
 }
 
 /*
- * Memindahkan pendaftaran yang sudah dibayar ke tabel ppdb_* dalam satu
- * transaksi, supaya tidak ada pembayaran sukses tanpa data pendaftaran.
- * Mengembalikan null kalau sudah pernah diselesaikan.
+ * Menandai pembayaran lunas, sekali saja. false berarti baris ini sudah
+ * pernah sukses — pemanggil harus berhenti, jangan menulis pendaftaran lagi.
+ * Syarat `status <> 'success'` itu penjaganya, bukan pengecekan di aplikasi:
+ * notifikasi DOKU bisa datang berulang dan berbarengan.
  */
-export async function settleAsRegistration(
-  payment: RegistrationPayment,
-  details: {
-    paymentMethod: string | null;
-    acquirer: string | null;
-    paidAt: string;
-  },
-): Promise<string | null> {
-  return sql.begin(async (tx) => {
-    const claimed = await tx.unsafe<{ id: string }[]>(
-      `UPDATE registration_payments
-       SET status = 'success', payment_method = $1, acquirer = $2,
-           paid_at = $3, updated_at = now()
-       WHERE id = $4 AND status <> 'success'
-       RETURNING id`,
-      [details.paymentMethod, details.acquirer, details.paidAt, payment.id],
-    );
+export async function claimForSettlementWithin(
+  tx: TransactionSql,
+  paymentId: string,
+  details: SettlementDetails,
+): Promise<boolean> {
+  const claimed = await tx.unsafe<{ id: string }[]>(
+    `UPDATE registration_payments
+     SET status = 'success', payment_method = $1, acquirer = $2,
+         paid_at = $3, updated_at = now()
+     WHERE id = $4 AND status <> 'success'
+     RETURNING id`,
+    [details.paymentMethod, details.acquirer, details.paidAt, paymentId],
+  );
 
-    if (claimed.length === 0) return null;
-
-    const registrationInput = {
-      ...payment.payload,
-      ip_address: payment.ip_address ?? "unknown",
-    };
-
-    /* Memakai insert milik modul registration supaya tidak pernah berbeda. */
-    const registrationId = await registrationRepository.insertWithin(
-      tx,
-      registrationInput,
-      "online",
-    );
-
-    await tx.unsafe(
-      `UPDATE registration_payments SET registration_id = $1 WHERE id = $2`,
-      [registrationId, payment.id],
-    );
-
-    return registrationId;
-  });
+  return claimed.length > 0;
 }
 
-export async function insertManual(
+export async function attachRegistrationIdWithin(
+  tx: TransactionSql,
+  paymentId: string,
+  registrationId: string,
+): Promise<void> {
+  await tx.unsafe(
+    `UPDATE registration_payments SET registration_id = $1 WHERE id = $2`,
+    [registrationId, paymentId],
+  );
+}
+
+export async function insertManualWithin(
+  tx: TransactionSql,
   input: NewManualPayment,
-): Promise<{ registrationId: string; payment: RegistrationPayment }> {
-  return sql.begin(async (tx) => {
-    const registrationInput = {
-      ...input.payload,
-      ip_address: input.ipAddress ?? "unknown",
-    };
+  registrationId: string,
+): Promise<RegistrationPayment> {
+  const rows = await tx.unsafe<RegistrationPayment[]>(
+    `INSERT INTO registration_payments
+       (invoice_number, amount, status, source, payload, registration_id,
+        payment_method, receipt_number, paid_at, ip_address)
+     VALUES ($1, $2, 'success', 'manual', $3, $4, $5, $6, $7, $8)
+     RETURNING ${COLUMNS}`,
+    [
+      input.invoiceNumber,
+      input.amount,
+      input.payload,
+      registrationId,
+      input.paymentMethod,
+      input.receiptNumber,
+      input.paidAt,
+      input.ipAddress,
+    ],
+  );
 
-    const registrationId = await registrationRepository.insertWithin(
-      tx,
-      registrationInput,
-      "offline",
-    );
-
-    const rows = await tx.unsafe<RegistrationPayment[]>(
-      `INSERT INTO registration_payments
-         (invoice_number, amount, status, source, payload, registration_id,
-          payment_method, receipt_number, paid_at, ip_address)
-       VALUES ($1, $2, 'success', 'manual', $3, $4, $5, $6, $7, $8)
-       RETURNING ${COLUMNS}`,
-      [
-        input.invoiceNumber,
-        input.amount,
-        input.payload,
-        registrationId,
-        input.paymentMethod,
-        input.receiptNumber,
-        input.paidAt,
-        input.ipAddress,
-      ],
-    );
-
-    return { registrationId, payment: rows[0] };
-  });
+  return rows[0];
 }
 
 /* Mencatat notifikasi. false berarti Request-Id sudah pernah masuk. */

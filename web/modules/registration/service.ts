@@ -1,6 +1,8 @@
 import type ExcelJS from "exceljs";
+import type { TransactionSql } from "postgres";
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
+import * as registrationStatsService from "@/modules/registration-stats/service";
 import {
   buildRegistrationsWorkbookBuffer,
   getRegistrationsExportFilename,
@@ -11,8 +13,11 @@ import type {
   PpdbRegistrationListItem,
   PpdbRegistrationStatus,
   RegistrationFilter,
+  RegistrationSource,
+  RegistrationSourceCounts,
 } from "./entity";
 import type {
+  CreatePpdbRegistrationRequest,
   ExportRegistrationsQuery,
   ListRegistrationsQuery,
   RegistrantRegion,
@@ -64,6 +69,35 @@ function toRegistrationListItemResponse(
     paid_at: item.paid_at,
     invoice_number: item.invoice_number,
   };
+}
+
+export async function insertWithin(
+  tx: TransactionSql,
+  input: CreatePpdbRegistrationRequest,
+  source: RegistrationSource,
+): Promise<string> {
+  const academicYear =
+    await registrationStatsService.findCurrentAcademicYearWithin(tx);
+
+  return withDbLogging("registration.insertWithin", () =>
+    repository.insertWithin(tx, input, source, academicYear),
+  );
+}
+
+export async function getSourceCounts(
+  academicYear: string,
+): Promise<RegistrationSourceCounts> {
+  return withDbLogging("registration.countBySourceForYear", () =>
+    repository.countBySourceForYear(academicYear),
+  );
+}
+
+export async function getSourceCountsForAllYears(): Promise<
+  Map<string, RegistrationSourceCounts>
+> {
+  return withDbLogging("registration.countBySourceForAllYears", () =>
+    repository.countBySourceForAllYears(),
+  );
 }
 
 export async function listRegistrations(
