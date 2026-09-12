@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { withDbLogging } from "@/modules/db/errors";
+import { withTransaction } from "@/modules/db/postgres";
 import * as repository from "./repository";
 import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
@@ -18,7 +19,9 @@ import type {
   PaymentFilter,
   PaymentStatus,
   RegistrationPayload,
+  RegistrationPayment,
   RegistrationPaymentListItem,
+  SettlementDetails,
 } from "./entity";
 import type {
   CreateManualRegistrationWithPaymentResult,
@@ -145,6 +148,35 @@ export async function startRegistrationPayment(input: {
   };
 }
 
+async function settleAsRegistration(
+  payment: RegistrationPayment,
+  details: SettlementDetails,
+): Promise<string | null> {
+  return withTransaction(async (tx) => {
+    const claimed = await repository.claimForSettlementWithin(
+      tx,
+      payment.id,
+      details,
+    );
+    if (!claimed) return null;
+
+    const registrationInput = {
+      ...payment.payload,
+      ip_address: payment.ip_address ?? "unknown",
+    };
+
+    const registrationId = await registrationService.insertWithin(
+      tx,
+      registrationInput,
+      "online",
+    );
+
+    await repository.attachRegistrationIdWithin(tx, payment.id, registrationId);
+
+    return registrationId;
+  });
+}
+
 export type NotificationOutcome =
   | "settled"
   | "duplicate"
@@ -189,14 +221,15 @@ export async function applyNotification(
   const paidAt = body.transaction?.date ?? new Date().toISOString();
   const paymentMethod = body.channel?.id ?? body.service?.id ?? null;
 
+  const settlementDetails = {
+    paymentMethod,
+    acquirer: body.acquirer?.id ?? null,
+    paidAt,
+  };
+
   const registrationId = await withDbLogging(
     "payment.settleAsRegistration",
-    () =>
-      repository.settleAsRegistration(payment, {
-        paymentMethod,
-        acquirer: body.acquirer?.id ?? null,
-        paidAt,
-      }),
+    () => settleAsRegistration(payment, settlementDetails),
   );
 
   // Cuma sekali: retry DOKU untuk pembayaran yang sudah settled tidak dikirim.
@@ -294,11 +327,32 @@ export async function createManualRegistrationWithPayment(
   };
 
   // Tidak ada email struk untuk jalur manual — itu khusus pembayaran online.
-  const { registrationId } = await withDbLogging("payment.insertManual", () =>
-    repository.insertManual(insertInput),
+  const registrationId = await withDbLogging("payment.insertManual", () =>
+    insertManualRegistration(insertInput),
   );
 
   return { ok: true, registration_id: registrationId };
+}
+
+async function insertManualRegistration(
+  input: NewManualPayment,
+): Promise<string> {
+  return withTransaction(async (tx) => {
+    const registrationInput = {
+      ...input.payload,
+      ip_address: input.ipAddress ?? "unknown",
+    };
+
+    const registrationId = await registrationService.insertWithin(
+      tx,
+      registrationInput,
+      "offline",
+    );
+
+    await repository.insertManualWithin(tx, input, registrationId);
+
+    return registrationId;
+  });
 }
 
 export async function listPayments(
