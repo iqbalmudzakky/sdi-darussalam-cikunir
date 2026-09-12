@@ -6,3 +6,7 @@ export function jakartaDateKey(now: Date): string {
     day: "2-digit",
   }).format(now);
 }
+
+export function jakartaMidnight(dateOnly: string): string {
+  return `${dateOnly}T00:00:00+07:00`;
+}

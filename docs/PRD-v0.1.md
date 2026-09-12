@@ -191,7 +191,7 @@ Supaya batas itu tidak bergantung pada ingatan admin, dua kolom ditambahkan ke
 | Kolom           | Isi                                                                                                |
 | --------------- | -------------------------------------------------------------------------------------------------- |
 | `source`        | `'online'` untuk pendaftaran lewat website, `'offline'` untuk yang diinput admin lewat form manual |
-| `academic_year` | Tahun ajaran pendaftaran itu, misal `'2026/2027'`                                                  |
+| `academic_year` | Tahun ajaran pendaftaran itu, misal `'2027/2028'`                                                  |
 
 **Kenapa `source` di `ppdb_registrations`, padahal `registration_payments.source` sudah
 ada.** Baris pembayaran bisa tidak ada — pendaftaran yang belum dibayar tetap pendaftaran
@@ -298,8 +298,13 @@ ditulis sebagai PRD tersendiri.
 - `academic_year` diisi dari baris `registration_stats` yang `is_current`. Kalau tidak ada
   baris aktif, pendaftaran **tetap tersimpan** dengan `academic_year` kosong — pendaftaran
   orang tidak boleh gagal gara-gara admin belum mengisi pengaturan
-- Baris lama di-backfill: `source = 'online'` untuk semua, kecuali yang punya baris
-  pembayaran `source = 'manual'` → `'offline'`
+- Baris lama di-backfill: `source = 'online'` **hanya** untuk yang punya baris pembayaran
+  `source = 'online'`; sisanya `'offline'`. Pembayaran `'manual'` jelas offline, dan baris
+  tanpa pembayaran sama sekali juga offline: sebelum 2026-09-05 (commit `73aaf23`) input
+  manual admin tidak membuat baris pembayaran, sedangkan sejak DOKU aktif (2026-08-25)
+  pendaftaran online selalu lahir dari pembayaran sukses. Saat migrasi dijalankan,
+  produksi belum punya satu pun baris pendaftaran — backfill ini hanya benar-benar
+  bekerja di staging
 
 **Selesai jika:** pendaftaran baru lewat website tersimpan sebagai `online`, lewat form
 admin sebagai `offline`, dan semua baris lama punya nilai yang masuk akal.
@@ -531,6 +536,9 @@ BEGIN;
 --
 -- academic_year disimpan, bukan disimpulkan dari created_at, supaya angka tahun
 -- lalu tetap sama meski jendela pendaftaran diubah.
+--
+-- DEFAULT 'online' sengaja dipertahankan: kode lama yang masih jalan di sela
+-- migrasi dan deploy tetap bisa menyimpan pendaftaran, bukan gagal.
 ALTER TABLE ppdb_registrations
     ADD COLUMN IF NOT EXISTS source text NOT NULL DEFAULT 'online',
     ADD COLUMN IF NOT EXISTS academic_year text;
@@ -549,16 +557,21 @@ ALTER TABLE ppdb_registrations
     ADD CONSTRAINT ppdb_registrations_academic_year_format
     CHECK (academic_year IS NULL OR academic_year ~ '^[0-9]{4}/[0-9]{4}$');
 
--- Baris lama: yang pembayarannya dicatat admin berarti pendaftaran offline.
+-- Baris lama: online hanya kalau lahir dari pembayaran DOKU. Input manual admin
+-- sebelum 2026-09-05 tidak membuat baris pembayaran sama sekali, jadi baris
+-- tanpa pembayaran online juga offline.
 UPDATE ppdb_registrations pr
 SET source = 'offline'
-FROM registration_payments rp
-WHERE rp.registration_id = pr.id
-  AND rp.source = 'manual';
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM registration_payments rp
+    WHERE rp.registration_id = pr.id
+      AND rp.source = 'online'
+);
 
--- Semua baris yang sudah ada masuk tahun ajaran berjalan saat migrasi ditulis.
+-- Semua baris yang sudah ada masuk tahun ajaran yang sedang dibuka pendaftarannya.
 UPDATE ppdb_registrations
-SET academic_year = '2026/2027'
+SET academic_year = '2027/2028'
 WHERE academic_year IS NULL;
 
 CREATE INDEX IF NOT EXISTS ppdb_registrations_stats_idx
@@ -591,8 +604,17 @@ BEGIN;
 -- boleh ada satu, dan itu dijaga index di bawah: dua tahun aktif membuat angka
 -- publik salah tanpa memunculkan error apa pun.
 CREATE TABLE IF NOT EXISTS registration_stats (
+    -- CASE, bukan AND: Postgres tidak menjamin urutan AND, dan cast ::int pada
+    -- teks yang formatnya salah akan error sebelum CHECK sempat menolaknya.
     academic_year text PRIMARY KEY
-        CHECK (academic_year ~ '^[0-9]{4}/[0-9]{4}$'),
+        CHECK (
+            CASE
+                WHEN academic_year ~ '^[0-9]{4}/[0-9]{4}$'
+                THEN split_part(academic_year, '/', 2)::int
+                     = split_part(academic_year, '/', 1)::int + 1
+                ELSE false
+            END
+        ),
 
     offline_count integer NOT NULL DEFAULT 0
         CHECK (offline_count >= 0),
@@ -607,8 +629,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS registration_stats_one_current_idx
     ON registration_stats (is_current)
     WHERE is_current;
 
+-- Tahun ajaran yang sedang dibuka pendaftarannya, sama dengan label di hero.
 INSERT INTO registration_stats (academic_year, offline_count, is_current)
-VALUES ('2026/2027', 0, true)
+VALUES ('2027/2028', 0, true)
 ON CONFLICT (academic_year) DO NOTHING;
 
 COMMIT;
@@ -711,7 +734,12 @@ COMMIT;
 ### 7.5 `20260911_enable_rls_on_events.sql` & `20260911_grant_privileges_on_events.sql`
 
 Mengikuti persis pola `20260811_enable_rls_on_achievements.sql` dan pasangan `grant`-nya.
-Tabel `registration_stats` juga mendapat pasangan yang sama.
+
+Tabel `registration_stats` mendapat pasangan serupa, tapi dikerjakan di **M1** bersama
+pembuatan tabelnya supaya tabel itu tidak sempat terbuka tanpa RLS sampai M5
+(`20260911_enable_rls_on_registration_stats.sql` + `20260911_grant_privileges_on_registration_stats.sql`).
+Polanya mengikuti `payment_settings`, bukan `achievements`: tanpa akses `anon` karena angka
+publik dihitung di server, dan tanpa `DELETE` supaya angka tahun lalu tidak bisa hilang.
 
 ### 7.6 `20260911_create_event_photos_bucket.sql`
 
@@ -733,7 +761,7 @@ keputusan desain dipegang OPUS.
 
 | Tahap | Model    | Isi                                                                                                                                                                                                                                                                                                               | Hasil yang bisa dilihat                                                                                                                  |
 | ----- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| M1    | **OPUS** | F1 — migrasi 7.1 **dan 7.2** (F1 membaca tahun ajaran aktif dari `registration_stats`, jadi tabelnya harus ada lebih dulu), `insertWithin()` menerima `source` + `academic_year`, kedua jalur pendaftaran mengisinya, backfill. Pembacaan tahun aktif cukup satu fungsi repository kecil — modul lengkapnya di M2 | Daftar pendaftar di admin tetap normal; kolom baru terisi benar untuk data lama; pendaftaran baru mendapat `academic_year = '2026/2027'` |
+| M1    | **OPUS** | F1 — migrasi 7.1 **dan 7.2** (F1 membaca tahun ajaran aktif dari `registration_stats`, jadi tabelnya harus ada lebih dulu) beserta RLS + grant `registration_stats` (7.5), `insertWithin()` menerima `source` + `academic_year`, kedua jalur pendaftaran mengisinya, backfill. Pembacaan tahun aktif cukup satu fungsi repository kecil — modul lengkapnya di M2 | Daftar pendaftar di admin tetap normal; kolom baru terisi benar untuk data lama; pendaftaran baru mendapat `academic_year = '2027/2028'` |
 | M2    | SONNET   | Migrasi 7.4, modul `registration-stats` lengkap (entity/dto/repository/service) + route API + kolom baru masuk modul `school-profile`                                                                                                                                                                             | `GET/PUT /api/registration-stats` dan penyimpanan dua angka sekolah jalan lewat Postman                                                  |
 | M3    | SONNET   | F2 — halaman `/admin/statistics` (dua bagian) + entri sidebar                                                                                                                                                                                                                                                     | Admin mengubah jumlah siswa dan angka offline, keduanya tersimpan                                                                        |
 | M4    | SONNET   | F3 — server action + kelima angka hero                                                                                                                                                                                                                                                                            | Landing page menampilkan siswa aktif, guru & staf, dan pendaftar dari database                                                           |
@@ -780,11 +808,11 @@ perubahan yang mulai merembet ke berkas di luar cakupan tahapnya.
 Dijalankan berurutan di lingkungan yang datanya menyerupai produksi:
 
 1. Buka `/admin/statistics`. Bagian "Angka sekolah" sudah terisi `683` dan `65` — nilai
-   yang tadinya ada di kode. Bagian "Pendaftar": tahun ajaran `2026/2027` aktif, jumlah
+   yang tadinya ada di kode. Bagian "Pendaftar": tahun ajaran `2027/2028` aktif, jumlah
    online dan offline terisi dari database, kolom isian masih 0
 2. Ubah "Siswa aktif" jadi `690`, simpan. Buka landing page — hero menampilkan `690`
 3. Isi kolom offline `120`, simpan. Total di layar bertambah 120
-4. Buka landing page — angka "Pendaftar TA 2026/2027" muncul dan cocok dengan total di
+4. Buka landing page — angka "Pendaftar TA 2027/2028" muncul dan cocok dengan total di
    dashboard
 5. Kosongkan "Guru & staf" di dashboard. Butir "Guru & staf" hilang dari hero, empat butir
    lain tetap tersusun rapi — bukan menyisakan lubang atau menampilkan "0"
