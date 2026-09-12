@@ -16,3 +16,8 @@ export type SchoolProfile = {
   tiktok: string;
   youtube: string;
 };
+
+export type SchoolProfileStats = {
+  active_student_count: number | null;
+  staff_count: number | null;
+};
