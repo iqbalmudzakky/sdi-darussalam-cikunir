@@ -260,6 +260,10 @@ export default function AdminRegistrationsPage() {
     );
   }
 
+  function handleWaPickerLinkClick() {
+    setTimeout(() => setWaPickerItem(null), 0);
+  }
+
   function handleDownloadExcel() {
     window.location.href = buildRegistrationsExportUrl(exportStatuses);
     setIsExportOpen(false);
@@ -764,7 +768,7 @@ export default function AdminRegistrationsPage() {
               }
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setWaPickerItem(null)}
+              onClick={handleWaPickerLinkClick}
               className={cn(
                 actionButtonVariants({ size: "row" }),
                 CONTACT_BUTTON_CLASSNAME,
@@ -781,7 +785,7 @@ export default function AdminRegistrationsPage() {
               }
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setWaPickerItem(null)}
+              onClick={handleWaPickerLinkClick}
               className={cn(
                 actionButtonVariants({ size: "row" }),
                 CONTACT_BUTTON_CLASSNAME,
