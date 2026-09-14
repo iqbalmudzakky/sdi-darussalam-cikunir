@@ -268,6 +268,14 @@ Aturannya: slug dibuat dari judul **saat event pertama kali diterbitkan**, lalu 
 Menyunting judul setelah itu tidak mengubah slug. Kalau slug hasil olahan sudah dipakai,
 tambahkan akhiran angka (`akram-2026`, `akram-2026-2`).
 
+**Slug pada draf.** Kolom `slug` di 7.3 bertipe `NOT NULL`, jadi draf pun butuh slug sejak
+dibuat — aturan di atas mengasumsikan ada momen "pertama terbit" tapi tidak bilang apa yang
+terjadi sebelum itu. Yang diimplementasikan (M5, `modules/event/service.ts`): slug dibuat
+dari judul saat event dibuat sebagai draf, dan **ikut berubah mengikuti judul** selama event
+itu belum pernah diterbitkan sekali pun. Begitu status Terbitkan dinyalakan untuk pertama
+kalinya, slug dihitung ulang dari judul final saat itu lalu dikunci permanen — mematikan
+lalu menerbitkan ulang event yang sama tidak membuka kunci ini.
+
 ### 4.5 Hubungan dengan Kegiatan & Prestasi yang sudah ada
 
 Tidak ada yang dipindahkan atau dihapus di v0.1.
@@ -642,7 +650,7 @@ COMMIT;
 -- COMMIT;
 ```
 
-### 7.3 `20260911_create_events.sql`
+### 7.3 `20260912_create_events.sql`
 
 ```sql
 BEGIN;
@@ -691,7 +699,7 @@ COMMIT;
 -- COMMIT;
 ```
 
-### 7.4 `20260911_add_stat_counts_to_school_profiles.sql`
+### 7.4 `20260912_add_stat_counts_to_school_profiles.sql`
 
 ```sql
 BEGIN;
@@ -731,7 +739,7 @@ COMMIT;
 -- COMMIT;
 ```
 
-### 7.5 `20260911_enable_rls_on_events.sql` & `20260911_grant_privileges_on_events.sql`
+### 7.5 `20260912_enable_rls_on_events.sql` & `20260912_grant_privileges_on_events.sql`
 
 Mengikuti persis pola `20260811_enable_rls_on_achievements.sql` dan pasangan `grant`-nya.
 
@@ -741,7 +749,7 @@ pembuatan tabelnya supaya tabel itu tidak sempat terbuka tanpa RLS sampai M5
 Polanya mengikuti `payment_settings`, bukan `achievements`: tanpa akses `anon` karena angka
 publik dihitung di server, dan tanpa `DELETE` supaya angka tahun lalu tidak bisa hilang.
 
-### 7.6 `20260911_create_event_photos_bucket.sql`
+### 7.6 `20260912_create_event_photos_bucket.sql`
 
 Mengikuti `20260804_create_activity_photos_bucket.sql`, dengan `event-photos` sebagai id
 bucket dan empat policy yang sama (publik boleh melihat, `authenticated` boleh
