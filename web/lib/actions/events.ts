@@ -12,6 +12,20 @@ export async function listPublishedEvents(): Promise<PublicEventItem[]> {
   }
 }
 
+export async function listLatestPublishedEvents(
+  limit: number,
+): Promise<PublicEventItem[]> {
+  try {
+    return await eventService.listLatestPublishedEvents(limit);
+  } catch (error) {
+    console.error(
+      "lib/actions/events.listLatestPublishedEvents failed:",
+      error,
+    );
+    return [];
+  }
+}
+
 export async function getPublishedEvent(
   slug: string,
 ): Promise<PublicEventItem | null> {

@@ -79,6 +79,15 @@ export async function listPublishedEvents(): Promise<PublicEventResponse[]> {
   return events.map(toPublicResponse);
 }
 
+export async function listLatestPublishedEvents(
+  limit: number,
+): Promise<PublicEventResponse[]> {
+  const events = await withDbLogging("event.listLatestPublished", () =>
+    repository.listLatestPublished(limit),
+  );
+  return events.map(toPublicResponse);
+}
+
 export async function getPublishedEventBySlug(
   slug: string,
 ): Promise<PublicEventResponse | null> {

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import About from "@/components/sections/About";
 import Activity from "@/components/sections/Activity";
 import Contact from "@/components/sections/Contact";
+import EventTeaser from "@/components/sections/EventTeaser";
 import Facility from "@/components/sections/Facility";
 import Footer from "@/components/sections/Footer";
 import Hero from "@/components/sections/Hero";
@@ -44,8 +45,9 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: SITE_NAME,
     publisher: SITE_NAME,
     /*
-     * Canonical menunjuk ke akar situs. Halaman ini satu-satunya
-     * halaman publik, jadi semua varian URL bermuara ke sini.
+     * Canonical menunjuk ke akar situs. Landing page adalah
+     * halaman publik utama; /event adalah halaman terpisah
+     * dengan canonical-nya sendiri.
      */
     alternates: {
       canonical: "/",
@@ -132,6 +134,9 @@ export default async function Home() {
 
       {/* Activity Section */}
       <Activity />
+
+      {/* Event Teaser Section */}
+      <EventTeaser />
 
       {/* Contact Section */}
       <Contact />
