@@ -33,7 +33,7 @@ export async function PUT(
     }
 
     revalidatePath("/");
-    revalidatePath("/event");
+    revalidatePath("/event", "layout");
     return NextResponse.json(event);
   } catch (error) {
     console.error(`PUT /api/events/${id} failed:`, error);
@@ -58,7 +58,7 @@ export async function DELETE(
   try {
     await eventService.deleteEvent(id);
     revalidatePath("/");
-    revalidatePath("/event");
+    revalidatePath("/event", "layout");
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error(`DELETE /api/events/${id} failed:`, error);

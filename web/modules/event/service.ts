@@ -1,7 +1,11 @@
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
 import { removeStoragePhoto } from "@/modules/storage/storage";
-import type { SaveEventRequest, EventResponse } from "./dto";
+import type {
+  SaveEventRequest,
+  EventResponse,
+  PublicEventResponse,
+} from "./dto";
 import type { Event } from "./entity";
 
 const PHOTO_BUCKET = "event-photos";
@@ -50,9 +54,38 @@ function toResponse(event: Event): EventResponse {
   };
 }
 
+function toPublicResponse(event: Event): PublicEventResponse {
+  return {
+    slug: event.slug,
+    title: event.title,
+    category: event.category,
+    summary: event.summary,
+    body: event.body,
+    poster_url: event.poster_url,
+    event_date: event.event_date,
+    updated_at: new Date(event.updated_at).toISOString(),
+  };
+}
+
 export async function listEvents(): Promise<EventResponse[]> {
   const events = await withDbLogging("event.list", () => repository.list());
   return events.map(toResponse);
+}
+
+export async function listPublishedEvents(): Promise<PublicEventResponse[]> {
+  const events = await withDbLogging("event.listPublished", () =>
+    repository.listPublished(),
+  );
+  return events.map(toPublicResponse);
+}
+
+export async function getPublishedEventBySlug(
+  slug: string,
+): Promise<PublicEventResponse | null> {
+  const event = await withDbLogging("event.findPublishedBySlug", () =>
+    repository.findPublishedBySlug(slug),
+  );
+  return event ? toPublicResponse(event) : null;
 }
 
 export async function createEvent(
