@@ -842,16 +842,29 @@ secara manual.
 | M2+M3 | `feat/registration-stats-module`         | #72 — `d0a0165`                | 7.4                                        |
 | M4    | `feat/hero-stats`                        | #73 — `529572f`                | —                                          |
 | M5    | `feat/event-module`                      | #74 — `76afd85`                | 7.3, 7.5, 7.6                              |
-| M6    | `feat/event-public-pages`                | _belum di-merge_               | — (tidak ada migrasi; revert kode saja)    |
+| M6    | `feat/event-public-pages`                | #75 — `3ef86e7`                | — (tidak ada migrasi; revert kode saja)    |
 | M7    | _belum dibuat_                           | —                              | —                                          |
 
 Isi kolom PR/merge commit setelah PR tahap itu di-merge.
+
+**Perbaikan di luar tahap — jangan ikut di-revert bersama M mana pun:**
+
+| Commit    | Masuk lewat                  | Isi                                                                                                                                                                                                                                                                                                                                                                                             |
+| --------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `abcb15a` | langsung ke `staging` (urgent) | `web/modules/db/postgres.ts`: `max_pipeline: 0`, `max: 1` saat build (`NEXT_PHASE`), `idle_timeout: 20`. Build `/` dan `/event` macet 60 detik karena `postgres.js` mem-pipeline query lewat pooler Supabase mode transaksi (`:6543`), yang menukar hasil query — muncul sebagai `UNDEFINED_VALUE` di query tanpa parameter. M6 hanya membuatnya lebih sering muncul (menambah `/event` dan `sitemap.xml` yang query DB saat build); penyebabnya sudah ada sejak sebelum PRD ini, dan perbaikan `Promise.all` → berurutan di `Footer` (commit `e850ef4`) bukan akar masalahnya |
 
 ---
 
 ## 9. Skenario Penerimaan
 
 Dijalankan berurutan di lingkungan yang datanya menyerupai produksi:
+
+| Batch   | Kapan           | Skenario | Catatan                                                                                                                          |
+| ------- | --------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Batch 1 | Setelah M4      | 1–9      | Statistik pendaftar (F1–F3)                                                                                                      |
+| Batch 2 | Setelah M7      | 10–24    | Event sekolah (F4–F6). **Skenario 12 boleh diuji lebih awal**, sebelum M7 — hasilnya bisa mengubah alur unggah poster (catatan F5) |
+
+Pengujian dilakukan di server staging; lokal hanya dipakai untuk menelusuri error.
 
 1. Buka `/admin/statistics`. Bagian "Angka sekolah" sudah terisi `683` dan `65` — nilai
    yang tadinya ada di kode. Bagian "Pendaftar": tahun ajaran `2027/2028` aktif, jumlah
@@ -897,6 +910,9 @@ Dijalankan berurutan di lingkungan yang datanya menyerupai produksi:
 23. Dari `/event`, tekan tautan "Tentang" di **footer** dan logo sekolah di navbar — keduanya
     membawa ke landing page. Di landing page sendiri, menekan menu navbar tetap hanya
     menggulir, tidak memuat ulang halaman
+24. Deploy ke staging selesai tanpa pesan "took more than 60 seconds". Setelah deploy, buka
+    landing page dan `/event`: foto hero, angka siswa/guru/pendaftar, dan daftar event tampil
+    sesuai dashboard — bukan kosong atau tertukar (perbaikan `abcb15a`, Bagian 8.2)
 
 ---
 
