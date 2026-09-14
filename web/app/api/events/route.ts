@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   try {
     const event = await eventService.createEvent(parsed.data);
     revalidatePath("/");
-    revalidatePath("/event");
+    revalidatePath("/event", "layout");
     return NextResponse.json(event, { status: 201 });
   } catch (error) {
     console.error("POST /api/events failed:", error);

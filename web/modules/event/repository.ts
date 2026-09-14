@@ -29,6 +29,25 @@ export async function findBySlug(slug: string): Promise<Event | null> {
   return rows[0] ?? null;
 }
 
+export async function listPublished(): Promise<Event[]> {
+  return sql.unsafe<Event[]>(
+    `SELECT id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at
+     FROM events
+     WHERE is_published = true
+     ORDER BY event_date DESC, published_at DESC`,
+  );
+}
+
+export async function findPublishedBySlug(slug: string): Promise<Event | null> {
+  const rows = await sql.unsafe<Event[]>(
+    `SELECT id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at
+     FROM events
+     WHERE slug = $1 AND is_published = true`,
+    [slug],
+  );
+  return rows[0] ?? null;
+}
+
 export async function findSlugsByPrefix(
   base: string,
   excludeId?: string,

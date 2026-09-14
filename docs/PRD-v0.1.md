@@ -440,6 +440,26 @@ sebagai draf, lalu menerbitkannya.
 **Selesai jika:** URL satu event ditempel ke WhatsApp dan muncul sebagai kartu bergambar
 poster, dan mengkliknya membuka halaman event itu.
 
+**Catatan implementasi (M6, branch `feat/event-public-pages`)** — keputusan yang diambil saat
+membangun F5 dan tidak tertulis di atas:
+
+| Hal                        | Yang diimplementasikan                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Query publik               | `repository.listPublished()` dan `findPublishedBySlug()` — `WHERE is_published = true` di SQL. Server action di `lib/actions/events.ts`                                                                                                                                                                                                                                                                                              |
+| Format `event_date`        | `postgres.js` mengubah kolom `date` jadi objek `Date` walau tipenya ditulis `string`. Query publik memakai `event_date::text` supaya dapat `YYYY-MM-DD` bersih (untuk JSON-LD dan format tanggal). Query admin M5 tidak diubah                                                                                                                                                                                                       |
+| Gagal DB di halaman detail | `getPublishedEvent()` **melempar ulang** error, bukan mengembalikan `null` — `null` berarti 404 dan 404 ikut ter-cache ISR. Daftar `/event` tetap mengikuti pola kembalikan `[]`                                                                                                                                                                                                                                                     |
+| Cache `/event/[slug]`      | `generateStaticParams()` mengembalikan `[]`: build tidak menyentuh DB, tiap event di-cache ISR saat pertama dibuka (`revalidate = 300`)                                                                                                                                                                                                                                                                                              |
+| Revalidate dari admin      | Route `POST/PUT/DELETE /api/events` memanggil `revalidatePath("/event", "layout")`, bukan `revalidatePath("/event")` — supaya halaman detail event yang dijadikan draf atau dihapus ikut segar, tidak tertinggal di cache                                                                                                                                                                                                            |
+| Footer                     | Footer juga tampil di `/event`, jadi anchor-nya ikut ditulis `/#tentang` dst. dan mendapat tautan "Event" — sama seperti Navbar                                                                                                                                                                                                                                                                                                      |
+| Logo Navbar                | `href="/#"`, bukan `/`: di landing tetap hanya menggulir ke atas tanpa memuat ulang, dari `/event` membawa pulang ke landing. Jarak menu desktop jadi `gap-5` di `lg` (`xl:gap-7`) supaya enam tautan + tombol muat di 1024 px                                                                                                                                                                                                       |
+| Kartu event                | `components/sections/EventCard.tsx` (dipakai ulang M7). Kelas ditulis sebagai `cva` (6.4) dan diekspor untuk dipakai halaman detail: `categoryBadgeVariants` + `categoryTone()`, `posterFrameVariants`, `posterImageVariants`, `posterFallbackVariants`. Tanggal diformat `formatDateOnly()` di `lib/date.ts`. Wadah `aspect-3/4` + `object-contain` — di kartu pun poster tidak di-crop agar tulisannya terbaca di HP (skenario 15) |
+| Warna kategori             | PMB/PPDB hijau brand, Prestasi hijau tua, Akram hitam, HUT RI/17 Agustus merah; sisanya warna aksen                                                                                                                                                                                                                                                                                                                                  |
+| Chip penyaring             | Disaring di klien (semua data yang dikirim memang event terbit). Chip hanya tampil kalau ada **≥ 2** kategori berbeda                                                                                                                                                                                                                                                                                                                |
+| `og:image` dan WebP        | `og:image` memakai `poster_url` apa adanya. Poster diunggah lewat `lib/image.ts` yang **mengubah semua gambar jadi WebP** — belum pasti WhatsApp menampilkan WebP sebagai kartu. Diuji pertama kali lewat skenario 12 di staging; kalau gagal, solusinya (misal salinan JPEG khusus OG) dibahas terpisah karena mengubah alur unggah M5                                                                                              |
+| JSON-LD                    | `@type: Event` dengan `startDate`, `image`, `location` (alamat dari `school_profiles`), `organizer`. Karakter `<` di-escape karena isinya diketik admin                                                                                                                                                                                                                                                                              |
+| Gaya kelas di halaman      | `app/event/page.tsx`, `app/event/[slug]/page.tsx`, dan `EventList.tsx` juga menaruh kelas panjang sebagai konstanta `cva` di atas berkas (`chipVariants({ active })`, `shareButtonVariants`, dst.). Yang tetap inline hanya kelas yang sangat pendek. **Bukan** shadcn `Badge`/`Card` — halaman publik repo ini memakai Tailwind + palet `brand`/`ink`/`accent`; shadcn hanya untuk perilaku (Dialog, Select, Popover)               |
+| Tertunda ke M7             | Komentar di `app/page.tsx` (`generateMetadata`, bagian `alternates`) masih berbunyi "halaman ini satu-satunya halaman publik" — sudah tidak benar sejak `/event` ada. Dirapikan saat M7 menyentuh berkas itu                                                                                                                                                                                                                         |
+
 ### F6 — Teaser event di landing page
 
 - Section baru setelah section Kegiatan: **"Event Terbaru"**, berisi **3 event terbit
@@ -803,11 +823,29 @@ dilihat orang dari seluruh fitur ini.
 | M3    | `/admin/payment` untuk halaman pengaturan berbentuk form                                                                                   | Label kolom offline dan keterangan "sudah ada N yang diinput" wajib persis seperti F2 — itu penjaga hitung ganda                                        |
 | M4    | `lib/actions/activities.ts` untuk server action yang tidak menjatuhkan halaman                                                             | Butir bernilai kosong/0 tidak dirender, bukan tampil "0"                                                                                                |
 | M5    | `/admin/activity` + `modules/activity` untuk CRUD, unggah, dan hapus foto                                                                  | Aturan slug 4.4: dibuat saat pertama terbit, lalu **dikunci** — uji dengan menyunting judul event yang sudah terbit                                     |
-| M7    | Komponen kartu event dari M6, pola reveal dari section lain                                                                                | Section tidak dirender sama sekali saat belum ada event terbit                                                                                          |
+| M7    | Komponen kartu event dari M6 (`EventCard.tsx`, lihat catatan implementasi F5), pola reveal dari section lain                               | Section tidak dirender sama sekali saat belum ada event terbit                                                                                          |
 
 **Kalau SONNET tersangkut di satu tahap**, naikkan tahap itu ke OPUS — jangan
 memaksakan. Tanda-tandanya: perbaikan yang berputar di masalah yang sama dua kali, atau
 perubahan yang mulai merembet ke berkas di luar cakupan tahapnya.
+
+### 8.2 Branch per tahap (untuk revert)
+
+Setiap tahap masuk `staging` lewat PR dari branch-nya sendiri. Kalau satu tahap harus
+dibatalkan, revert **merge commit**-nya (`git revert -m 1 <merge-commit>`) — kode ikut
+kembali, tapi **migrasi database tidak**: jalankan blok rollback di bawah berkas migrasinya
+secara manual.
+
+| Tahap | Branch                                   | PR / merge commit ke `staging` | Migrasi yang dibawa                        |
+| ----- | ---------------------------------------- | ------------------------------ | ------------------------------------------ |
+| M1    | `feat/registration-source-academic-year` | #70 — `777450b`                | 7.1, 7.2, RLS + grant `registration_stats` |
+| M2+M3 | `feat/registration-stats-module`         | #72 — `d0a0165`                | 7.4                                        |
+| M4    | `feat/hero-stats`                        | #73 — `529572f`                | —                                          |
+| M5    | `feat/event-module`                      | #74 — `76afd85`                | 7.3, 7.5, 7.6                              |
+| M6    | `feat/event-public-pages`                | _belum di-merge_               | — (tidak ada migrasi; revert kode saja)    |
+| M7    | _belum dibuat_                           | —                              | —                                          |
+
+Isi kolom PR/merge commit setelah PR tahap itu di-merge.
 
 ---
 
@@ -854,6 +892,11 @@ Dijalankan berurutan di lingkungan yang datanya menyerupai produksi:
 21. Ulangi langkah 2, 11, 12, dan 14 **seluruhnya dari HP di lebar 390 px**, dengan jempol
     saja: angka di hero terbaca, kartu event di landing bisa ditekan, halaman detail event
     terbaca tanpa mencubit layar, dan tombol bagikan ke WhatsApp berfungsi
+22. Buka URL detail sebuah event terbit, lalu jadikan event itu draf dari admin. Buka ulang
+    URL-nya — halaman 404, bukan poster yang masih tersisa di cache (catatan implementasi F5)
+23. Dari `/event`, tekan tautan "Tentang" di **footer** dan logo sekolah di navbar — keduanya
+    membawa ke landing page. Di landing page sendiri, menekan menu navbar tetap hanya
+    menggulir, tidak memuat ulang halaman
 
 ---
 
@@ -872,6 +915,7 @@ Dijalankan berurutan di lingkungan yang datanya menyerupai produksi:
 | Halaman `/event` sepi karena tidak ada yang mengisi     | Fitur mubazir                                                         | Teaser di landing (F6) membuat event terlihat. Kalau kosong, section-nya menghilang sendiri sehingga situs tidak terlihat terbengkalai |
 | Navbar dipakai di halaman selain landing                | Menu anchor tidak berfungsi dari `/event`                             | Anchor ditulis absolut `/#tentang` (F5), diuji di skenario 16                                                                          |
 | Event draf bocor ke publik                              | Poster acara terbit sebelum waktunya                                  | Penyaringan `is_published` dilakukan di query repository, bukan di komponen (F5)                                                       |
+| WhatsApp tidak menampilkan `og:image` berformat WebP    | Link event tampil tanpa gambar poster — G6 tidak tercapai             | Diuji paling awal lewat skenario 12 di staging. Kalau gagal, dibahas perbaikan alur unggah (salinan JPEG untuk OG) — lihat catatan F5  |
 
 ---
 

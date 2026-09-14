@@ -39,6 +39,11 @@ export function formatDate(value: Date | string): string {
   });
 }
 
+export function formatDateOnly(value: string): string {
+  const date = parseDateOnly(value);
+  return date ? formatDate(date) : value;
+}
+
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleDateString("id-ID", {
     day: "numeric",

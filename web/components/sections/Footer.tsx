@@ -5,12 +5,13 @@ import Reveal from "@/components/sections/Reveal";
 import { VisitorCounter } from "@/components/sections/VisitorCounter";
 
 const NAV_LINKS = [
-  { href: "#tentang", label: "Tentang" },
-  { href: "#program", label: "Program" },
-  { href: "#fasilitas", label: "Fasilitas" },
-  { href: "#visi-misi", label: "Visi & Misi" },
-  { href: "#kegiatan", label: "Kegiatan" },
-  { href: "#kontak", label: "Pendaftaran" },
+  { href: "/#tentang", label: "Tentang" },
+  { href: "/#program", label: "Program" },
+  { href: "/#fasilitas", label: "Fasilitas" },
+  { href: "/#visi-misi", label: "Visi & Misi" },
+  { href: "/#kegiatan", label: "Kegiatan" },
+  { href: "/event", label: "Event" },
+  { href: "/#kontak", label: "Pendaftaran" },
 ];
 
 type FooterDetailProps = {
