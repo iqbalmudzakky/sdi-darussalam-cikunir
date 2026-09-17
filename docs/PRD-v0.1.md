@@ -471,6 +471,17 @@ membangun F5 dan tidak tertulis di atas:
 **Selesai jika:** landing page menampilkan 3 event terbaru, dan section itu hilang sendiri
 saat semua event dijadikan draf.
 
+**Catatan implementasi (M7, branch `feat/event-landing-teaser`)** — keputusan yang diambil
+saat membangun F6 dan tidak tertulis di atas:
+
+| Hal                       | Yang diimplementasikan                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Query 3 event terbaru     | `repository.listLatestPublished(limit)` — query terpisah dari `listPublished()` dengan `LIMIT`, bukan memotong hasil `listPublished()` di kode. Memotong di kode berarti menarik seluruh arsip event dari database di setiap render landing, padahal arsipnya terus bertambah tiap tahun                                                                                                |
+| Tata letak di HP (390 px) | **Opsi A** yang disepakati sebelum eksekusi: di lebar dasar kartu digulir menyamping di dalam wadahnya sendiri (kartu selebar 75% wadah, kartu berikutnya sengaja terlihat sebagian sebagai isyarat), `sm:` ke atas berubah jadi grid 3 kolom tanpa gulir. Menumpuk ke bawah di HP (opsi B) ditolak karena tiga poster portrait berturutan membuat section ini ±1.800 px dan melawan G8 |
+| Komponen                  | `components/sections/EventTeaser.tsx`, server component. Memakai ulang `EventCard` dari M6 apa adanya — tidak ada varian baru di `EventCard`                                                                                                                                                                                                                                            |
+| Reveal                    | Tiap kartu punya `delay` sendiri (`index * 80` ms) mengikuti pola _Reveal_ section lain, supaya kartu menyusul satu per satu, bukan muncul serentak                                                                                                                                                                                                                                     |
+| Komentar `app/page.tsx`   | Komentar `alternates.canonical` yang masih berbunyi "halaman ini satu-satunya halaman publik" (tertunda sejak M6) dirapikan di tahap ini karena berkasnya sudah disentuh untuk memasang `<EventTeaser />`                                                                                                                                                                               |
+
 ---
 
 ## 6. Konvensi yang Diikuti
@@ -538,8 +549,8 @@ Aturannya:
 - **Target sentuh minimal 44 px** untuk tombol dan tautan, termasuk chip penyaring
   kategori dan tombol bagikan
 - **Gambar tidak menggeser layout saat dimuat** — beri rasio aspek tetap pada wadahnya
-- Bagian yang menggulir menyamping (deretan chip kategori) menggulir **di dalam wadahnya
-  sendiri**, bukan menyeret seluruh halaman
+- Bagian yang menggulir menyamping (deretan chip kategori, teaser event di landing)
+  menggulir **di dalam wadahnya sendiri**, bukan menyeret seluruh halaman
 - **Diperiksa di lebar 390 px sebagai syarat selesai**, bukan sebagai catatan tambahan —
   lihat skenario 15 dan 21 di Bagian 9
 
@@ -843,14 +854,14 @@ secara manual.
 | M4    | `feat/hero-stats`                        | #73 — `529572f`                | —                                          |
 | M5    | `feat/event-module`                      | #74 — `76afd85`                | 7.3, 7.5, 7.6                              |
 | M6    | `feat/event-public-pages`                | #75 — `3ef86e7`                | — (tidak ada migrasi; revert kode saja)    |
-| M7    | _belum dibuat_                           | —                              | —                                          |
+| M7    | `feat/event-landing-teaser`              | —                              | —                                          |
 
 Isi kolom PR/merge commit setelah PR tahap itu di-merge.
 
 **Perbaikan di luar tahap — jangan ikut di-revert bersama M mana pun:**
 
-| Commit    | Masuk lewat                  | Isi                                                                                                                                                                                                                                                                                                                                                                                             |
-| --------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Commit    | Masuk lewat                    | Isi                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| --------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `abcb15a` | langsung ke `staging` (urgent) | `web/modules/db/postgres.ts`: `max_pipeline: 0`, `max: 1` saat build (`NEXT_PHASE`), `idle_timeout: 20`. Build `/` dan `/event` macet 60 detik karena `postgres.js` mem-pipeline query lewat pooler Supabase mode transaksi (`:6543`), yang menukar hasil query — muncul sebagai `UNDEFINED_VALUE` di query tanpa parameter. M6 hanya membuatnya lebih sering muncul (menambah `/event` dan `sitemap.xml` yang query DB saat build); penyebabnya sudah ada sejak sebelum PRD ini, dan perbaikan `Promise.all` → berurutan di `Footer` (commit `e850ef4`) bukan akar masalahnya |
 
 ---
@@ -859,10 +870,10 @@ Isi kolom PR/merge commit setelah PR tahap itu di-merge.
 
 Dijalankan berurutan di lingkungan yang datanya menyerupai produksi:
 
-| Batch   | Kapan           | Skenario | Catatan                                                                                                                          |
-| ------- | --------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Batch 1 | Setelah M4      | 1–9      | Statistik pendaftar (F1–F3)                                                                                                      |
-| Batch 2 | Setelah M7      | 10–24    | Event sekolah (F4–F6). **Skenario 12 boleh diuji lebih awal**, sebelum M7 — hasilnya bisa mengubah alur unggah poster (catatan F5) |
+| Batch   | Kapan      | Skenario | Catatan                                                                                                                            |
+| ------- | ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Batch 1 | Setelah M4 | 1–9      | Statistik pendaftar (F1–F3)                                                                                                        |
+| Batch 2 | Setelah M7 | 10–25    | Event sekolah (F4–F6). **Skenario 12 boleh diuji lebih awal**, sebelum M7 — hasilnya bisa mengubah alur unggah poster (catatan F5) |
 
 Pengujian dilakukan di server staging; lokal hanya dipakai untuk menelusuri error.
 
@@ -913,6 +924,9 @@ Pengujian dilakukan di server staging; lokal hanya dipakai untuk menelusuri erro
 24. Deploy ke staging selesai tanpa pesan "took more than 60 seconds". Setelah deploy, buka
     landing page dan `/event`: foto hero, angka siswa/guru/pendaftar, dan daftar event tampil
     sesuai dashboard — bukan kosong atau tertukar (perbaikan `abcb15a`, Bagian 8.2)
+25. Buka landing page di HP lebar 390 px, gulir section "Event Terbaru" ke samping dengan
+    jari — kartu berikutnya terlihat sebagian sebagai isyarat, dan gulirannya terjadi **di
+    dalam wadah kartu**, bukan menyeret seluruh halaman (catatan implementasi F6, 6.5)
 
 ---
 

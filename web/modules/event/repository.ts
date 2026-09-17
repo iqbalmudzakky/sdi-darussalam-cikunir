@@ -38,6 +38,17 @@ export async function listPublished(): Promise<Event[]> {
   );
 }
 
+export async function listLatestPublished(limit: number): Promise<Event[]> {
+  return sql.unsafe<Event[]>(
+    `SELECT id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at
+     FROM events
+     WHERE is_published = true
+     ORDER BY event_date DESC, published_at DESC
+     LIMIT $1`,
+    [limit],
+  );
+}
+
 export async function findPublishedBySlug(slug: string): Promise<Event | null> {
   const rows = await sql.unsafe<Event[]>(
     `SELECT id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at
