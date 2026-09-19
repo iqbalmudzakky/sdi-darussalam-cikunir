@@ -7,17 +7,18 @@ const globalForDb = globalThis as unknown as {
 
 const isBuild = process.env.NEXT_PHASE === "phase-production-build";
 
-// max_pipeline ada di runtime postgres.js tapi belum masuk definisi tipenya.
-const connectionOptions: Options<Record<string, never>> & {
-  max_pipeline: number;
-} = {
+const connectionOptions: Options<Record<string, never>> = {
   prepare: false,
   connect_timeout: 10,
   max: isBuild ? 1 : 10,
   idle_timeout: 20,
-  // Pooler Supabase mode transaksi (:6543) menukar hasil query yang di-pipeline — query jadi salah data atau menggantung.
-  max_pipeline: 0,
 };
+
+if (/:6543\//.test(process.env.DATABASE_URL ?? "")) {
+  console.error(
+    "[db] DATABASE_URL points to the transaction pooler (:6543). Use the session pooler (:5432) — pipelined query results can get swapped.",
+  );
+}
 
 export const sql =
   globalForDb.sql ?? postgres(process.env.DATABASE_URL!, connectionOptions);
