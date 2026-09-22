@@ -1,3 +1,5 @@
+import { getSiteUrl as siteUrl } from "@/modules/shared/siteUrl";
+
 /* Dibaca di dalam fungsi supaya variabel yang hilang muncul sebagai error
  * pada request yang membutuhkannya, bukan menggagalkan build. */
 
@@ -32,14 +34,11 @@ export function getDokuConfig() {
 
 /*
  * Saat development host diambil dari request, supaya tunnel langsung jalan
- * tanpa mengubah .env. Di produksi selalu memakai NEXT_PUBLIC_SITE_URL, karena
- * header Host bisa dipalsukan pengirim request.
+ * tanpa mengubah .env. Di produksi selalu memakai SITE_URL, karena header Host
+ * bisa dipalsukan pengirim request.
  */
 export function getSiteUrl(request?: Request): string {
-  const configured = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(
-    /\/+$/,
-    "",
-  );
+  const configured = siteUrl();
 
   if (process.env.NODE_ENV === "production") return configured;
 

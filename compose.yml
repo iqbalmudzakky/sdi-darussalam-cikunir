@@ -1,0 +1,59 @@
+name: pmb
+
+# Dua env di satu berkas. Production dan staging memakai IMAGE yang sama dan
+# hanya berbeda tag, .env, port, folder unggahan, dan batas resource — supaya
+# yang diuji di staging benar-benar sama dengan yang naik ke production.
+#
+# Layanan bersama (Postgres) bukan milik berkas ini: ia dipegang repo
+# darussalam-infra dan dijangkau lewat jaringan `darussalam-infra`.
+
+x-app: &app
+  restart: unless-stopped
+  # ⚠️ Selalu "127.0.0.1:<port>:3000". Docker menulis aturan iptables sendiri
+  # yang dievaluasi SEBELUM UFW, jadi "3000:3000" membuka port ini ke internet
+  # sementara `ufw status` tetap melaporkan aman.
+  # Periksa dengan: ss -tlnp | grep -v 127.0.0.1
+  expose:
+    - "3000"
+  networks:
+    - infra
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  production:
+    <<: *app
+    image: ${PMB_IMAGE:-ghcr.io/iqbalmudzakky/sdi-darussalam-cikunir}:${PMB_TAG_PRODUCTION:-main}
+    container_name: pmb-production
+    env_file: /etc/pmb/production.env
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      # ⚠️ Jangan pernah MENUKAR direktori ini (mv folder baru ke tempat yang
+      # sama): bind mount terikat ke inode, jadi container tetap menulis ke
+      # folder lama yang sudah tidak bernama. Ganti ISINYA, atau buat ulang
+      # containernya. (INFRASTRUKTUR-VPS 6.7c)
+      - /var/lib/pmb/production/uploads:/var/lib/pmb/uploads
+    mem_limit: 768m
+    cpus: 1.0
+
+  staging:
+    <<: *app
+    image: ${PMB_IMAGE:-ghcr.io/iqbalmudzakky/sdi-darussalam-cikunir}:${PMB_TAG_STAGING:-staging}
+    container_name: pmb-staging
+    env_file: /etc/pmb/staging.env
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - /var/lib/pmb/staging/uploads:/var/lib/pmb/uploads
+    # Lebih ketat dari production: bila VPS sesak, ini yang pertama dimatikan.
+    mem_limit: 384m
+    cpus: 0.5
+
+networks:
+  infra:
+    name: darussalam-infra
+    external: true

@@ -1,10 +1,36 @@
-import { createServiceRoleClient } from "./client";
+import { mkdir, unlink, writeFile } from "node:fs/promises";
+import path from "node:path";
 
-function extractStoragePath(bucket: string, publicUrl: string): string | null {
+/* Dibaca di dalam fungsi supaya variabel yang hilang muncul sebagai error pada
+ * request yang membutuhkannya, bukan menggagalkan build. */
+function uploadDir(): string {
+  const value = process.env.UPLOAD_DIR;
+  if (!value) {
+    throw new Error("Environment variable UPLOAD_DIR is not set.");
+  }
+  return value;
+}
+
+export const UPLOAD_URL_PREFIX = "/uploads";
+
+/* Nama berkas dari pengguna dipakai sebagai nama di disk, jadi dibatasi ke
+ * karakter yang aman: tanpa jalur, tanpa spasi, tanpa karakter khusus. */
+function safeFileName(originalName: string): string {
+  const base = path.basename(originalName);
+  const cleaned = base.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/^\.+/, "");
+  return cleaned || "file";
+}
+
+/* Menerima jalur baru (/uploads/<bucket>/<berkas>) maupun URL Supabase lama,
+ * karena keduanya masih ada di database selama masa pindahan. */
+function extractFileName(bucket: string, storedUrl: string): string | null {
   const marker = `/${bucket}/`;
-  const index = publicUrl.indexOf(marker);
+  const index = storedUrl.indexOf(marker);
   if (index === -1) return null;
-  return decodeURIComponent(publicUrl.slice(index + marker.length));
+
+  const rest = decodeURIComponent(storedUrl.slice(index + marker.length));
+  const name = path.basename(rest);
+  return name === "" || name === "." || name === ".." ? null : name;
 }
 
 export async function removeStoragePhoto(
@@ -12,19 +38,15 @@ export async function removeStoragePhoto(
   photoUrl: string | null,
 ) {
   if (!photoUrl) return;
-  const path = extractStoragePath(bucket, photoUrl);
-  if (!path) return;
+  const fileName = extractFileName(bucket, photoUrl);
+  if (!fileName) return;
 
   try {
-    const supabase = createServiceRoleClient();
-    const { error } = await supabase.storage.from(bucket).remove([path]);
-    if (error) {
-      console.error(
-        `[storage] removeStoragePhoto failed for bucket "${bucket}" (non-fatal):`,
-        error,
-      );
-    }
+    await unlink(path.join(uploadDir(), bucket, fileName));
   } catch (error) {
+    /* Berkas yang memang sudah tidak ada bukan kegagalan — termasuk foto lama
+     * yang masih menunjuk Supabase dan tidak pernah ada di disk ini. */
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
     console.error(
       `[storage] removeStoragePhoto failed for bucket "${bucket}" (non-fatal):`,
       error,
@@ -36,11 +58,14 @@ export async function uploadStoragePhoto(
   bucket: string,
   file: File,
 ): Promise<string> {
-  const supabase = createServiceRoleClient();
-  const filePath = `${crypto.randomUUID()}-${file.name}`;
+  const fileName = `${crypto.randomUUID()}-${safeFileName(file.name)}`;
+  const directory = path.join(uploadDir(), bucket);
 
-  const { error } = await supabase.storage.from(bucket).upload(filePath, file);
-  if (error) {
+  try {
+    await mkdir(directory, { recursive: true });
+    const bytes = Buffer.from(await file.arrayBuffer());
+    await writeFile(path.join(directory, fileName), bytes);
+  } catch (error) {
     console.error(
       `[storage] uploadStoragePhoto failed for bucket "${bucket}":`,
       error,
@@ -48,9 +73,5 @@ export async function uploadStoragePhoto(
     throw error;
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(filePath);
-
-  return publicUrl;
+  return `${UPLOAD_URL_PREFIX}/${bucket}/${fileName}`;
 }

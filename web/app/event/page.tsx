@@ -10,7 +10,7 @@ import Navbar from "@/components/sections/Navbar";
 import Reveal from "@/components/sections/Reveal";
 import { listPublishedEvents } from "@/lib/actions/events";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 const getEvents = cache(listPublishedEvents);
 

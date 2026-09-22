@@ -1,0 +1,61 @@
+name: Deploy ke VPS
+
+# Dijalankan dengan tangan, bukan otomatis saat push: yang menentukan kapan
+# sekolah menerima versi baru adalah manusia.
+#
+# Kunci deploy di server dikunci ke satu perintah (/usr/local/bin/pmb-deploy,
+# lihat ops/pmb-deploy.sh). Jadi workflow ini tidak menjalankan docker apa pun
+# sendiri — ia hanya menyebutkan lingkungan dan tag. Kalau secret di sini
+# bocor, yang bisa dilakukan orang lain sebatas men-deploy ulang PMB.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Lingkungan yang di-deploy
+        required: true
+        type: choice
+        options: [staging, production]
+        default: staging
+      tag:
+        description: Tag image (kosongkan untuk "staging"/"main" sesuai lingkungan)
+        required: false
+        type: string
+      update_compose:
+        description: Kirim ulang compose.yml dari repo sebelum deploy
+        required: false
+        type: boolean
+        default: false
+
+# Dua deploy bersamaan bisa saling menimpa container yang sedang dibuat ulang.
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Siapkan kunci SSH
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          # Host key dipin lewat secret — bukan StrictHostKeyChecking=no, yang
+          # membuat deploy menerima server mana pun yang menjawab.
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Kirim compose.yml
+        if: ${{ inputs.update_compose }}
+        run: |
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" put-compose < compose.yml
+
+      - name: Deploy
+        run: |
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "deploy ${{ inputs.environment }} ${{ inputs.tag }}"
