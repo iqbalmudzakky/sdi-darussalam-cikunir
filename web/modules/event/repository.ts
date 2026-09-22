@@ -3,7 +3,7 @@ import type { Event, NewEvent, UpdatedEvent } from "./entity";
 
 export async function list(): Promise<Event[]> {
   return sql.unsafe<Event[]>(
-    `SELECT id, slug, title, category, summary, body, poster_url, event_date, is_published, published_at, created_at, updated_at
+    `SELECT id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at
      FROM events
      ORDER BY is_published ASC, event_date DESC`,
   );
@@ -11,7 +11,7 @@ export async function list(): Promise<Event[]> {
 
 export async function findById(id: string): Promise<Event | null> {
   const rows = await sql.unsafe<Event[]>(
-    `SELECT id, slug, title, category, summary, body, poster_url, event_date, is_published, published_at, created_at, updated_at
+    `SELECT id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at
      FROM events
      WHERE id = $1`,
     [id],
@@ -21,7 +21,7 @@ export async function findById(id: string): Promise<Event | null> {
 
 export async function findBySlug(slug: string): Promise<Event | null> {
   const rows = await sql.unsafe<Event[]>(
-    `SELECT id, slug, title, category, summary, body, poster_url, event_date, is_published, published_at, created_at, updated_at
+    `SELECT id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at
      FROM events
      WHERE slug = $1`,
     [slug],
@@ -76,7 +76,7 @@ export async function insert(input: NewEvent): Promise<Event> {
   const rows = await sql.unsafe<Event[]>(
     `INSERT INTO events (slug, title, category, summary, body, poster_url, event_date, is_published, published_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-     RETURNING id, slug, title, category, summary, body, poster_url, event_date, is_published, published_at, created_at, updated_at`,
+     RETURNING id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at`,
     [
       input.slug,
       input.title,
@@ -98,7 +98,7 @@ export async function update(id: string, input: UpdatedEvent): Promise<Event> {
      SET slug = $1, title = $2, category = $3, summary = $4, body = $5, poster_url = $6,
          event_date = $7, is_published = $8, published_at = $9, updated_at = now()
      WHERE id = $10
-     RETURNING id, slug, title, category, summary, body, poster_url, event_date, is_published, published_at, created_at, updated_at`,
+     RETURNING id, slug, title, category, summary, body, poster_url, event_date::text AS event_date, is_published, published_at, created_at, updated_at`,
     [
       input.slug,
       input.title,

@@ -43,6 +43,13 @@ export async function PUT(request: Request) {
   const parsed = SavePaymentSettingsRequestSchema.safeParse(body);
 
   if (!parsed.success) {
+    console.warn(
+      "PUT /api/payment-settings rejected:",
+      parsed.error.issues.map((issue) => ({
+        path: issue.path.join("."),
+        message: issue.message,
+      })),
+    );
     return NextResponse.json(
       { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
       { status: 400 },

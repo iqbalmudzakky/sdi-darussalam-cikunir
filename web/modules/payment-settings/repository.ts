@@ -3,7 +3,10 @@ import type { PaymentSettings, PaymentSettingsUpdateInput } from "./entity";
 
 export async function get(): Promise<PaymentSettings | null> {
   const rows = await sql.unsafe<PaymentSettings[]>(
-    `SELECT registration_fee, registration_opens_on, registration_closes_on, updated_at
+    `SELECT registration_fee,
+            registration_opens_on::text,
+            registration_closes_on::text,
+            updated_at
      FROM payment_settings
      LIMIT 1`,
   );
@@ -19,7 +22,10 @@ export async function update(
      SET registration_fee = $1, registration_opens_on = $2,
          registration_closes_on = $3, updated_at = now()
      WHERE singleton_guard
-     RETURNING registration_fee, registration_opens_on, registration_closes_on, updated_at`,
+     RETURNING registration_fee,
+               registration_opens_on::text,
+               registration_closes_on::text,
+               updated_at`,
     [
       input.registrationFee,
       input.registrationOpensOn,

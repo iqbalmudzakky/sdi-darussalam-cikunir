@@ -1,2 +1,6 @@
 .vercel
 .env*
+
+# Hasil pg_dump saat pindah dari Supabase — sementara, jangan ikut ter-commit.
+baseline-mentah.sql
+*.dump
