@@ -96,7 +96,11 @@ deploy() {
 	local port body
 	port=$(port_for "$service")
 	body=$(curl -fsS -m 20 "http://127.0.0.1:$port/" || true)
-	if ! printf '%s' "$body" | grep -qi "darussalam"; then
+	# Dicocokkan di bash, bukan `printf | grep -q`: grep -q berhenti membaca
+	# begitu kata itu ketemu, printf yang masih menulis halaman sebesar ini
+	# kena SIGPIPE, dan pipefail menghitungnya sebagai gagal — deploy yang
+	# sehat pun gagal secara acak (terjadi 25 Sep 2026).
+	if [[ "${body,,}" != *darussalam* ]]; then
 		fail "landing page tidak menjawab sebagaimana mestinya di port $port"
 	fi
 

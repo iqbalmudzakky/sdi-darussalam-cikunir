@@ -1,0 +1,4 @@
+# Skrip yang dijalankan di server Linux wajib berakhiran baris LF, apa pun
+# setelan git di laptop yang meng-commit-nya. Dengan CRLF, bash membaca "\r"
+# sebagai bagian perintah dan skrip deploy gagal dengan galat yang aneh.
+*.sh text eol=lf
