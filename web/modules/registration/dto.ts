@@ -6,6 +6,13 @@ import {
   birthDate,
   requiredEmail,
 } from "@/modules/validation/validators";
+import {
+  MAX_HEAD_CIRCUMFERENCE_CM,
+  MAX_HEIGHT_CM,
+  MAX_PARENT_INCOME,
+  MAX_SIBLING_NUMBER,
+  MAX_WEIGHT_KG,
+} from "@/modules/shared/constant/registration";
 import type { PpdbRegistrationStatus } from "./entity";
 
 const REGISTRATION_TYPE_VALUES = ["siswa_baru", "pindahan"] as const;
@@ -80,12 +87,14 @@ export const CreatePpdbRegistrationStudentSchema = z.object({
   birth_order: z
     .number()
     .int("Anak ke- harus berupa angka bulat.")
-    .min(1, "Anak ke- minimal 1."),
+    .min(1, "Anak ke- minimal 1.")
+    .max(MAX_SIBLING_NUMBER, `Anak ke- maksimal ${MAX_SIBLING_NUMBER}.`),
 
   sibling_count: z
     .number()
     .int("Jumlah saudara harus berupa angka bulat.")
-    .min(0, "Jumlah saudara minimal 0."),
+    .min(0, "Jumlah saudara minimal 0.")
+    .max(MAX_SIBLING_NUMBER, `Jumlah saudara maksimal ${MAX_SIBLING_NUMBER}.`),
 
   orphan_status: z.string().trim().nullable().optional(),
 
@@ -127,7 +136,16 @@ export const CreatePpdbRegistrationParentSchema = z.object({
 
   position: z.string().trim().nullable().optional(),
 
-  income: z.number().int().nullable().optional(),
+  income: z
+    .number()
+    .int("Penghasilan harus berupa angka bulat.")
+    .min(0, "Penghasilan tidak boleh negatif.")
+    .max(
+      MAX_PARENT_INCOME,
+      "Penghasilan maksimal Rp1.000.000.000 per bulan. Periksa kembali angkanya.",
+    )
+    .nullable()
+    .optional(),
 
   citizenship: z.string().trim().default("Indonesia"),
 
@@ -147,11 +165,32 @@ export const CreatePpdbRegistrationDetailSchema = z.object({
 
   blood_type: z.string().trim().nullable().optional(),
 
-  height: z.number().int().min(0).nullable().optional(),
+  height: z
+    .number()
+    .int("Tinggi badan harus berupa angka bulat.")
+    .min(0, "Tinggi badan tidak boleh negatif.")
+    .max(MAX_HEIGHT_CM, `Tinggi badan maksimal ${MAX_HEIGHT_CM} cm.`)
+    .nullable()
+    .optional(),
 
-  weight: z.number().int().min(0).nullable().optional(),
+  weight: z
+    .number()
+    .int("Berat badan harus berupa angka bulat.")
+    .min(0, "Berat badan tidak boleh negatif.")
+    .max(MAX_WEIGHT_KG, `Berat badan maksimal ${MAX_WEIGHT_KG} kg.`)
+    .nullable()
+    .optional(),
 
-  head_circumference: z.number().int().min(0).nullable().optional(),
+  head_circumference: z
+    .number()
+    .int("Lingkar kepala harus berupa angka bulat.")
+    .min(0, "Lingkar kepala tidak boleh negatif.")
+    .max(
+      MAX_HEAD_CIRCUMFERENCE_CM,
+      `Lingkar kepala maksimal ${MAX_HEAD_CIRCUMFERENCE_CM} cm.`,
+    )
+    .nullable()
+    .optional(),
 });
 
 export const CreatePpdbRegistrationRequestSchema = z.object({
