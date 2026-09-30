@@ -28,14 +28,7 @@ services:
     <<: *app
     image: ${PMB_IMAGE:-ghcr.io/iqbalmudzakky/sdi-darussalam-cikunir}:${PMB_TAG_PRODUCTION:-main}
     container_name: pmb-production
-    # required: false sampai cutover — berkasnya baru dibuat saat production
-    # benar-benar pindah dari Vercel. Tanpa ini, `docker compose config` menolak
-    # seluruh berkas dan staging pun ikut tidak bisa di-deploy.
-    # ⚠️ Kembalikan menjadi wajib begitu production.env ada, supaya container
-    # production tidak pernah naik tanpa konfigurasi.
-    env_file:
-      - path: /etc/pmb/production.env
-        required: false
+    env_file: /etc/pmb/production.env
     ports:
       - "127.0.0.1:3000:3000"
     volumes:

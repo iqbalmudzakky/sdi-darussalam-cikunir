@@ -67,7 +67,7 @@ tabel — klik Edit untuk melihatnya) dari:
 | Record | Tipe | Isi sekarang | Proxy |
 |---|---|---|---|
 | `sdidarussalamcikunir.sch.id` (root) | A | `216.198.79.1` | Proxied |
-| `www` | CNAME | `665caf835e69193b.verc…` ← **salin utuh** | Proxied |
+| `www` | CNAME | `665caf835e69193b.vercel-dns-017.com` | Proxied |
 
 Simpan di catatan pribadi. Inilah yang dipasang ulang kalau harus mundur.
 
@@ -77,11 +77,15 @@ Vercel → Project → Settings → Environment Variables → environment **Prod
 Yang dibutuhkan (lihat nilainya di sana, jangan disalin ke chat):
 
 - [ ] `DOKU_CLIENT_ID` dan `DOKU_SECRET_KEY` **production** (bukan sandbox)
-- [ ] `RESEND_API_KEY`
-- [ ] `ANALYTICS_SALT` — **wajib nilai yang sama** dengan yang sekarang. Kalau
-      diganti, semua pengunjung lama terhitung sebagai orang baru.
+- [ ] `RESEND_API_KEY` — nilai di Vercel bertanda *Sensitive* dan tidak bisa
+      dibaca lagi. Buat key baru di Resend → API Keys (Sending access, domain
+      `sdidarussalamcikunir.sch.id`). Key lama dicabut di bagian G.
 - [ ] Session pooler URL Supabase **production** (Supabase → Connect → Session
       pooler, port `5432`) — sumber data di bagian C
+
+`ANALYTICS_SALT` tidak perlu diambil dari Vercel. Hash pengunjung sudah memuat
+tanggal (`modules/visitor/visitor.ts`), jadi berganti tiap hari. Salt baru hanya
+membuat pengunjung di hari cutover bisa terhitung dua kali.
 
 ### A4. Buat `/etc/pmb/production.env` di server
 
@@ -98,6 +102,7 @@ UPLOAD_DIR=/var/lib/pmb/uploads
 JWT_ACCESS_SECRET=$(openssl rand -base64 32)
 JWT_REFRESH_PEPPER=$(openssl rand -base64 32)
 CRON_SECRET=$(openssl rand -hex 32)
+ANALYTICS_SALT=$(openssl rand -hex 32)
 EMAIL_FROM=no-reply@sdidarussalamcikunir.sch.id
 DOKU_ENV=production
 EOF
@@ -106,12 +111,11 @@ chown root:pmb /etc/pmb/production.env
 chmod 640 /etc/pmb/production.env
 ```
 
-Lalu tambahkan empat nilai dari A3, **satu baris perintah per nilai** (jangan
+Lalu tambahkan tiga nilai dari A3, **satu baris perintah per nilai** (jangan
 ditempel bersamaan — `read` akan menelan baris berikutnya):
 
 ```bash
 read -rs -p "Resend API key: " R && printf 'RESEND_API_KEY=%s\n' "$R" >> /etc/pmb/production.env && unset R && echo OK
-read -rs -p "Analytics salt (dari Vercel): " S && printf 'ANALYTICS_SALT=%s\n' "$S" >> /etc/pmb/production.env && unset S && echo OK
 read -rs -p "DOKU client id PRODUCTION: " C && printf 'DOKU_CLIENT_ID=%s\n' "$C" >> /etc/pmb/production.env && unset C && echo OK
 read -rs -p "DOKU secret key PRODUCTION: " D && printf 'DOKU_SECRET_KEY=%s\n' "$D" >> /etc/pmb/production.env && unset D && echo OK
 ```
@@ -375,6 +379,8 @@ Supabase — catat dari admin VPS dan masukkan manual.
 - [ ] Hapus `web/vercel.json`
 - [ ] Hapus cadangan `NEXT_PUBLIC_SITE_URL` di `modules/shared/siteUrl.ts`
 - [ ] Hapus project di Vercel
+- [ ] Cabut API key Resend lama: yang dipakai Vercel, dan yang ada di
+      `web/.env.production` laptop (sempat terlihat di chat)
 - [ ] Supabase production: biarkan hidup ±1 minggu sebagai cadangan, lalu pause
       atau hapus, dan **ganti sandi database-nya** (pernah lewat chat)
 - [ ] Supabase staging: idem
