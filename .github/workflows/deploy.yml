@@ -1,13 +1,20 @@
 name: Deploy ke VPS
 
-# Dijalankan dengan tangan, bukan otomatis saat push: yang menentukan kapan
-# sekolah menerima versi baru adalah manusia.
+# Otomatis setiap "Bangun image" selesai hijau: staging → staging, main →
+# production. Yang menentukan kapan sekolah menerima versi baru tetap manusia,
+# lewat merge ke main. Image yang naik bertag sha-<commit>, jadi pasti hasil
+# build commit itu, bukan "main" yang kebetulan terakhir. Jalankan dengan
+# tangan untuk rollback ke tag tertentu.
 #
 # Kunci deploy di server dikunci ke satu perintah (/usr/local/bin/pmb-deploy,
 # lihat ops/pmb-deploy.sh). Jadi workflow ini tidak menjalankan docker apa pun
 # sendiri — ia hanya menyebutkan lingkungan dan tag. Kalau secret di sini
 # bocor, yang bisa dilakukan orang lain sebatas men-deploy ulang PMB.
 on:
+  workflow_run:
+    workflows: [Bangun image]
+    types: [completed]
+    branches: [main, staging]
   workflow_dispatch:
     inputs:
       environment:
@@ -28,17 +35,39 @@ on:
 
 # Dua deploy bersamaan bisa saling menimpa container yang sedang dibuat ulang.
 concurrency:
-  group: deploy-${{ inputs.environment }}
+  group: deploy-${{ inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'staging') }}
   cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
+      # compose.yml diambil dari commit yang di-build, bukan ujung branch saat ini.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Tentukan lingkungan & tag
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          INPUT_ENVIRONMENT: ${{ inputs.environment }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_run" ]; then
+            [ "$HEAD_BRANCH" = "main" ] && environment=production || environment=staging
+            tag="sha-${HEAD_SHA::7}"
+          else
+            environment="$INPUT_ENVIRONMENT"
+            tag="$INPUT_TAG"
+          fi
+          echo "DEPLOY_ENVIRONMENT=$environment" >> "$GITHUB_ENV"
+          echo "DEPLOY_TAG=$tag" >> "$GITHUB_ENV"
+          echo "Deploy $environment, tag: ${tag:-bawaan}"
 
       - name: Siapkan kunci SSH
         run: |
@@ -51,11 +80,11 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Kirim compose.yml
-        if: ${{ inputs.update_compose }}
+        if: github.event_name == 'workflow_run' || inputs.update_compose
         run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" put-compose < compose.yml
 
       - name: Deploy
         run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "deploy ${{ inputs.environment }} ${{ inputs.tag }}"
+            "deploy $DEPLOY_ENVIRONMENT $DEPLOY_TAG"
