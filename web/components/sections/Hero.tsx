@@ -1,22 +1,63 @@
 import { ArrowRight } from "lucide-react";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
+import { getCurrentSummary } from "@/lib/actions/registrationStats";
 import { extractYouTubeVideoId } from "@/lib/social/youtube";
 import { cn } from "@/lib/utils";
 import RegistrationDialog from "@/components/sections/RegistrationDialog";
 import HeroStats, { type HeroStat } from "@/components/sections/HeroStats";
 import { HeroMedia } from "@/components/sections/HeroMedia";
 
-const STATS: HeroStat[] = [
-  { value: 683, display: "683", label: "Siswa aktif" },
-  { value: 65, display: "65", label: "Guru & staf" },
-  { value: 16, display: "16", suffix: "+", label: "Tahun berdiri" },
-  { value: null, display: "A", label: "Akreditasi" },
-];
+function buildStats(
+  activeStudentCount: number | null,
+  staffCount: number | null,
+  registrationSummary: Awaited<ReturnType<typeof getCurrentSummary>>,
+): HeroStat[] {
+  const stats: HeroStat[] = [];
+
+  if (activeStudentCount) {
+    stats.push({
+      value: activeStudentCount,
+      display: String(activeStudentCount),
+      label: "Siswa aktif",
+    });
+  }
+
+  if (staffCount) {
+    stats.push({
+      value: staffCount,
+      display: String(staffCount),
+      label: "Guru & staf",
+    });
+  }
+
+  if (registrationSummary && registrationSummary.total) {
+    stats.push({
+      value: registrationSummary.total,
+      display: String(registrationSummary.total),
+      label: `Pendaftar TA ${registrationSummary.academic_year}`,
+    });
+  }
+
+  stats.push(
+    { value: 16, display: "16", suffix: "+", label: "Tahun berdiri" },
+    { value: null, display: "A", label: "Akreditasi" },
+  );
+
+  return stats;
+}
 
 export default async function Hero() {
-  const profile = await getSchoolProfile();
+  const [profile, registrationSummary] = await Promise.all([
+    getSchoolProfile(),
+    getCurrentSummary(),
+  ]);
 
   const hasVideo = Boolean(extractYouTubeVideoId(profile.hero_video_url));
+  const stats = buildStats(
+    profile.active_student_count,
+    profile.staff_count,
+    registrationSummary,
+  );
 
   return (
     <section className="relative bg-paper pt-16 sm:pt-[72px]">
@@ -78,7 +119,7 @@ export default async function Hero() {
             </div>
 
             {/* Angka ringkas */}
-            <HeroStats stats={STATS} />
+            <HeroStats stats={stats} />
           </div>
 
           {/* Video kalau diatur, selain itu foto gedung. */}

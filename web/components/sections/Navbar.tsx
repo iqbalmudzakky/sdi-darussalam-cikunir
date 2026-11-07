@@ -7,12 +7,17 @@ import {
   RegistrationTrigger,
 } from "@/components/sections/RegistrationDialog";
 
+/*
+ * Anchor ditulis "/#..." karena Navbar juga dipakai di /event.
+ * Di landing page tetap menggulir tanpa memuat ulang.
+ */
 const NAV_LINKS = [
-  { href: "#tentang", label: "Tentang" },
-  { href: "#program", label: "Program" },
-  { href: "#fasilitas", label: "Fasilitas" },
-  { href: "#kegiatan", label: "Kegiatan" },
-  { href: "#kontak", label: "Kontak" },
+  { href: "/#tentang", label: "Tentang" },
+  { href: "/#program", label: "Program" },
+  { href: "/#fasilitas", label: "Fasilitas" },
+  { href: "/#kegiatan", label: "Kegiatan" },
+  { href: "/event", label: "Event" },
+  { href: "/#kontak", label: "Kontak" },
 ];
 
 export default function Navbar() {
@@ -104,8 +109,10 @@ export default function Navbar() {
       <div className="page-container relative z-10">
         <div className="flex h-16 items-center justify-between sm:h-[72px]">
           {/* Logo + identitas sekolah */}
+          {/* <a> biasa: di landing "/#" cukup menggulir ke atas, tanpa navigasi router. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a
-            href="#"
+            href="/#"
             className="flex min-w-0 cursor-pointer items-center gap-3"
             onClick={() => setIsMenuOpen(false)}
           >
@@ -127,7 +134,8 @@ export default function Navbar() {
           </a>
 
           {/* Navigasi desktop */}
-          <div className="hidden items-center gap-7 lg:flex">
+          {/* gap-5 di lg: enam tautan + tombol masih muat di layar 1024 px */}
+          <div className="hidden items-center gap-5 lg:flex xl:gap-7">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}

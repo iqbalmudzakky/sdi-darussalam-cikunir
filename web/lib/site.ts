@@ -1,34 +1,4 @@
-function isValidUrl(value: string): boolean {
-  try {
-    new URL(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export function getSiteUrl(): string {
-  if (
-    process.env.NEXT_PUBLIC_SITE_URL &&
-    isValidUrl(process.env.NEXT_PUBLIC_SITE_URL)
-  ) {
-    return process.env.NEXT_PUBLIC_SITE_URL;
-  }
-
-  if (
-    process.env.VERCEL_ENV === "production" &&
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-
-  if (process.env.VERCEL_BRANCH_URL) {
-    return `https://${process.env.VERCEL_BRANCH_URL}`;
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
-  return "http://localhost:3000";
-}
+/* Alamat situs dipakai halaman (metadata, sitemap, robots) maupun backend
+   (tautan di email, callback DOKU). Nilainya ditentukan di
+   modules/shared/siteUrl; berkas ini hanya pintu masuknya dari sisi halaman. */
+export { getSiteUrl } from "@/modules/shared/siteUrl";

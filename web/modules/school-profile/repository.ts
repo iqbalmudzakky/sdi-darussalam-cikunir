@@ -1,15 +1,19 @@
 import { sql } from "@/modules/db/postgres";
-import type { NewSchoolProfile, SchoolProfile } from "./entity";
-
-const COLUMNS = `
-  id, photo_url, vision_photo_url, hero_video_url, description, visi, misi, alamat, telepon,
-  whatsapp, whatsapp_message, email, jam_operasional, facebook, instagram,
-  tiktok, youtube, created_at, updated_at
-`;
+import type {
+  NewSchoolProfile,
+  SchoolProfile,
+  SchoolProfileStatsInput,
+} from "./entity";
 
 export async function get(): Promise<SchoolProfile | null> {
   const rows = await sql.unsafe<SchoolProfile[]>(
-    `SELECT ${COLUMNS} FROM school_profiles ORDER BY created_at LIMIT 1`,
+    `SELECT id, photo_url, vision_photo_url, hero_video_url, description, visi,
+       misi, alamat, telepon, whatsapp, whatsapp_message, email,
+       jam_operasional, facebook, instagram, tiktok, youtube,
+       active_student_count, staff_count, created_at, updated_at
+     FROM school_profiles
+     ORDER BY created_at
+     LIMIT 1`,
   );
   return rows[0] ?? null;
 }
@@ -46,7 +50,10 @@ export async function upsert(input: NewSchoolProfile): Promise<SchoolProfile> {
            tiktok = $15, youtube = $16,
            updated_at = now()
        WHERE id = $17
-       RETURNING ${COLUMNS}`,
+       RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
+         visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
+         jam_operasional, facebook, instagram, tiktok, youtube,
+         active_student_count, staff_count, created_at, updated_at`,
       [...values, existing.id],
     );
     return rows[0];
@@ -61,8 +68,43 @@ export async function upsert(input: NewSchoolProfile): Promise<SchoolProfile> {
      VALUES (
        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
      )
-     RETURNING ${COLUMNS}`,
+     RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
+       visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
+       jam_operasional, facebook, instagram, tiktok, youtube,
+       active_student_count, staff_count, created_at, updated_at`,
     values,
+  );
+  return rows[0];
+}
+
+export async function insertStats(
+  input: SchoolProfileStatsInput,
+): Promise<SchoolProfile> {
+  const rows = await sql.unsafe<SchoolProfile[]>(
+    `INSERT INTO school_profiles (active_student_count, staff_count)
+     VALUES ($1, $2)
+     RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
+       visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
+       jam_operasional, facebook, instagram, tiktok, youtube,
+       active_student_count, staff_count, created_at, updated_at`,
+    [input.activeStudentCount, input.staffCount],
+  );
+  return rows[0];
+}
+
+export async function updateStatsById(
+  id: string,
+  input: SchoolProfileStatsInput,
+): Promise<SchoolProfile> {
+  const rows = await sql.unsafe<SchoolProfile[]>(
+    `UPDATE school_profiles
+     SET active_student_count = $1, staff_count = $2, updated_at = now()
+     WHERE id = $3
+     RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
+       visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
+       jam_operasional, facebook, instagram, tiktok, youtube,
+       active_student_count, staff_count, created_at, updated_at`,
+    [input.activeStudentCount, input.staffCount, id],
   );
   return rows[0];
 }

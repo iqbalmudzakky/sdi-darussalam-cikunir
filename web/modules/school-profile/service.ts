@@ -1,7 +1,12 @@
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
 import { removeStoragePhoto } from "@/modules/storage/storage";
-import type { SaveSchoolProfileRequest, SchoolProfileResponse } from "./dto";
+import type {
+  SaveSchoolProfileRequest,
+  SaveSchoolProfileStatsRequest,
+  SchoolProfileResponse,
+  SchoolProfileStatsResponse,
+} from "./dto";
 
 const PHOTO_BUCKET = "school-profile-photos";
 
@@ -22,6 +27,8 @@ const DEFAULT_SCHOOL_PROFILE_RESPONSE: SchoolProfileResponse = {
   instagram: "",
   tiktok: "",
   youtube: "",
+  active_student_count: null,
+  staff_count: null,
 };
 
 export async function getSchoolProfile(): Promise<SchoolProfileResponse> {
@@ -48,6 +55,8 @@ export async function getSchoolProfile(): Promise<SchoolProfileResponse> {
     instagram: profile.instagram,
     tiktok: profile.tiktok,
     youtube: profile.youtube,
+    active_student_count: profile.active_student_count,
+    staff_count: profile.staff_count,
   };
 
   return response;
@@ -99,7 +108,46 @@ export async function saveSchoolProfile(
     instagram: saved.instagram,
     tiktok: saved.tiktok,
     youtube: saved.youtube,
+    active_student_count: saved.active_student_count,
+    staff_count: saved.staff_count,
   };
 
   return response;
+}
+
+export async function getSchoolProfileStats(): Promise<SchoolProfileStatsResponse> {
+  const profile = await withDbLogging("schoolProfile.get", () =>
+    repository.get(),
+  );
+
+  return {
+    active_student_count: profile?.active_student_count ?? null,
+    staff_count: profile?.staff_count ?? null,
+  };
+}
+
+export async function saveSchoolProfileStats(
+  input: SaveSchoolProfileStatsRequest,
+): Promise<SchoolProfileStatsResponse> {
+  const existing = await withDbLogging("schoolProfile.get", () =>
+    repository.get(),
+  );
+
+  const statsInput = {
+    activeStudentCount: input.active_student_count,
+    staffCount: input.staff_count,
+  };
+
+  const saved = existing
+    ? await withDbLogging("schoolProfile.updateStats", () =>
+        repository.updateStatsById(existing.id, statsInput),
+      )
+    : await withDbLogging("schoolProfile.insertStats", () =>
+        repository.insertStats(statsInput),
+      );
+
+  return {
+    active_student_count: saved.active_student_count,
+    staff_count: saved.staff_count,
+  };
 }

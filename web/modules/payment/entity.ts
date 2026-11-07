@@ -50,6 +50,12 @@ export type NewManualPayment = {
   paidAt: string;
 };
 
+export type SettlementDetails = {
+  paymentMethod: string | null;
+  acquirer: string | null;
+  paidAt: string;
+};
+
 export type PaymentFilter = {
   search: string;
   statuses: PaymentStatus[];

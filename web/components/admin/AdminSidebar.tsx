@@ -19,6 +19,8 @@ import {
   Receipt,
   ShieldCheck,
   Wallet,
+  BarChart3,
+  PartyPopper,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
@@ -74,12 +76,14 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/facility", label: "Fasilitas", icon: Building2 },
       { href: "/admin/activity", label: "Kegiatan", icon: CalendarDays },
       { href: "/admin/achievement", label: "Prestasi", icon: Trophy },
+      { href: "/admin/events", label: "Event", icon: PartyPopper },
     ],
   },
   {
     label: "Masuk",
     items: [
       { href: "/admin/registrations", label: "Pendaftar", icon: Inbox },
+      { href: "/admin/statistics", label: "Statistik", icon: BarChart3 },
       { href: "/admin/transactions", label: "Transaksi", icon: Receipt },
     ],
   },

@@ -9,6 +9,7 @@ import type {
   RegistrantRegionRow,
   RegistrationFilter,
   RegistrationSource,
+  RegistrationSourceCounts,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest } from "./dto";
 
@@ -96,37 +97,20 @@ const DETAIL_COLUMNS = `
  * settling a DOKU payment, for instance — can join this into their own
  * transaction instead of opening a nested one.
  *
- * `source` sengaja argumen wajib terpisah, bukan bagian payload: payload berasal
- * dari isian klien, dan pemanggil yang lupa mengisinya gagal saat build.
+ * `source` dan `academicYear` sengaja argumen wajib terpisah, bukan bagian
+ * payload: payload berasal dari isian klien, dan pemanggil yang lupa
+ * mengisinya gagal saat build. `academicYear` sudah harus diresolusi
+ * pemanggil (registration/service.ts) sebelum masuk sini — repository tidak
+ * boleh menjangkau domain registration-stats sendiri.
  */
-/*
- * Dibaca di dalam transaksi pemanggil supaya pendaftaran tercap tahun ajaran
- * yang aktif saat barisnya benar-benar ditulis. null = belum ada tahun aktif.
- *
- * Menyentuh tabel registration_stats, bukan ppdb_registrations — dirangkap di
- * sini karena baru dipakai dari satu tempat; pindah ke modul registration-stats
- * sendiri begitu modul itu dibangun lengkap (lihat PRD tahap M2).
- */
-async function findCurrentAcademicYearWithin(
-  tx: TransactionSql,
-): Promise<string | null> {
-  const rows = await tx.unsafe<{ academic_year: string }[]>(
-    `SELECT academic_year
-     FROM registration_stats
-     WHERE is_current
-     LIMIT 1`,
-  );
-  return rows[0]?.academic_year ?? null;
-}
 
 export async function insertWithin(
   tx: TransactionSql,
   input: CreatePpdbRegistrationRequest,
   source: RegistrationSource,
+  academicYear: string | null,
 ): Promise<string> {
   {
-    const academicYear = await findCurrentAcademicYearWithin(tx);
-
     const registrationRows = await tx.unsafe<{ id: string }[]>(
       `
       INSERT INTO ppdb_registrations (
@@ -549,5 +533,42 @@ export async function listRegistrantRegions(
      ORDER BY total DESC, city ASC
      LIMIT $1`,
     [limit],
+  );
+}
+
+export async function countBySourceForYear(
+  academicYear: string,
+): Promise<RegistrationSourceCounts> {
+  const rows = await sql.unsafe<{ online: number; offline_recorded: number }[]>(
+    `SELECT
+       count(*) FILTER (WHERE source = 'online')::int AS online,
+       count(*) FILTER (WHERE source = 'offline')::int AS offline_recorded
+     FROM ppdb_registrations
+     WHERE academic_year = $1`,
+    [academicYear],
+  );
+  return rows[0] ?? { online: 0, offline_recorded: 0 };
+}
+
+export async function countBySourceForAllYears(): Promise<
+  Map<string, RegistrationSourceCounts>
+> {
+  const rows = await sql.unsafe<
+    { academic_year: string; online: number; offline_recorded: number }[]
+  >(
+    `SELECT
+       academic_year,
+       count(*) FILTER (WHERE source = 'online')::int AS online,
+       count(*) FILTER (WHERE source = 'offline')::int AS offline_recorded
+     FROM ppdb_registrations
+     WHERE academic_year IS NOT NULL
+     GROUP BY academic_year`,
+  );
+
+  return new Map(
+    rows.map((row) => [
+      row.academic_year,
+      { online: row.online, offline_recorded: row.offline_recorded },
+    ]),
   );
 }

@@ -1,0 +1,26 @@
+# Yang TIDAK boleh masuk image.
+#
+# .dockerignore hanya berlaku bila konteks dikirim sebagai DIREKTORI. Bila
+# konteks dikirim lewat tar di stdin (`tar ... | docker build -`), berkas ini
+# diabaikan seluruhnya dan semua yang di bawah ikut terbawa — jangan pernah
+# membangun image produksi dengan cara itu.
+
+node_modules
+.next
+.git
+.gitignore
+
+# Rahasia: tidak pernah ikut image. Nilainya diberikan saat container jalan.
+.env
+.env.*
+!env.example
+
+# Sisa pindahan dari Supabase dan berkas kerja lokal.
+*.sql
+*.dump
+tsconfig.tsbuildinfo
+
+Dockerfile
+.dockerignore
+README.md
+vercel.json

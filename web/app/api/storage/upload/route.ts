@@ -6,6 +6,7 @@ const ALLOWED_BUCKETS = new Set([
   "activity-photos",
   "facility-photos",
   "school-profile-photos",
+  "event-photos",
 ]);
 
 export async function POST(request: Request) {

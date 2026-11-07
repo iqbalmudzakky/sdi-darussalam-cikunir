@@ -243,3 +243,8 @@ export type RegistrantRegionRow = {
   province: string;
   total: number;
 };
+
+export type RegistrationSourceCounts = {
+  online: number;
+  offline_recorded: number;
+};

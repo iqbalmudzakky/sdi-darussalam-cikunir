@@ -17,11 +17,18 @@ export type SchoolProfile = {
   instagram: string;
   tiktok: string;
   youtube: string;
+  active_student_count: number | null;
+  staff_count: number | null;
   created_at: string;
   updated_at: string;
 };
 
 export type NewSchoolProfile = Omit<
   SchoolProfile,
-  "id" | "created_at" | "updated_at"
+  "id" | "created_at" | "updated_at" | "active_student_count" | "staff_count"
 >;
+
+export type SchoolProfileStatsInput = {
+  activeStudentCount: number | null;
+  staffCount: number | null;
+};
