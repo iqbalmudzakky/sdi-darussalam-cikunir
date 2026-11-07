@@ -141,7 +141,7 @@ gagal dengan cara yang membingungkan.
 
 ### A6. Siapkan env laptop khusus production
 
-Buat `web/.env.production.local` (sudah diabaikan git lewat `.env*`):
+Isi dua baris ini di `web/.env.production` (sudah diabaikan git lewat `.env*`):
 
 ```
 DATABASE_URL=postgres://pmb_production:<sandi>@127.0.0.1:5432/pmb_production
@@ -203,8 +203,8 @@ ssh -N -L 5432:127.0.0.1:5432 -i /c/Dzakky/works/PID/vps/id_ed25519_vps tunnel@1
 
 ```bash
 cd /c/Dzakky/works/PID/sdi-darussalam-cikunir/web
-node --env-file=.env.production.local scripts/migrate.mjs --dry-run
-node --env-file=.env.production.local scripts/migrate.mjs
+node --env-file=.env.production scripts/migrate.mjs --dry-run
+node --env-file=.env.production scripts/migrate.mjs
 ```
 
 Yang dicari: `[migrate] applied 00000000_baseline.sql`.
@@ -213,10 +213,10 @@ Yang dicari: `[migrate] applied 00000000_baseline.sql`.
 
 ```bash
 SOURCE_DATABASE_URL="<session pooler Supabase PRODUCTION>" \
-  node --env-file=.env.production.local scripts/copy-db.mjs --dry-run
+  node --env-file=.env.production scripts/copy-db.mjs --dry-run
 
 SOURCE_DATABASE_URL="<session pooler Supabase PRODUCTION>" \
-  node --env-file=.env.production.local scripts/copy-db.mjs --truncate
+  node --env-file=.env.production scripts/copy-db.mjs --truncate
 ```
 
 Yang dicari: `verified: row counts match for every table.`
@@ -228,8 +228,8 @@ bukan staging.
 ### C3. Salin foto
 
 ```bash
-node --env-file=.env.production.local scripts/copy-storage.mjs --dry-run
-node --env-file=.env.production.local scripts/copy-storage.mjs
+node --env-file=.env.production scripts/copy-storage.mjs --dry-run
+node --env-file=.env.production scripts/copy-storage.mjs
 ```
 
 Yang dicari: `verified: every stored path exists on disk.`
@@ -384,7 +384,7 @@ Supabase — catat dari admin VPS dan masukkan manual.
 - [ ] Supabase production: biarkan hidup ±1 minggu sebagai cadangan, lalu pause
       atau hapus, dan **ganti sandi database-nya** (pernah lewat chat)
 - [ ] Supabase staging: idem
-- [ ] Hapus `web/.env.production.local` dan folder `uploads-pmb-production` di
+- [ ] Hapus `web/.env.production` dan folder `uploads-pmb-production` di
       laptop
 - [ ] Pantau `/api/cron/cleanup-tokens` berjalan tiap 03.00 — infra memasang
       pemantau stempel 26 jam
