@@ -526,6 +526,11 @@ modules/<domain>/
 - **Harus aman untuk kode lama.** Selama migrasi berjalan, container lama masih melayani
   pengunjung. Jadi migrasi cukup menambah (tabel, kolom nullable, index). Menghapus atau
   mengganti nama dikerjakan di rilis berikutnya, setelah kode yang memakainya sudah hilang
+- `ALTER TABLE` pada tabel yang sedang dipakai: tambahkan `SET lock_timeout = '10s';` tepat
+  setelah `BEGIN;`, supaya deploy gagal cepat alih-alih menggantung menunggu lock
+- Rollback image tidak memundurkan migrasi — image lama tetap memakai skema baru. Kalau
+  skema harus dikembalikan, minta infra memulihkan dari dump
+  `/var/backups/darussalam/pre-migration/` (5 terakhir disimpan)
 
 ### 6.4 Frontend
 

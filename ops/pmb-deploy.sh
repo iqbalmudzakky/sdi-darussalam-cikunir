@@ -68,7 +68,9 @@ deploy() {
 	# aman dipanggil di setiap deploy.
 	if [ "$service" = "production" ]; then
 		log "mencadangkan pmb_production sebelum migrasi"
-		/opt/darussalam-infra/backup/dump-database.sh pmb_production </dev/null
+		# Hanya perintah persis ini yang diizinkan /etc/sudoers.d/pmb-deploy.
+		# -n: gagal langsung, bukan menunggu sandi.
+		sudo -n /opt/darussalam-infra/backup/dump-database.sh pmb_production </dev/null
 	fi
 	log "menjalankan migrasi $service"
 	docker compose run --rm --no-deps -T "$service" node scripts/migrate.mjs </dev/null
