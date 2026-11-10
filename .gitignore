@@ -4,3 +4,6 @@
 # Hasil pg_dump saat pindah dari Supabase — sementara, jangan ikut ter-commit.
 baseline-mentah.sql
 *.dump
+
+# Akun uji staging — hanya di laptop, jangan pernah ikut ter-commit.
+docs/STAGING-CREDENTIALS.md
