@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import * as authService from "@/modules/auth/service";
-import { AcceptInviteRequestSchema } from "@/modules/auth/dto";
+import * as adminService from "@/modules/admin/service";
+import { AcceptInviteRequestSchema } from "@/modules/admin/dto";
 import { setAuthCookies } from "@/lib/auth/cookies";
 
 export async function POST(request: Request) {
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await authService.acceptInvite(parsed.data);
+    const result = await adminService.acceptInvite(parsed.data);
     if (!result.ok) {
       return NextResponse.json(
         { error: result.message, reason: result.reason },

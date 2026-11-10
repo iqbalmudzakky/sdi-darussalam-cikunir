@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import * as authService from "@/modules/auth/service";
-import { ForgotPasswordRequestSchema } from "@/modules/auth/dto";
+import * as adminService from "@/modules/admin/service";
+import { ForgotPasswordRequestSchema } from "@/modules/admin/dto";
 
 const GENERIC_MESSAGE =
   "Jika email terdaftar, tautan reset password telah dikirim.";
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    await authService.forgotPassword(parsed.data);
+    await adminService.forgotPassword(parsed.data);
   } catch (error) {
     console.error("POST /api/auth/forgot-password failed:", error);
   }

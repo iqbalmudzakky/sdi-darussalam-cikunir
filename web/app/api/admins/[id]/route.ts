@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireSuperadmin } from "@/lib/auth/session";
-import * as authService from "@/modules/auth/service";
+import * as adminService from "@/modules/admin/service";
 import {
   UpdateAdminRequestSchema,
   type DeleteAdminInput,
   type UpdateAdminInput,
-} from "@/modules/auth/dto";
+} from "@/modules/admin/dto";
 
 function statusFor(reason: "self" | "last_superadmin" | "not_found") {
   if (reason === "not_found") return 404;
@@ -38,7 +38,7 @@ export async function PATCH(
       targetId: id,
       patch: parsed.data,
     };
-    const result = await authService.updateAdmin(updateInput);
+    const result = await adminService.updateAdmin(updateInput);
     if (!result.ok) {
       return NextResponse.json(
         { error: result.message },
@@ -71,7 +71,7 @@ export async function DELETE(
       actingUserId: user.id,
       targetId: id,
     };
-    const result = await authService.deleteAdmin(deleteInput);
+    const result = await adminService.deleteAdmin(deleteInput);
     if (!result.ok) {
       return NextResponse.json(
         { error: result.message },

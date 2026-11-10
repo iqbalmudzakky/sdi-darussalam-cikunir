@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import * as authService from "@/modules/auth/service";
 import { LoginRequestSchema } from "@/modules/auth/dto";
+import { getClientIp } from "@/modules/shared/clientIp";
+import { LOGIN_RATE_LIMIT_WINDOW_MINUTES } from "@/modules/shared/constant/auth";
 import { setAuthCookies } from "@/lib/auth/cookies";
 
 export async function POST(request: Request) {
@@ -14,18 +16,27 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await authService.login(parsed.data);
-    if (!result) {
+    const ipAddress = getClientIp(request);
+    const result = await authService.login(parsed.data, ipAddress);
+    if (!result.ok) {
+      if (result.reason === "rate_limited") {
+        return NextResponse.json(
+          {
+            error: `Terlalu banyak percobaan masuk. Coba lagi ${LOGIN_RATE_LIMIT_WINDOW_MINUTES} menit lagi.`,
+          },
+          { status: 429 },
+        );
+      }
       return NextResponse.json(
         { error: "Email atau password salah." },
         { status: 401 },
       );
     }
 
-    await setAuthCookies(result.accessToken, result.refreshToken);
+    await setAuthCookies(result.tokens.accessToken, result.tokens.refreshToken);
     return NextResponse.json({
-      email: result.user.email,
-      role: result.user.role,
+      email: result.tokens.user.email,
+      role: result.tokens.user.role,
     });
   } catch (error) {
     console.error("POST /api/auth/login failed:", error);

@@ -558,6 +558,49 @@ Pola ini sudah dipakai komponen yang ada (`ActivityContent.tsx` menaruh keterang
 terlihat di layar sentuh dan baru mengikuti hover mulai `lg:`). Ikuti, jangan buat pola
 baru.
 
+### 6.6 Guide for Clean Code
+
+Kode PMB mengikuti **GUIDE FOR CLEAN CODE** milik pemilik repo, yang juga dipakai LMS.
+Isinya berlaku apa adanya (500 baris per berkas, nesting maksimal 2, parameter maksimal 3,
+argumen lewat variabel, objek 3+ field satu per baris, hindari N+1, jangan pecah fungsi
+sebelum batas terlewati, logika bisnis di backend, aturan Frontend React). Penyesuaian
+istilah untuk Next.js + TypeScript:
+
+| Di guide                                          | Di PMB                                                                                                   |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Backend (Go)                                      | `modules/<domain>/` (service, repository) dan `app/api/**/route.ts`                                      |
+| Fungsi Go maksimal 100 baris                      | Fungsi di `modules/`, handler route, dan server action maksimal 100 baris                                |
+| Pengecualian parameter: `ctx`, konstruktor `New…` | Bentuk yang ditentukan Next.js: handler route, server action, `generateMetadata`, props halaman          |
+| Struct domain / struct DTO                        | `entity.ts` (dipakai service & repository) / `dto.ts` (skema zod dan bentuk request/response)            |
+| Tiap tabel satu fitur pemilik                     | Sama: hanya `modules/<pemilik>/repository.ts` yang menulis query ke tabelnya, termasuk JOIN dan subquery |
+| HANDOVER.md maksimal 150 baris                    | Tidak dipakai — PMB belum punya HANDOVER                                                                 |
+
+**Pemilik tabel:**
+
+| Fitur (`modules/…`)                              | Tabel                                                                                                        |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `auth`                                           | `admin_users`, `refresh_tokens`, `login_attempts`                                                            |
+| `admin`                                          | `admin_action_tokens` — memanggil service `auth` untuk akun & sesi, tidak sebaliknya                         |
+| `registration`                                   | `ppdb_registrations`, `ppdb_registration_details`, `ppdb_registration_parents`, `ppdb_registration_students` |
+| `payment`                                        | `registration_payments`, `doku_notification_events`                                                          |
+| `payment-settings`                               | `payment_settings`                                                                                           |
+| `registration-stats`                             | `registration_stats`                                                                                         |
+| `school-profile`                                 | `school_profiles`                                                                                            |
+| `analytics`                                      | `site_visits`                                                                                                |
+| `event`                                          | `events`                                                                                                     |
+| `activity`, `achievement`, `facility`, `program` | tabel senamanya (`activities`, `achievements`, `facilities`, `programs`)                                     |
+
+Tabel `registrations` (bentuk pendaftaran lama, kosong) tidak dipakai kode mana pun.
+
+**Kapan diterapkan:** hanya pada berkas yang disentuh, baik karena kodenya diubah maupun
+kode baru ditambahkan. Berkas yang tidak disentuh dibiarkan dulu, supaya satu perubahan
+kecil tidak menyeret perapian besar. Pelanggaran lama yang tercatat per 10 November 2026:
+
+- Berkas lebih dari 500 baris: `RegistrationForm.tsx` (1164), `admin/(dashboard)/registrations/page.tsx`
+  (910), `admin/(dashboard)/about/page.tsx` (698), `modules/registration/repository.ts` (574),
+  `admin/(dashboard)/transactions/page.tsx` (559)
+- Tabel `registration_payments` di-query oleh repository `payment` dan `registration`
+
 ---
 
 ## 7. Skema Database

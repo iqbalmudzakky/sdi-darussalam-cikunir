@@ -1,12 +1,11 @@
 import { sql } from "@/modules/db/postgres";
 import type {
-  AdminActionToken,
-  AdminActionTokenPurpose,
   AdminCredentials,
   AdminPatch,
   AdminSummary,
-  CountActionTokensInput,
-  NewAdminActionToken,
+  CountLoginAttemptsInput,
+  LoginAttemptCounts,
+  NewLoginAttempt,
   NewInvitedAdmin,
   NewRefreshToken,
   RefreshToken,
@@ -150,58 +149,40 @@ export async function countActiveSuperadmins(
   return rows[0].count;
 }
 
-export async function insertActionToken(
-  input: NewAdminActionToken,
-): Promise<AdminActionToken> {
-  const rows = await sql.unsafe<AdminActionToken[]>(
-    `INSERT INTO admin_action_tokens (user_id, purpose, token_hash, expires_at)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, user_id, purpose, token_hash, expires_at, used_at, created_at`,
-    [input.user_id, input.purpose, input.token_hash, input.expires_at],
+export async function countRecentLoginAttempts(
+  input: CountLoginAttemptsInput,
+): Promise<LoginAttemptCounts> {
+  const rows = await sql.unsafe<LoginAttemptCounts[]>(
+    `SELECT COUNT(*) FILTER (WHERE email = $1)::int AS by_email,
+            COUNT(*) FILTER (WHERE ip_address = $2)::int AS by_ip
+     FROM login_attempts
+     WHERE (email = $1 OR ip_address = $2)
+       AND created_at > now() - ($3 || ' minutes')::interval`,
+    [input.email, input.ipAddress, input.windowMinutes],
   );
   return rows[0];
 }
 
-export async function findActionTokenByHash(
-  tokenHash: string,
-  purpose: AdminActionTokenPurpose,
-): Promise<AdminActionToken | null> {
-  const rows = await sql.unsafe<AdminActionToken[]>(
-    `SELECT id, user_id, purpose, token_hash, expires_at, used_at, created_at
-     FROM admin_action_tokens WHERE token_hash = $1 AND purpose = $2`,
-    [tokenHash, purpose],
-  );
-  return rows[0] ?? null;
-}
-
-export async function markActionTokenUsed(id: string): Promise<void> {
-  await sql.unsafe(
-    `UPDATE admin_action_tokens SET used_at = now() WHERE id = $1`,
-    [id],
-  );
-}
-
-export async function invalidateActiveActionTokens(
-  userId: string,
-  purpose: AdminActionTokenPurpose,
+export async function insertLoginAttempt(
+  input: NewLoginAttempt,
 ): Promise<void> {
   await sql.unsafe(
-    `UPDATE admin_action_tokens SET used_at = now()
-     WHERE user_id = $1 AND purpose = $2 AND used_at IS NULL`,
-    [userId, purpose],
+    `INSERT INTO login_attempts (email, ip_address) VALUES ($1, $2)`,
+    [input.email, input.ip_address],
   );
 }
 
-export async function countRecentActionTokens(
-  input: CountActionTokensInput,
-): Promise<number> {
-  const rows = await sql.unsafe<{ count: number }[]>(
-    `SELECT COUNT(*)::int AS count FROM admin_action_tokens
-     WHERE user_id = $1 AND purpose = $2
-       AND created_at > now() - ($3 || ' minutes')::interval`,
-    [input.userId, input.purpose, input.windowMinutes],
+export async function deleteLoginAttemptsForEmail(
+  email: string,
+): Promise<void> {
+  await sql.unsafe(`DELETE FROM login_attempts WHERE email = $1`, [email]);
+}
+
+export async function deleteStaleLoginAttempts(): Promise<number> {
+  const result = await sql.unsafe(
+    `DELETE FROM login_attempts WHERE created_at < now() - interval '24 hours'`,
   );
-  return rows[0].count;
+  return result.count;
 }
 
 export async function deleteStaleRefreshTokens(): Promise<number> {
@@ -209,15 +190,6 @@ export async function deleteStaleRefreshTokens(): Promise<number> {
     `DELETE FROM refresh_tokens
      WHERE expires_at < now()
         OR (revoked_at IS NOT NULL AND revoked_at < now() - interval '30 days')`,
-  );
-  return result.count;
-}
-
-export async function deleteStaleActionTokens(): Promise<number> {
-  const result = await sql.unsafe(
-    `DELETE FROM admin_action_tokens
-     WHERE expires_at < now()
-        OR (used_at IS NOT NULL AND used_at < now() - interval '30 days')`,
   );
   return result.count;
 }

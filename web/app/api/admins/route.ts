@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireSuperadmin } from "@/lib/auth/session";
-import * as authService from "@/modules/auth/service";
-import { InviteAdminRequestSchema } from "@/modules/auth/dto";
+import * as adminService from "@/modules/admin/service";
+import { InviteAdminRequestSchema } from "@/modules/admin/dto";
 
 export async function GET() {
   const user = await requireSuperadmin();
@@ -10,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    const admins = await authService.listAdmins();
+    const admins = await adminService.listAdmins();
     return NextResponse.json(admins);
   } catch (error) {
     console.error("GET /api/admins failed:", error);
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await authService.inviteAdmin(parsed.data);
+    const result = await adminService.inviteAdmin(parsed.data);
     if (!result.ok) {
       return NextResponse.json({ error: result.message }, { status: 409 });
     }
