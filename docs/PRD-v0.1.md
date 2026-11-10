@@ -519,6 +519,13 @@ modules/<domain>/
 - Rollback ditulis sebagai komentar di bagian bawah berkas
 - Aturan yang bisa dijaga database dijaga di database (CHECK, unique index), bukan hanya
   di aplikasi
+- **Dijalankan otomatis saat deploy.** `pmb-deploy` menjalankan `scripts/migrate.mjs` dengan
+  image baru sebelum container lama diganti (production dicadangkan dulu). Hanya berkas yang
+  belum tercatat di `schema_migrations` yang dijalankan. Kalau migrasi gagal, deploy berhenti
+  dan versi lama tetap melayani
+- **Harus aman untuk kode lama.** Selama migrasi berjalan, container lama masih melayani
+  pengunjung. Jadi migrasi cukup menambah (tabel, kolom nullable, index). Menghapus atau
+  mengganti nama dikerjakan di rilis berikutnya, setelah kode yang memakainya sudah hilang
 
 ### 6.4 Frontend
 

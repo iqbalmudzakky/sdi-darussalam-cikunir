@@ -6,7 +6,7 @@
 # apa pun yang dikirim lewat SSH tetap berujung di sini. Perintah aslinya
 # terbaca lewat $SSH_ORIGINAL_COMMAND dan hanya empat bentuk yang diterima:
 #
-#   deploy <production|staging> [tag]   tarik image lalu buat ulang container
+#   deploy <production|staging> [tag]   tarik image, migrasi, buat ulang container
 #   rollback <production|staging> <tag> sama dengan deploy, tag wajib diisi
 #   status                              apa yang sedang berjalan
 #   put-compose                         ganti compose.yml dari stdin
@@ -61,6 +61,17 @@ deploy() {
 
 	log "menarik image $service:$tag"
 	docker compose pull "$service" </dev/null
+
+	# Migrasi memakai image BARU, sebelum container lama diganti: kalau gagal,
+	# deploy berhenti di sini dan situs tetap dilayani versi lama. migrate.mjs
+	# hanya menjalankan berkas yang belum tercatat di schema_migrations, jadi
+	# aman dipanggil di setiap deploy.
+	if [ "$service" = "production" ]; then
+		log "mencadangkan pmb_production sebelum migrasi"
+		/opt/darussalam-infra/backup/dump-database.sh pmb_production </dev/null
+	fi
+	log "menjalankan migrasi $service"
+	docker compose run --rm --no-deps -T "$service" node scripts/migrate.mjs </dev/null
 
 	# --force-recreate wajib: tanpa itu, Compose pernah melaporkan sukses
 	# padahal container lama tidak pernah diganti (INFRASTRUKTUR-VPS 6.7f).

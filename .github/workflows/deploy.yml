@@ -1,19 +1,19 @@
-name: Deploy ke VPS
+name: Deploy
 
-# Otomatis setiap "Bangun image" selesai hijau: staging → staging, main →
+# Satu alur per push: bangun image, lalu deploy. staging → staging, main →
 # production. Yang menentukan kapan sekolah menerima versi baru tetap manusia,
-# lewat merge ke main. Image yang naik bertag sha-<commit>, jadi pasti hasil
-# build commit itu, bukan "main" yang kebetulan terakhir. Jalankan dengan
-# tangan untuk rollback ke tag tertentu.
+# lewat merge ke main. Image diberi tag "staging"/"main" dan sha-<commit>; yang
+# di-deploy selalu sha-<commit>, jadi pasti hasil build commit itu. Migrasi
+# database dijalankan pmb-deploy di server sebelum container diganti.
+#
+# Jalankan dengan tangan untuk rollback ke tag tertentu — tahap build dilewati.
 #
 # Kunci deploy di server dikunci ke satu perintah (/usr/local/bin/pmb-deploy,
 # lihat ops/pmb-deploy.sh). Jadi workflow ini tidak menjalankan docker apa pun
-# sendiri — ia hanya menyebutkan lingkungan dan tag. Kalau secret di sini
+# di server — ia hanya menyebutkan lingkungan dan tag. Kalau secret di sini
 # bocor, yang bisa dilakukan orang lain sebatas men-deploy ulang PMB.
 on:
-  workflow_run:
-    workflows: [Bangun image]
-    types: [completed]
+  push:
     branches: [main, staging]
   workflow_dispatch:
     inputs:
@@ -24,7 +24,7 @@ on:
         options: [staging, production]
         default: staging
       tag:
-        description: Tag image (kosongkan untuk "staging"/"main" sesuai lingkungan)
+        description: Tag image, mis. sha-1a2b3c4 (kosongkan untuk "staging"/"main" sesuai lingkungan)
         required: false
         type: string
       update_compose:
@@ -33,34 +33,72 @@ on:
         type: boolean
         default: false
 
-# Dua deploy bersamaan bisa saling menimpa container yang sedang dibuat ulang.
-concurrency:
-  group: deploy-${{ inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'staging') }}
-  cancel-in-progress: false
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+  build:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
 
     steps:
-      # compose.yml diambil dari commit yang di-build, bukan ujung branch saat ini.
       - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+
+      - uses: docker/build-push-action@v6
+        with:
+          # Konteks DIREKTORI, bukan tar lewat stdin — kalau tar, .dockerignore
+          # diabaikan seluruhnya dan berkas rahasia ikut masuk image.
+          context: ./web
+          file: ./web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    # Saat dijalankan dengan tangan, build dilewati (skipped) — deploy tetap jalan.
+    if: ${{ !cancelled() && (needs.build.result == 'success' || needs.build.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # Dua deploy bersamaan bisa saling menimpa container yang sedang dibuat ulang.
+    concurrency:
+      group: deploy-${{ inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Tentukan lingkungan & tag
         env:
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           INPUT_ENVIRONMENT: ${{ inputs.environment }}
           INPUT_TAG: ${{ inputs.tag }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" = "workflow_run" ]; then
-            [ "$HEAD_BRANCH" = "main" ] && environment=production || environment=staging
-            tag="sha-${HEAD_SHA::7}"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            [ "$GITHUB_REF_NAME" = "main" ] && environment=production || environment=staging
+            tag="sha-${GITHUB_SHA::7}"
           else
             environment="$INPUT_ENVIRONMENT"
             tag="$INPUT_TAG"
@@ -80,7 +118,7 @@ jobs:
           chmod 600 ~/.ssh/known_hosts
 
       - name: Kirim compose.yml
-        if: github.event_name == 'workflow_run' || inputs.update_compose
+        if: github.event_name == 'push' || inputs.update_compose
         run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" put-compose < compose.yml
 
