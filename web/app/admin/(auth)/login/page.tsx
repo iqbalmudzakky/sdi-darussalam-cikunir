@@ -44,9 +44,10 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-    } catch {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Gagal login.";
       setIsLoading(false);
-      setError("Email atau password salah.");
+      setError(message);
       return;
     }
 
