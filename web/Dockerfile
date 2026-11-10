@@ -34,6 +34,14 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Untuk migrasi: pmb-deploy menjalankan `node scripts/migrate.mjs` dengan image
+# ini sebelum container lama diganti. Paket postgres disalin utuh karena
+# standalone hanya membawa berkas yang dipakai server.js, bukan yang dipakai
+# skrip ini.
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/migrate.mjs ./scripts/migrate.mjs
+COPY --from=builder --chown=nextjs:nodejs /app/modules/db/migrations ./modules/db/migrations
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/postgres ./node_modules/postgres
+
 USER nextjs
 EXPOSE 3000
 

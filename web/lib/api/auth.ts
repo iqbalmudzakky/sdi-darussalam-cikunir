@@ -4,15 +4,17 @@ export async function login(
   email: string,
   password: string,
 ): Promise<SessionInfo> {
+  const payload = { email, password };
   const res = await fetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
     const data = await res.json().catch(() => null);
-    throw new Error(data?.error ?? `Login failed (${res.status})`);
+    const message = data?.error ?? "Gagal login.";
+    throw new Error(message);
   }
 
   return res.json();
@@ -29,10 +31,11 @@ export async function refreshSession(): Promise<SessionInfo | null> {
 }
 
 export async function forgotPassword(email: string): Promise<void> {
+  const payload = { email };
   await fetch("/api/auth/forgot-password", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify(payload),
   });
 }
 
@@ -43,10 +46,11 @@ export async function acceptInvite(
   | { ok: true; session: SessionInfo }
   | { ok: false; error: string; reason?: "invalid_token" | "expired" }
 > {
+  const payload = { token, password };
   const res = await fetch("/api/auth/accept-invite", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, password }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -56,7 +60,8 @@ export async function acceptInvite(
       reason: data.reason,
     };
   }
-  return { ok: true, session: await res.json() };
+  const session: SessionInfo = await res.json();
+  return { ok: true, session };
 }
 
 export async function resetPassword(
@@ -66,10 +71,11 @@ export async function resetPassword(
   | { ok: true; session: SessionInfo }
   | { ok: false; error: string; reason?: "invalid_token" | "expired" }
 > {
+  const payload = { token, password };
   const res = await fetch("/api/auth/reset-password", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, password }),
+    body: JSON.stringify(payload),
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
@@ -79,5 +85,6 @@ export async function resetPassword(
       reason: data.reason,
     };
   }
-  return { ok: true, session: await res.json() };
+  const session: SessionInfo = await res.json();
+  return { ok: true, session };
 }
