@@ -10,11 +10,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      /*
-       * Area admin dan endpoint API tidak punya nilai bagi
-       * pencari, jadi tidak perlu ikut dirayapi.
-       */
-      disallow: ["/admin", "/api"],
+      disallow: ["/api"],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };

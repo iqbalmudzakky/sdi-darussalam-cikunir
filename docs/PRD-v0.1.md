@@ -606,12 +606,29 @@ Tabel `registrations` (bentuk pendaftaran lama, kosong) tidak dipakai kode mana 
 
 **Kapan diterapkan:** hanya pada berkas yang disentuh, baik karena kodenya diubah maupun
 kode baru ditambahkan. Berkas yang tidak disentuh dibiarkan dulu, supaya satu perubahan
-kecil tidak menyeret perapian besar. Pelanggaran lama yang tercatat per 10 November 2026:
+kecil tidak menyeret perapian besar. **Perubahan mekanis tidak dihitung menyentuh**: mengganti
+teks path, mengganti nama import, atau memindah folder. Berkasnya dirapikan saat logikanya
+benar-benar diubah.
 
-- Berkas lebih dari 500 baris: `RegistrationForm.tsx` (1164), `admin/(dashboard)/registrations/page.tsx`
-  (910), `admin/(dashboard)/about/page.tsx` (698), `modules/registration/repository.ts` (574),
-  `admin/(dashboard)/transactions/page.tsx` (559)
+Pelanggaran lama yang tercatat per 11 November 2026:
+
+- Berkas lebih dari 500 baris: `RegistrationForm.tsx` (1164), `(admin)/(dashboard)/registrations/page.tsx`
+  (910), `(admin)/(dashboard)/about/page.tsx` (698), `modules/registration/repository.ts` (574),
+  `(admin)/(dashboard)/transactions/page.tsx` (559)
+- Komponen lebih dari 200 baris: `(admin)/(dashboard)/dashboard/page.tsx` (429),
+  `components/admin/AdminSidebar.tsx` (345)
 - Tabel `registration_payments` di-query oleh repository `payment` dan `registration`
+
+### 6.7 Alamat halaman admin
+
+Halaman admin tidak memakai awalan `/admin` (folder `app/(admin)/` adalah route group, jadi
+tidak muncul di URL): `/masuk-sekolah` untuk login, `/dashboard` untuk beranda, lalu
+`/registrations`, `/event-management`, `/admin-management`, dan seterusnya. Pengunjung yang
+belum login mendapat **404**, bukan dialihkan ke halaman login — dari luar, halaman admin
+tidak bisa dibedakan dari halaman yang tidak ada. Alamat admin tidak ditulis di
+`robots.txt`; penanda `noindex` dipasang di `app/(admin)/layout.tsx`.
+
+Halaman publik baru tidak boleh memakai nama yang sudah dipakai admin.
 
 ---
 

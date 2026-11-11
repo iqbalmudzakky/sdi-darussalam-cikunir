@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { cva } from "class-variance-authority";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { acceptInvite } from "@/lib/api/auth";
+import { login } from "@/lib/api/auth";
 import { cn } from "@/lib/utils";
 
 const pageBackgroundVariants = cva([
@@ -31,49 +30,28 @@ const errorBoxVariants = cva([
   "text-sm text-red-600",
 ]);
 
-export default function AcceptInvitePage() {
-  const router = useRouter();
-  const { token } = useParams<{ token: string }>();
-
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [expired, setExpired] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    setExpired(false);
-
-    if (password.length < 8) {
-      setError("Password minimal 8 karakter.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Konfirmasi password tidak cocok.");
-      return;
-    }
-
     setIsLoading(true);
-    try {
-      const result = await acceptInvite(token, password);
-      if (!result.ok) {
-        setError(result.error);
-        setExpired(result.reason === "expired");
-        return;
-      }
 
-      router.push("/admin");
-      router.refresh();
-    } catch {
-      setError(
-        "Gagal terhubung ke server, periksa koneksi Anda dan coba lagi.",
-      );
-    } finally {
+    try {
+      await login(email, password);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Gagal login.";
       setIsLoading(false);
+      setError(message);
+      return;
     }
+
+    window.location.replace("/dashboard");
   }
 
   return (
@@ -83,25 +61,38 @@ export default function AcceptInvitePage() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center gap-4 py-16">
               <Loader2 className="w-12 h-12 text-brand-600 animate-spin" />
-              <p className="text-sm text-gray-500">Memproses...</p>
+              <p className="text-sm text-gray-500">Memproses login...</p>
             </div>
           ) : (
             <>
               <div className="flex flex-col items-center text-center mb-8">
                 <img
                   src="/logo.png"
-                  alt="Logo SDI Darussalam Cikunir"
+                  alt="Logo SD Islam Darussalam Cikunir"
                   className="w-14 h-14 mb-4 rounded-full object-cover"
                 />
                 <h1 className="text-xl font-bold text-gray-900">
-                  Selamat Datang, Admin
+                  SD Islam Darussalam Cikunir
                 </h1>
                 <p className="text-sm text-gray-500 mt-1">
-                  Atur password Anda untuk mulai menggunakan panel admin.
+                  Masuk ke panel admin untuk kelola konten website
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@sdidarussalam.sch.id"
+                    className={inputFieldVariants()}
+                  />
+                </div>
+
                 <div className="space-y-1.5">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -131,29 +122,16 @@ export default function AcceptInvitePage() {
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="confirm-password">Konfirmasi Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className={inputFieldVariants()}
-                  />
+                <div className="flex justify-end">
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs font-medium text-brand-600 hover:underline"
+                  >
+                    Lupa password?
+                  </Link>
                 </div>
 
-                {error && (
-                  <div className={errorBoxVariants()}>
-                    <p>{error}</p>
-                    {expired && (
-                      <p className="mt-1">
-                        Minta superadmin kirim ulang undangan.
-                      </p>
-                    )}
-                  </div>
-                )}
+                {error && <p className={errorBoxVariants()}>{error}</p>}
 
                 <Button
                   type="submit"
@@ -161,15 +139,8 @@ export default function AcceptInvitePage() {
                   disabled={isLoading}
                   className="w-full font-semibold"
                 >
-                  Mulai Gunakan Panel Admin
+                  Masuk
                 </Button>
-
-                <Link
-                  href="/admin/login"
-                  className="block text-center text-sm font-medium text-gray-500 hover:text-gray-700"
-                >
-                  Sudah punya akun? Masuk
-                </Link>
               </form>
             </>
           )}

@@ -5,7 +5,7 @@ import { AdminManagementView } from "@/components/admin/admin-management/AdminMa
 export default async function AdminManagementPage() {
   const user = await requireSuperadmin();
   if (!user) {
-    redirect("/admin");
+    redirect("/dashboard");
   }
 
   return <AdminManagementView currentUserId={user.id} />;

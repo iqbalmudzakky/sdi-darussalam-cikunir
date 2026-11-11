@@ -15,7 +15,7 @@ export default function AdminNewRegistrationPage() {
       <Button
         variant="outline"
         size="sm"
-        render={<Link href="/admin/registrations" />}
+        render={<Link href="/registrations" />}
         className="mb-3"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -29,7 +29,7 @@ export default function AdminNewRegistrationPage() {
 
       <RegistrationForm
         mode="manual"
-        onSuccess={() => router.push("/admin/registrations")}
+        onSuccess={() => router.push("/registrations")}
       />
     </div>
   );

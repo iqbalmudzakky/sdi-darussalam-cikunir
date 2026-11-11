@@ -46,11 +46,6 @@ const sidebarPendingBadgeVariants = cva([
   "bg-red-500 px-1.5 text-xs font-semibold text-white",
 ]);
 
-/*
- * Menu dikelompokkan supaya daftar panjang tetap terbaca:
- * konten yang tampil di halaman utama dipisahkan dari data
- * yang masuk dari pengunjung.
- */
 type NavItem = {
   href: string;
   label: string;
@@ -66,25 +61,25 @@ type NavGroup = {
 const NAV_GROUPS: NavGroup[] = [
   {
     label: null,
-    items: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
+    items: [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
     label: "Konten Halaman",
     items: [
-      { href: "/admin/about", label: "Profil Sekolah", icon: Info },
-      { href: "/admin/program", label: "Program", icon: BookOpen },
-      { href: "/admin/facility", label: "Fasilitas", icon: Building2 },
-      { href: "/admin/activity", label: "Kegiatan", icon: CalendarDays },
-      { href: "/admin/achievement", label: "Prestasi", icon: Trophy },
-      { href: "/admin/events", label: "Event", icon: PartyPopper },
+      { href: "/about", label: "Profil Sekolah", icon: Info },
+      { href: "/program", label: "Program", icon: BookOpen },
+      { href: "/facility", label: "Fasilitas", icon: Building2 },
+      { href: "/activity", label: "Kegiatan", icon: CalendarDays },
+      { href: "/achievement", label: "Prestasi", icon: Trophy },
+      { href: "/event-management", label: "Event", icon: PartyPopper },
     ],
   },
   {
     label: "Masuk",
     items: [
-      { href: "/admin/registrations", label: "Pendaftar", icon: Inbox },
-      { href: "/admin/statistics", label: "Statistik", icon: BarChart3 },
-      { href: "/admin/transactions", label: "Transaksi", icon: Receipt },
+      { href: "/registrations", label: "Pendaftar", icon: Inbox },
+      { href: "/statistics", label: "Statistik", icon: BarChart3 },
+      { href: "/transactions", label: "Transaksi", icon: Receipt },
     ],
   },
   {
@@ -92,13 +87,13 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       {
         // Sets what applicants are charged, so it stays with the superadmin.
-        href: "/admin/payment",
+        href: "/payment",
         label: "Pembayaran",
         icon: Wallet,
         superadminOnly: true,
       },
       {
-        href: "/admin/admin-management",
+        href: "/admin-management",
         label: "Kelola Admin",
         icon: ShieldCheck,
         superadminOnly: true,
@@ -127,11 +122,6 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
     }
   }, []);
 
-  /*
-   * Jumlah pendaftar baru ikut diperbarui ketika halaman
-   * pendaftar mengirim event, supaya lencana di menu tidak
-   * tertinggal setelah status diubah.
-   */
   useEffect(() => {
     const timer = setTimeout(loadPendingCount, 0);
 
@@ -143,10 +133,6 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
     };
   }, [loadPendingCount]);
 
-  /*
-   * Selama laci terbuka, halaman di belakangnya dikunci
-   * agar tidak ikut bergeser saat menggulir menu.
-   */
   useEffect(() => {
     if (!isOpen) return;
 
@@ -172,7 +158,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
 
   async function handleLogout() {
     await logout();
-    router.replace("/admin/login");
+    router.replace("/masuk-sekolah");
     router.refresh();
   }
 
@@ -215,8 +201,8 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
             <div className="space-y-1">
               {visibleItems.map(({ href, label, icon: Icon }) => {
                 const isActive =
-                  href === "/admin"
-                    ? pathname === "/admin"
+                  href === "/dashboard"
+                    ? pathname === "/dashboard"
                     : pathname.startsWith(href);
 
                 return (
@@ -229,7 +215,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
                     <Icon className="h-4 w-4 shrink-0" />
                     {label}
 
-                    {href === "/admin/registrations" && pendingCount > 0 && (
+                    {href === "/registrations" && pendingCount > 0 && (
                       <span className={sidebarPendingBadgeVariants()}>
                         {pendingCount}
                       </span>
@@ -295,7 +281,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
 
         {pendingCount > 0 && (
           <Link
-            href="/admin/registrations"
+            href="/registrations"
             className="ml-auto flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600"
           >
             <Inbox className="h-3.5 w-3.5" />

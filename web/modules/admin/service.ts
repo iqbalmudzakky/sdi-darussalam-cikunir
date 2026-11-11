@@ -70,7 +70,7 @@ async function issueAndSendInviteToken(
     repository.insertActionToken(newActionToken),
   );
 
-  const invitePath = `/admin/invite/${rawToken}`;
+  const invitePath = `/invite/${rawToken}`;
   const inviteUrl = buildAdminUrl(invitePath);
   const inviteEmail = { to: email, inviteUrl };
   await sendInviteEmail(inviteEmail);
@@ -235,7 +235,7 @@ export async function forgotPassword(
       repository.insertActionToken(newActionToken),
     );
 
-    const resetPath = `/admin/reset-password/${rawToken}`;
+    const resetPath = `/reset-password/${rawToken}`;
     const resetUrl = buildAdminUrl(resetPath);
     const resetEmail = { to: admin.email, resetUrl };
     await sendPasswordResetEmail(resetEmail);

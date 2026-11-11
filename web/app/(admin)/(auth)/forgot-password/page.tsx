@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
                 terdaftar, tautan reset password sudah dikirim.
               </p>
               <Link
-                href="/admin/login"
+                href="/masuk-sekolah"
                 className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
                 </Button>
 
                 <Link
-                  href="/admin/login"
+                  href="/masuk-sekolah"
                   className="flex items-center justify-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
                 >
                   <ArrowLeft className="w-4 h-4" />

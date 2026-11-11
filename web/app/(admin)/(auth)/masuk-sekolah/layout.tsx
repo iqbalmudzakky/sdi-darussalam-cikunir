@@ -9,7 +9,7 @@ export default async function LoginLayout({
   const user = await getSession();
 
   if (user) {
-    redirect("/admin");
+    redirect("/dashboard");
   }
 
   return <>{children}</>;
