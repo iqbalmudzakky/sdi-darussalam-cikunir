@@ -26,11 +26,6 @@ import { getVisitSummary } from "@/lib/actions/analytics";
 import { getSession } from "@/lib/auth/session";
 import { formatDuration } from "@/lib/date";
 
-/*
- * Selalu ambil data terbaru. Dashboard ini dipakai untuk
- * memantau, jadi angka yang basi lebih berbahaya daripada
- * render yang sedikit lebih lambat.
- */
 export const dynamic = "force-dynamic";
 
 function formatRelativeTime(isoDate: string): string {
@@ -124,50 +119,45 @@ export default async function AdminDashboardPage() {
     {
       label: "Program",
       count: programs.length,
-      href: "/admin/program",
+      href: "/program",
       icon: BookOpen,
     },
     {
       label: "Fasilitas",
       count: facilities.length,
-      href: "/admin/facility",
+      href: "/facility",
       icon: Building2,
     },
     {
       label: "Kegiatan",
       count: activities.length,
-      href: "/admin/activity",
+      href: "/activity",
       icon: CalendarDays,
     },
     {
       label: "Prestasi",
       count: achievements.length,
-      href: "/admin/achievement",
+      href: "/achievement",
       icon: Trophy,
     },
   ];
 
-  /*
-   * Bagian halaman utama yang masih kosong dikumpulkan
-   * sebagai pengingat, supaya admin tahu apa yang belum
-   * terisi tanpa harus membuka satu per satu.
-   */
   const warnings: { label: string; href: string }[] = [];
 
   if (!profile.description.trim()) {
-    warnings.push({ label: "Deskripsi sekolah", href: "/admin/about" });
+    warnings.push({ label: "Deskripsi sekolah", href: "/about" });
   }
 
   if (!profile.visi.trim()) {
-    warnings.push({ label: "Visi sekolah", href: "/admin/about" });
+    warnings.push({ label: "Visi sekolah", href: "/about" });
   }
 
   if (profile.misi.length === 0) {
-    warnings.push({ label: "Misi sekolah", href: "/admin/about" });
+    warnings.push({ label: "Misi sekolah", href: "/about" });
   }
 
   if (!profile.photo_url) {
-    warnings.push({ label: "Foto gedung sekolah", href: "/admin/about" });
+    warnings.push({ label: "Foto gedung sekolah", href: "/about" });
   }
 
   for (const stat of stats) {
@@ -176,10 +166,6 @@ export default async function AdminDashboardPage() {
     }
   }
 
-  /*
-   * Sesi hanya menyimpan email, jadi sapaan diambil dari
-   * bagian sebelum tanda @.
-   */
   const greetingName = user?.email?.split("@")[0] ?? "Admin";
 
   return (
@@ -194,10 +180,9 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      {/* Sorotan pendaftar yang belum ditindaklanjuti */}
       {pendingCount > 0 && (
         <Link
-          href="/admin/registrations"
+          href="/registrations"
           className="group mb-6 flex items-center gap-4 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 transition-colors hover:border-brand-500"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
@@ -217,7 +202,6 @@ export default async function AdminDashboardPage() {
         </Link>
       )}
 
-      {/* Jumlah tiap konten */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(({ label, count, href, icon: Icon }) => (
           <Link
@@ -237,7 +221,6 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Kunjungan situs */}
       <div className="mt-8">
         <div className="mb-4 flex items-baseline justify-between gap-3">
           <h2 className="text-sm font-semibold text-gray-900">
@@ -271,7 +254,6 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        {/* Pendaftar terakhir */}
         <div className="rounded-xl border border-gray-100 bg-white">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
             <h2 className="text-sm font-semibold text-gray-900">
@@ -280,7 +262,7 @@ export default async function AdminDashboardPage() {
 
             {registrations.total > 0 && (
               <Link
-                href="/admin/registrations"
+                href="/registrations"
                 className="text-sm text-brand-600 transition-colors hover:text-brand-700"
               >
                 Lihat semua
@@ -333,7 +315,6 @@ export default async function AdminDashboardPage() {
           )}
         </div>
 
-        {/* Konten yang belum terisi */}
         <div className="rounded-xl border border-gray-100 bg-white">
           <div className="border-b border-gray-100 px-5 py-4">
             <h2 className="text-sm font-semibold text-gray-900">
@@ -368,7 +349,6 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Asal pendaftar */}
       <div className="mt-6 rounded-xl border border-gray-100 bg-white">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-gray-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-gray-900">

@@ -38,11 +38,6 @@ const photoOverlayVariants = cva([
   "bg-black/40 text-white",
 ]);
 
-/*
- * Pratinjau foto latar dibuat melebar mengikuti bentuk
- * section-nya di halaman utama, bukan 4:3 seperti foto
- * profil.
- */
 const visionPhotoButtonVariants = cva([
   "relative aspect-video w-full max-w-xl overflow-hidden rounded-lg",
   "bg-gray-100",
@@ -83,12 +78,6 @@ export default function AdminAboutPage() {
   const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  /*
-   * Mode disimpan terpisah, bukan diturunkan dari ada/tidaknya tautan video.
-   * Kalau diturunkan, menekan "Video YouTube" saat tautannya masih kosong
-   * akan langsung terpental balik ke mode foto dan kolomnya tidak pernah
-   * sempat muncul.
-   */
   const [heroMode, setHeroMode] = useState<"photo" | "video">("photo");
   const [isUploading, setIsUploading] = useState(false);
   const [isPreparingPhoto, setIsPreparingPhoto] = useState(false);
@@ -234,12 +223,6 @@ export default function AdminAboutPage() {
     }
   }
 
-  /*
-   * Beralih ke foto langsung mengosongkan tautan video — itulah yang membuat
-   * Hero memakai foto lagi, dan menjawab "cara hapus videonya bagaimana"
-   * tanpa admin perlu menebak. Fotonya sendiri tidak pernah dihapus, jadi
-   * berpindah mode bolak-balik tidak menghilangkan apa pun.
-   */
   function handleHeroModeChange(mode: "photo" | "video") {
     setHeroMode(mode);
 
@@ -248,8 +231,6 @@ export default function AdminAboutPage() {
     }
   }
 
-  // Dihitung ulang tiap render supaya admin langsung tahu tautannya terbaca
-  // atau tidak, tanpa harus menyimpan dulu.
   const heroVideoId = extractYouTubeVideoId(draft.hero_video_url.trim());
 
   return (
@@ -262,7 +243,7 @@ export default function AdminAboutPage() {
       <p className="mb-6 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-500">
         Mengatur jumlah siswa aktif atau guru &amp; staf? Angka itu ada di{" "}
         <Link
-          href="/admin/statistics"
+          href="/statistics"
           className="font-medium text-brand-700 hover:underline"
         >
           halaman Statistik
@@ -286,12 +267,6 @@ export default function AdminAboutPage() {
             title="Tampilan Hero"
             description="Bagian paling atas halaman utama. Pilih satu: foto gedung atau video YouTube."
           >
-            {/*
-              Pilihan dibuat eksplisit. Sebelumnya kolom foto dan kolom video
-              tampil bersamaan padahal hanya salah satu yang dipakai, sehingga
-              admin tidak punya cara tahu mana yang sedang aktif — atau cara
-              mematikan video selain mengosongkan kolomnya.
-            */}
             <div className="grid grid-cols-2 gap-3">
               {(
                 [
@@ -475,7 +450,6 @@ export default function AdminAboutPage() {
               </Button>
             </div>
 
-            {/* Foto latar section Visi & Misi */}
             <div className="space-y-1.5">
               <Label>Foto Latar Visi &amp; Misi</Label>
 
@@ -668,11 +642,6 @@ export default function AdminAboutPage() {
             </div>
           </AdminFormSection>
 
-          {/*
-            Bilah simpan menempel di bawah layar. Form ini
-            panjang, jadi tombolnya harus tetap terjangkau
-            tanpa menggulir sampai ujung.
-          */}
           <div className="fixed inset-x-0 bottom-0 z-20 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur-sm lg:left-64">
             <div className="mx-auto flex max-w-4xl items-center justify-end gap-3">
               <p className="mr-auto hidden text-xs text-gray-500 sm:block">

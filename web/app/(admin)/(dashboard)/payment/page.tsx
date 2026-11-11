@@ -14,12 +14,6 @@ import {
   savePaymentSettings,
 } from "@/lib/api/paymentSettings";
 
-/*
- * DOKU memotong MDR dari uang yang masuk, dan nominal dikunci sebelum
- * pendaftar memilih metode bayar. Jadi nominal yang ditagihkan harus sudah
- * menutup metode termahal. Tarif ini dipakai untuk pratinjau saja — yang
- * menagih tetap satu angka di bawah.
- */
 const PPN_RATE = 0.11;
 
 const MDR_METHODS = [

@@ -346,7 +346,7 @@ export default function AdminRegistrationsPage() {
 
             <Button
               type="button"
-              render={<Link href="/admin/registrations/new" />}
+              render={<Link href="/registrations/new" />}
             >
               <Plus className="w-4 h-4" />
               Input Manual

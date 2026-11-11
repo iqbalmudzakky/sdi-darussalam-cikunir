@@ -8,7 +8,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { resetPassword } from "@/lib/api/auth";
+import { acceptInvite } from "@/lib/api/auth";
 import { cn } from "@/lib/utils";
 
 const pageBackgroundVariants = cva([
@@ -31,7 +31,7 @@ const errorBoxVariants = cva([
   "text-sm text-red-600",
 ]);
 
-export default function ResetPasswordPage() {
+export default function AcceptInvitePage() {
   const router = useRouter();
   const { token } = useParams<{ token: string }>();
 
@@ -58,14 +58,14 @@ export default function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      const result = await resetPassword(token, password);
+      const result = await acceptInvite(token, password);
       if (!result.ok) {
         setError(result.error);
         setExpired(result.reason === "expired");
         return;
       }
 
-      router.push("/admin");
+      router.push("/dashboard");
       router.refresh();
     } catch {
       setError(
@@ -94,13 +94,16 @@ export default function ResetPasswordPage() {
                   className="w-14 h-14 mb-4 rounded-full object-cover"
                 />
                 <h1 className="text-xl font-bold text-gray-900">
-                  Atur Password Baru
+                  Selamat Datang, Admin
                 </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  Atur password Anda untuk mulai menggunakan panel admin.
+                </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-1.5">
-                  <Label htmlFor="password">Password Baru</Label>
+                  <Label htmlFor="password">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -145,12 +148,9 @@ export default function ResetPasswordPage() {
                   <div className={errorBoxVariants()}>
                     <p>{error}</p>
                     {expired && (
-                      <Link
-                        href="/admin/forgot-password"
-                        className="mt-1 inline-block font-medium underline"
-                      >
-                        Minta tautan reset baru
-                      </Link>
+                      <p className="mt-1">
+                        Minta superadmin kirim ulang undangan.
+                      </p>
                     )}
                   </div>
                 )}
@@ -161,8 +161,15 @@ export default function ResetPasswordPage() {
                   disabled={isLoading}
                   className="w-full font-semibold"
                 >
-                  Simpan Password
+                  Mulai Gunakan Panel Admin
                 </Button>
+
+                <Link
+                  href="/masuk-sekolah"
+                  className="block text-center text-sm font-medium text-gray-500 hover:text-gray-700"
+                >
+                  Sudah punya akun? Masuk
+                </Link>
               </form>
             </>
           )}

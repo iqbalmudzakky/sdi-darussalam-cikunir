@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { SessionRefresher } from "@/components/admin/SessionRefresher";
@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   const user = await requireUser();
 
   if (!user) {
-    redirect("/admin/login");
+    notFound();
   }
 
   return (
