@@ -37,6 +37,11 @@ services:
       # folder lama yang sudah tidak bernama. Ganti ISINYA, atau buat ulang
       # containernya. (INFRASTRUKTUR-VPS 6.7c)
       - /var/lib/pmb/production/uploads:/var/lib/pmb/uploads
+      # Basis data lokasi IP untuk halaman Pengunjung, diperbarui bulanan oleh
+      # ops/pmb-update-geoip.sh. Yang dipasang FOLDERNYA, bukan berkasnya:
+      # pembaruan mengganti berkas lewat mv, dan bind mount ke satu berkas
+      # akan tetap menunjuk ke berkas lama (lihat catatan inode di atas).
+      - /var/lib/pmb/geoip:/var/lib/pmb/geoip:ro
     mem_limit: 768m
     cpus: 1.0
 
@@ -51,8 +56,11 @@ services:
       - "127.0.0.1:3001:3000"
     volumes:
       - /var/lib/pmb/staging/uploads:/var/lib/pmb/uploads
+      - /var/lib/pmb/geoip:/var/lib/pmb/geoip:ro
     # Lebih ketat dari production: bila VPS sesak, ini yang pertama dimatikan.
-    mem_limit: 384m
+    # 512m, bukan 384m: basis data lokasi IP (sekitar 130 MB) dimuat utuh ke
+    # memori begitu ada kunjungan pertama.
+    mem_limit: 512m
     cpus: 0.5
 
 networks:

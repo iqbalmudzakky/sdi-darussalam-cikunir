@@ -54,7 +54,7 @@ const SEARCH_DEBOUNCE_MS = 600;
 const FILTER_STATUSES: PaymentStatus[] = ["success", "pending"];
 
 const chipVariants = cva(
-  "flex shrink-0 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+  "flex shrink-0 items-center justify-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
 );
 
 export default function AdminTransactionsPage() {
@@ -225,12 +225,16 @@ export default function AdminTransactionsPage() {
         count={isLoading || loadError ? undefined : total}
       />
 
-      <div className="mb-5 rounded-xl border border-gray-100 bg-white p-5">
+      <div className="mb-5 rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow) p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2 text-gray-500">
-              <Wallet className="h-4 w-4" />
-              <span className="text-sm">Total Pemasukan</span>
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand-200 bg-brand-50 text-brand-700">
+                <Wallet className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-medium text-gray-600">
+                Total Pemasukan
+              </span>
             </div>
 
             <div className="mt-2 flex items-baseline gap-3">
@@ -238,15 +242,15 @@ export default function AdminTransactionsPage() {
                 <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
               ) : (
                 <>
-                  <p className="text-3xl font-bold text-gray-900 tabular-nums">
+                  <p className="text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">
                     {formatAmount(revenueSummary?.totalAmount ?? 0)}
                   </p>
                 </>
               )}
             </div>
 
-            <p className="mt-1 text-xs text-gray-400">
-              Gross — belum dikurangi biaya admin DOKU (MDR).
+            <p className="mt-1 text-xs text-gray-500">
+              Gross, belum dikurangi biaya admin DOKU (MDR).
             </p>
           </div>
 
@@ -271,7 +275,6 @@ export default function AdminTransactionsPage() {
               <Button
                 type="button"
                 variant="outline"
-                className="h-9"
                 onClick={() => {
                   setPaidFrom("");
                   setPaidTo("");
@@ -287,14 +290,14 @@ export default function AdminTransactionsPage() {
       <div className="mb-5 flex flex-col gap-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Cari nomor invoice, nama siswa, atau NIK..."
               aria-label="Cari transaksi"
-              className="h-9 pr-8 pl-8"
+              className="pr-9 pl-9"
             />
 
             {isRefreshing && !isLoading && (
@@ -308,7 +311,7 @@ export default function AdminTransactionsPage() {
             onClick={() =>
               setSort((prev) => (prev === "desc" ? "asc" : "desc"))
             }
-            className="h-9 shrink-0"
+            className="shrink-0"
             title={
               sort === "desc"
                 ? "Urut dari transaksi terbaru"
@@ -337,8 +340,8 @@ export default function AdminTransactionsPage() {
                 className={cn(
                   chipVariants(),
                   isActive
-                    ? cn(meta.className, "ring-1 ring-current/25")
-                    : "bg-gray-50 text-gray-500 hover:bg-gray-100",
+                    ? cn(meta.className, "border-current/30")
+                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100",
                 )}
               >
                 <meta.icon className="h-3.5 w-3.5" />
@@ -351,7 +354,7 @@ export default function AdminTransactionsPage() {
             <button
               type="button"
               onClick={() => setStatusFilter([])}
-              className="px-2 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-gray-600"
+              className="px-2 py-1.5 text-xs font-medium text-gray-500 underline-offset-2 transition-colors hover:text-gray-900 hover:underline"
             >
               Reset filter
             </button>
@@ -364,7 +367,7 @@ export default function AdminTransactionsPage() {
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-sm font-medium text-red-700">
             Gagal memuat data transaksi. Coba refresh halaman.
           </p>
@@ -388,8 +391,21 @@ export default function AdminTransactionsPage() {
             isRefreshing && "pointer-events-none opacity-50",
           )}
         >
-          <div className="overflow-x-auto">
-            <div className="flex min-w-260 flex-col gap-2">
+          {/*
+            Satu tabel berbingkai dengan kepala kolom. Lebar tiap
+            kolom di kepala harus sama dengan lebar di TransactionRow.
+          */}
+          <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow)">
+            <div className="flex min-w-260 flex-col">
+              <div className="flex items-center gap-3 border-b border-gray-200 bg-gray-50 px-4 py-2.5 text-[11px] font-semibold tracking-[0.06em] text-gray-500 uppercase">
+                <span className="min-w-50 flex-1">Siswa</span>
+                <span className="w-52 shrink-0">Invoice</span>
+                <span className="w-28 shrink-0">Nominal</span>
+                <span className="w-44 shrink-0">Status</span>
+                <span className="w-40 shrink-0">Waktu</span>
+                <span className="w-18 shrink-0 text-right">Aksi</span>
+              </div>
+
               {items.map((item) => (
                 <TransactionRow
                   key={item.id}
@@ -432,10 +448,8 @@ function TransactionRow({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border bg-white px-4 py-3 transition-colors",
-        orphaned
-          ? "border-red-200 bg-red-50/40 hover:border-red-300"
-          : "border-gray-200 hover:border-gray-300",
+        "flex items-center gap-3 border-b border-gray-200 px-4 py-3 transition-colors last:border-b-0",
+        orphaned ? "bg-red-50/60 hover:bg-red-50" : "hover:bg-gray-50",
       )}
     >
       <div className="min-w-50 flex-1">
@@ -443,7 +457,7 @@ function TransactionRow({
           {item.full_name ?? "Nama tidak tercatat"}
         </p>
         <p className="truncate text-xs text-gray-500">
-          NIK {item.student_nik ?? "—"}
+          NIK {item.student_nik ?? "-"}
         </p>
       </div>
 
@@ -476,7 +490,7 @@ function TransactionRow({
         rel="noopener noreferrer"
         title="Hubungi orang tua"
         aria-label={`Hubungi orang tua ${item.full_name ?? ""}`}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700 transition-colors hover:bg-brand-100"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand-200 bg-brand-50 text-brand-700 transition-colors hover:bg-brand-100"
       >
         <MessageCircle className="h-3.5 w-3.5" />
       </a>
@@ -513,7 +527,7 @@ function AdminDateField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-xs text-gray-500">
+      <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-600">
         {label}
       </label>
 
@@ -521,7 +535,7 @@ function AdminDateField({
         <PopoverTrigger
           id={id}
           type="button"
-          className="flex h-9 w-36 cursor-pointer items-center justify-between gap-2 rounded-lg border border-gray-200 bg-white px-2.5 text-sm text-gray-900 transition-colors hover:border-gray-300"
+          className="flex h-10 w-40 cursor-pointer items-center justify-between gap-2 rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 transition-colors hover:border-gray-400"
         >
           <span className={cn("truncate", !selected && "text-gray-400")}>
             {selected ? formatDate(selected) : "Pilih tanggal"}

@@ -110,7 +110,7 @@ export default function AdminFacilityPage() {
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-sm font-medium text-red-700">Gagal memuat data fasilitas. Coba refresh halaman.</p>
         </div>
       ) : items.length === 0 ? (

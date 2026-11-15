@@ -170,12 +170,12 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
+      <div className="mb-6 border-b border-gray-200 pb-6">
+        <h1 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
           Halo, {greetingName}
         </h1>
 
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1.5 text-sm text-gray-500">
           Ringkasan konten website dan pendaftar yang masuk.
         </p>
       </div>
@@ -183,7 +183,7 @@ export default async function AdminDashboardPage() {
       {pendingCount > 0 && (
         <Link
           href="/registrations"
-          className="group mb-6 flex items-center gap-4 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 transition-colors hover:border-brand-500"
+          className="group mb-6 flex items-center gap-4 rounded-xl border border-brand-300 bg-brand-50 px-5 py-4 shadow-(--admin-card-shadow) transition-colors hover:border-brand-500"
         >
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-white">
             <Inbox className="h-5 w-5" />
@@ -202,60 +202,82 @@ export default async function AdminDashboardPage() {
         </Link>
       )}
 
+      <h2 className="mb-3 text-sm font-semibold text-gray-900">
+        Konten website
+      </h2>
+
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map(({ label, count, href, icon: Icon }) => (
           <Link
             key={label}
             href={href}
-            className="group rounded-xl border border-gray-100 bg-white p-5 transition-colors hover:border-gray-300"
+            className="group rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow) p-5 transition-colors hover:border-brand-500"
           >
-            <div className="flex items-center gap-2 text-gray-500">
-              <Icon className="h-4 w-4" />
-              <span className="text-sm">{label}</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-gray-600">{label}</span>
+
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand-200 bg-brand-50 text-brand-700">
+                <Icon className="h-4 w-4" />
+              </span>
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-gray-900 tabular-nums">
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">
               {count}
+            </p>
+
+            <p className="mt-2 flex items-center gap-1 text-xs font-medium text-gray-500 transition-colors group-hover:text-brand-700">
+              Kelola
+              <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
             </p>
           </Link>
         ))}
       </div>
 
       <div className="mt-8">
-        <div className="mb-4 flex items-baseline justify-between gap-3">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h2 className="text-sm font-semibold text-gray-900">
             Kunjungan situs
           </h2>
 
-          <p className="text-xs text-gray-400">
-            Halaman utama saja, tanpa halaman admin
-          </p>
+          <Link
+            href="/visitors"
+            className="text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
+          >
+            Lihat rincian
+          </Link>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           {visitStats.map(({ label, value, caption, icon: Icon }) => (
             <div
               key={label}
-              className="rounded-xl border border-gray-100 bg-white p-5"
+              className="rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow) p-5"
             >
-              <div className="flex items-center gap-2 text-gray-500">
-                <Icon className="h-4 w-4" />
-                <span className="text-sm">{label}</span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-gray-600">
+                  {label}
+                </span>
+
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-500">
+                  <Icon className="h-4 w-4" />
+                </span>
               </div>
 
-              <p className="mt-3 text-3xl font-bold text-gray-900 tabular-nums">
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">
                 {value}
               </p>
 
-              <p className="mt-1 text-xs text-gray-400">{caption}</p>
+              {caption && (
+                <p className="mt-1 text-xs text-gray-500">{caption}</p>
+              )}
             </div>
           ))}
         </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-xl border border-gray-100 bg-white">
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow)">
+          <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-5 py-3.5">
             <h2 className="text-sm font-semibold text-gray-900">
               Pendaftar terakhir
             </h2>
@@ -263,7 +285,7 @@ export default async function AdminDashboardPage() {
             {registrations.total > 0 && (
               <Link
                 href="/registrations"
-                className="text-sm text-brand-600 transition-colors hover:text-brand-700"
+                className="text-sm font-medium text-brand-700 underline-offset-2 hover:underline"
               >
                 Lihat semua
               </Link>
@@ -275,7 +297,7 @@ export default async function AdminDashboardPage() {
               Belum ada pendaftar yang masuk.
             </p>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-gray-200">
               {recentRegistrations.map((item) => (
                 <li
                   key={item.id}
@@ -292,20 +314,20 @@ export default async function AdminDashboardPage() {
 
                   <div className="shrink-0 text-right">
                     {item.status === "pending" ? (
-                      <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-600">
+                      <span className="inline-block rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">
                         Baru
                       </span>
                     ) : item.status === "in_progress" ? (
-                      <span className="inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                      <span className="inline-block rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
                         Diproses
                       </span>
                     ) : (
-                      <span className="inline-block rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
+                      <span className="inline-block rounded-full border border-brand-200 bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
                         Selesai
                       </span>
                     )}
 
-                    <p className="mt-1 text-[11px] text-gray-400">
+                    <p className="mt-1 text-[11px] text-gray-500">
                       {formatRelativeTime(item.created_at)}
                     </p>
                   </div>
@@ -315,8 +337,8 @@ export default async function AdminDashboardPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-gray-100 bg-white">
-          <div className="border-b border-gray-100 px-5 py-4">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow)">
+          <div className="border-b border-gray-200 bg-gray-50 px-5 py-3.5">
             <h2 className="text-sm font-semibold text-gray-900">
               Kelengkapan konten
             </h2>
@@ -327,20 +349,20 @@ export default async function AdminDashboardPage() {
               Semua bagian halaman utama sudah terisi.
             </p>
           ) : (
-            <ul className="divide-y divide-gray-100">
+            <ul className="divide-y divide-gray-200">
               {warnings.map((warning) => (
                 <li key={warning.label}>
                   <Link
                     href={warning.href}
                     className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-gray-50"
                   >
-                    <TriangleAlert className="h-4 w-4 shrink-0 text-amber-500" />
+                    <TriangleAlert className="h-4 w-4 shrink-0 text-amber-600" />
 
                     <span className="min-w-0 flex-1 truncate text-sm text-gray-700">
                       {warning.label} belum diisi
                     </span>
 
-                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-500" />
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-gray-400 transition-transform group-hover:translate-x-0.5 group-hover:text-gray-700" />
                   </Link>
                 </li>
               ))}
@@ -349,13 +371,13 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-xl border border-gray-100 bg-white">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-gray-100 px-5 py-4">
+      <div className="mt-6 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow)">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-gray-200 bg-gray-50 px-5 py-3.5">
           <h2 className="text-sm font-semibold text-gray-900">
             Asal pendaftar
           </h2>
 
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             Dari alamat yang diisi di formulir pendaftaran
           </p>
         </div>
@@ -365,7 +387,7 @@ export default async function AdminDashboardPage() {
             Belum ada pendaftar yang masuk.
           </p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-200">
             {registrantRegions.map((region) => (
               <li
                 key={`${region.province}-${region.city}`}
@@ -391,7 +413,7 @@ export default async function AdminDashboardPage() {
                   </span>
                 </div>
 
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100">
+                <div className="mt-2 ml-7 h-1.5 overflow-hidden rounded-full bg-gray-100">
                   <div
                     className="h-full rounded-full bg-brand-500"
                     style={{

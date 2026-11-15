@@ -428,6 +428,78 @@ body {
   }
 }
 
+/* =========================
+   Tema Dashboard Admin
+   ========================= */
+
+/*
+  Seluruh halaman admin (login dan dashboard) dibungkus
+  elemen ber-atribut data-admin. Selama elemen itu ada,
+  skala abu-abu dan token shadcn diganti di tingkat <html>,
+  bukan di pembungkusnya, supaya dialog, popover, dan select
+  yang di-portal ke <body> ikut memakai nilai yang sama.
+
+  Halaman publik tidak terpengaruh karena tidak memuat
+  elemen data-admin.
+
+  Abu-abunya sengaja digeser sedikit ke hijau agar serasi
+  dengan warna brand, dan tiap anak tangga dibuat lebih
+  tegas: garis tepi kartu harus terlihat jelas di atas
+  latar halaman, tidak menyatu dengannya.
+*/
+html:has([data-admin]) {
+  --color-gray-50: #f3f5f0;
+  --color-gray-100: #e8ebe5;
+  --color-gray-200: #d2d8cf;
+  --color-gray-300: #b4bcb1;
+  --color-gray-400: #7f887e;
+  --color-gray-500: #5f685f;
+  --color-gray-600: #4a524a;
+  --color-gray-700: #373d37;
+  --color-gray-800: #252a25;
+  --color-gray-900: #181b18;
+
+  --foreground: #181b18;
+  --card-foreground: #181b18;
+  --popover-foreground: #181b18;
+  --primary: var(--brand-600);
+  --primary-foreground: #ffffff;
+  --secondary: #e8ebe5;
+  --secondary-foreground: #252a25;
+  --muted: #e8ebe5;
+  --muted-foreground: #5f685f;
+  --border: #d2d8cf;
+  --input: #b4bcb1;
+  --ring: var(--brand-500);
+
+  /* Bayangan tipis yang mengangkat kartu dari latar. */
+  --admin-card-shadow:
+    0 1px 2px rgb(24 27 24 / 0.05), 0 1px 1px rgb(24 27 24 / 0.03);
+}
+
+/*
+  Kolom isian selalu putih, supaya tetap terbaca sebagai
+  kolom saat berada langsung di atas latar halaman, dan
+  cukup tinggi untuk disentuh dengan nyaman. Hanya tinggi
+  minimum yang diatur di sini: padding tetap milik kelas
+  utilitas tiap pemakaian, misalnya kolom cari berikon.
+*/
+html:has([data-admin]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]):not(:disabled) {
+  background-color: #ffffff;
+}
+
+html:has([data-admin]) :is([data-slot="input"], [data-slot="select-trigger"]) {
+  min-height: 2.5rem;
+}
+
+html:has([data-admin]) [data-slot="button"][data-size="default"] {
+  min-height: 2.5rem;
+}
+
+html:has([data-admin]) [data-slot="label"] {
+  color: var(--color-gray-700);
+}
+
 /* Dark Theme */
 .dark {
   --background: oklch(0.145 0 0);

@@ -21,6 +21,7 @@ import {
   Wallet,
   BarChart3,
   PartyPopper,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { logout } from "@/lib/api/auth";
@@ -28,14 +29,18 @@ import { getPendingFollowUpCount } from "@/lib/api/registrations";
 
 const sidebarNavLinkVariants = cva(
   [
-    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+    "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm",
     "transition-colors",
   ],
   {
     variants: {
       active: {
-        true: "bg-brand-50 text-brand-700",
-        false: "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
+        true: [
+          "bg-brand-50 font-semibold text-brand-800",
+          // Penanda tegak di tepi kiri supaya halaman aktif langsung terlihat.
+          "before:absolute before:inset-y-1.5 before:-left-3 before:w-1 before:rounded-r-full before:bg-brand-600",
+        ],
+        false: "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900",
       },
     },
   },
@@ -43,7 +48,7 @@ const sidebarNavLinkVariants = cva(
 
 const sidebarPendingBadgeVariants = cva([
   "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full",
-  "bg-red-500 px-1.5 text-xs font-semibold text-white",
+  "bg-red-600 px-1.5 text-[11px] font-semibold text-white tabular-nums",
 ]);
 
 type NavItem = {
@@ -78,6 +83,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Masuk",
     items: [
       { href: "/registrations", label: "Pendaftar", icon: Inbox },
+      { href: "/visitors", label: "Pengunjung", icon: Users },
       { href: "/statistics", label: "Statistik", icon: BarChart3 },
       { href: "/transactions", label: "Transaksi", icon: Receipt },
     ],
@@ -163,7 +169,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
   }
 
   const header = (
-    <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-5">
+    <div className="flex h-16 shrink-0 items-center gap-3 border-b border-gray-200 px-5">
       <img
         src="/logo.png"
         alt=""
@@ -172,18 +178,16 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
       />
 
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-gray-900">
-          Admin Panel
+        <p className="truncate text-sm leading-tight font-semibold text-gray-900">
+          SD Islam Darussalam
         </p>
-        <p className="truncate text-xs text-gray-500">
-          SD Islam Darussalam Cikunir
-        </p>
+        <p className="truncate text-xs text-gray-500">Panel Admin</p>
       </div>
     </div>
   );
 
   const navigation = (
-    <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+    <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
       {NAV_GROUPS.map((group, groupIndex) => {
         const visibleItems = group.items.filter(
           (item) => !item.superadminOnly || role === "superadmin",
@@ -193,12 +197,12 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
         return (
           <div key={group.label ?? groupIndex}>
             {group.label && (
-              <p className="mb-2 px-3 text-[11px] font-semibold tracking-[0.12em] text-gray-400 uppercase">
+              <p className="mb-1.5 px-3 text-[11px] font-semibold tracking-[0.08em] text-gray-500 uppercase">
                 {group.label}
               </p>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {visibleItems.map(({ href, label, icon: Icon }) => {
                 const isActive =
                   href === "/dashboard"
@@ -212,7 +216,13 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
                     onClick={() => setIsOpen(false)}
                     className={sidebarNavLinkVariants({ active: isActive })}
                   >
-                    <Icon className="h-4 w-4 shrink-0" />
+                    <Icon
+                      className={
+                        isActive
+                          ? "h-4 w-4 shrink-0 text-brand-600"
+                          : "h-4 w-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600"
+                      }
+                    />
                     {label}
 
                     {href === "/registrations" && pendingCount > 0 && (
@@ -231,21 +241,28 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
   );
 
   const footer = (
-    <div className="space-y-1 border-t border-gray-100 px-3 py-4">
+    <div className="space-y-0.5 border-t border-gray-200 px-3 py-3">
+      <p className="mb-1 flex items-center justify-between px-3 py-1 text-xs text-gray-500">
+        Masuk sebagai
+        <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 font-medium text-gray-700">
+          {role === "superadmin" ? "Superadmin" : "Admin"}
+        </span>
+      </p>
+
       <a
         href="/"
         target="_blank"
         rel="noopener noreferrer"
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
       >
-        <ExternalLink className="h-4 w-4 shrink-0" />
+        <ExternalLink className="h-4 w-4 shrink-0 text-gray-400" />
         Lihat Website
       </a>
 
       <button
         type="button"
         onClick={handleLogout}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-600"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-700"
       >
         <LogOut className="h-4 w-4 shrink-0" />
         Keluar
@@ -256,13 +273,13 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
   return (
     <>
       {/* Bilah atas khusus layar kecil */}
-      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-3 border-b border-gray-100 bg-white px-4 lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-3 border-b border-gray-200 bg-white px-4 lg:hidden">
         <button
           type="button"
           onClick={() => setIsOpen(true)}
           aria-label="Buka menu"
           aria-expanded={isOpen}
-          className="-ml-2 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-50"
+          className="-ml-2 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 transition-colors hover:bg-gray-100"
         >
           <Menu className="h-5 w-5" />
         </button>
@@ -275,14 +292,14 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
             className="h-7 w-7 shrink-0 object-contain"
           />
           <p className="truncate text-sm font-semibold text-gray-900">
-            Admin Panel
+            Panel Admin
           </p>
         </div>
 
         {pendingCount > 0 && (
           <Link
             href="/registrations"
-            className="ml-auto flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600"
+            className="ml-auto flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700"
           >
             <Inbox className="h-3.5 w-3.5" />
             {pendingCount}
@@ -291,7 +308,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
       </div>
 
       {/* Sidebar tetap di layar besar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-gray-100 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen">
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-gray-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen">
         {header}
         {navigation}
         {footer}
@@ -315,7 +332,7 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
                 type="button"
                 onClick={() => setIsOpen(false)}
                 aria-label="Tutup menu"
-                className="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                className="absolute top-1/2 right-3 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
               >
                 <X className="h-5 w-5" />
               </button>

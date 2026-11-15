@@ -19,8 +19,8 @@ export function AdminFormSection({
   children,
 }: AdminFormSectionProps) {
   return (
-    <section className="rounded-xl border border-gray-200 bg-white">
-      <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+    <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow)">
+      <div className="border-b border-gray-200 bg-gray-50 px-5 py-3.5 sm:px-6">
         <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
 
         {description && (

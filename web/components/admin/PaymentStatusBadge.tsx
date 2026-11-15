@@ -10,22 +10,22 @@ export const PAYMENT_STATUS_META: Record<
   success: {
     label: "Lunas",
     icon: CheckCircle2,
-    className: "bg-green-100 text-green-700",
+    className: "border-green-200 bg-green-50 text-green-800",
   },
   pending: {
     label: "Belum Bayar",
     icon: Clock,
-    className: "bg-amber-100 text-amber-700",
+    className: "border-amber-200 bg-amber-50 text-amber-800",
   },
   failed: {
     label: "Gagal Bayar",
     icon: XCircle,
-    className: "bg-red-100 text-red-700",
+    className: "border-red-200 bg-red-50 text-red-700",
   },
   expired: {
     label: "Kedaluwarsa",
     icon: XCircle,
-    className: "bg-gray-100 text-gray-600",
+    className: "border-gray-200 bg-gray-100 text-gray-600",
   },
 };
 
@@ -42,7 +42,7 @@ export function PaymentStatusBadge({ status, title }: PaymentStatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap",
         meta.className,
       )}
       title={title}

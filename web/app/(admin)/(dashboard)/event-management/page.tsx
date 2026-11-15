@@ -115,7 +115,7 @@ export default function AdminEventsPage() {
     <div className="max-w-6xl mx-auto">
       <AdminPageHeader
         title="Event"
-        description="Poster kegiatan bertanggal — PMB, Akram, 17-an, prestasi siswa — yang tampil di halaman Event."
+        description="Poster kegiatan bertanggal (PMB, Akram, 17-an, prestasi siswa) yang tampil di halaman Event."
         count={isLoading || loadError ? undefined : items.length}
         action={
           <Button
@@ -135,7 +135,7 @@ export default function AdminEventsPage() {
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-sm font-medium text-red-700">
             Gagal memuat data event. Coba refresh halaman.
           </p>

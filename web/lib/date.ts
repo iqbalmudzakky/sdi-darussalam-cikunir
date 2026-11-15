@@ -55,7 +55,7 @@ export function formatDateTime(iso: string): string {
 }
 
 export function formatDuration(ms: number | null): string {
-  if (ms === null) return "—";
+  if (ms === null) return "-";
 
   const totalSeconds = Math.round(ms / 1000);
 

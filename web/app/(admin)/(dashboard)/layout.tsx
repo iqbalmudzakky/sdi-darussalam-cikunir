@@ -18,7 +18,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen bg-gray-50">
       <SessionRefresher />
       <AdminSidebar role={user.role} />
-      <main className="min-w-0 flex-1 px-4 pt-20 pb-10 sm:px-6 lg:px-10 lg:pt-10">
+      <main className="min-w-0 flex-1 px-4 pt-20 pb-12 sm:px-6 lg:px-10 lg:pt-8">
         {children}
       </main>
     </div>

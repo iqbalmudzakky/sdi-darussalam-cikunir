@@ -24,7 +24,7 @@ function PopoverTrigger({
 }
 
 const popoverContentVariants = cva([
-  "rounded-xl border border-gray-100 bg-white shadow-lg outline-none",
+  "rounded-xl border border-gray-200 bg-white shadow-lg outline-none",
   "max-h-[var(--available-height)] overflow-y-auto",
   "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
   "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",

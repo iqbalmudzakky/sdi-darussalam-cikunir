@@ -10,7 +10,6 @@ import Hero from "@/components/sections/Hero";
 import Navbar from "@/components/sections/Navbar";
 import Program from "@/components/sections/Program";
 import Vision from "@/components/sections/Vision";
-import { VisitTracker } from "@/components/analytics/VisitTracker";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getSiteUrl } from "@/lib/site";
 
@@ -112,7 +111,6 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <VisitTracker />
 
       {/* Navigation */}
       <Navbar />

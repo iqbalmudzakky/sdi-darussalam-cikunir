@@ -129,7 +129,7 @@ export default function AdminPaymentPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-3xl">
       <AdminPageHeader
         title="Pembayaran"
         description="Atur biaya pendaftaran yang ditagihkan ke calon siswa."
@@ -182,7 +182,7 @@ export default function AdminPaymentPage() {
           </div>
 
           {!isValidWindow && (
-            <p className="mt-2 text-sm text-red-500">
+            <p className="mt-2 text-sm text-red-600">
               Tanggal tutup harus sama atau setelah tanggal buka.
             </p>
           )}
@@ -196,14 +196,14 @@ export default function AdminPaymentPage() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-md text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 text-left text-xs uppercase text-gray-400">
+                  <tr className="border-b border-gray-200 text-left text-xs tracking-[0.06em] uppercase text-gray-500">
                     <th className="pb-2 font-semibold">Metode</th>
                     <th className="pb-2 text-right font-semibold">Potongan</th>
                     <th className="pb-2 text-right font-semibold">Diterima</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-200">
                   {MDR_METHODS.map((method) => {
                     const mdr = mdrFor(method, parsedFee);
 
