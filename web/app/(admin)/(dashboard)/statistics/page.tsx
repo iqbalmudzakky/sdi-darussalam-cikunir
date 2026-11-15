@@ -418,7 +418,7 @@ export default function AdminStatisticsPage() {
               </div>
 
               {selectedYearData && (
-                <div className="space-y-4 border-t border-gray-100 pt-4">
+                <div className="space-y-4 border-t border-gray-200 pt-4">
                   <dl className="space-y-2 text-sm">
                     <div className="flex items-center justify-between">
                       <dt className="text-gray-500">Pendaftar online</dt>
@@ -458,12 +458,12 @@ export default function AdminStatisticsPage() {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+                  <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
                     <span className="text-sm font-medium text-gray-700">
                       Total tampil di website
                     </span>
                     <span className="text-lg font-semibold text-gray-900 tabular-nums">
-                      {liveTotal === null ? "—" : formatCount(liveTotal)}
+                      {liveTotal === null ? "-" : formatCount(liveTotal)}
                     </span>
                   </div>
 

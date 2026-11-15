@@ -20,8 +20,8 @@ export function AdminEmptyState({
   action,
 }: AdminEmptyStateProps) {
   return (
-    <div className="rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center">
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+    <div className="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500">
         <Icon className="h-5 w-5" />
       </span>
 

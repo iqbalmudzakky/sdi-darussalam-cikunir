@@ -27,25 +27,25 @@ type AdminEditCardProps = {
 };
 
 const statusBadgeVariants = cva(
-  ["rounded-full px-2 py-0.5 text-xs font-semibold"],
+  ["rounded-full border px-2 py-0.5 text-xs font-semibold"],
   {
     variants: {
       status: {
-        invited: "bg-amber-50 text-amber-700",
-        active: "bg-brand-50 text-brand-700",
-        deactivated: "bg-gray-100 text-gray-500",
+        invited: "border-amber-200 bg-amber-50 text-amber-800",
+        active: "border-brand-200 bg-brand-50 text-brand-700",
+        deactivated: "border-gray-200 bg-gray-100 text-gray-600",
       },
     },
   },
 );
 
 const roleBadgeVariants = cva(
-  ["rounded-full px-2 py-0.5 text-xs font-semibold"],
+  ["rounded-full border px-2 py-0.5 text-xs font-semibold"],
   {
     variants: {
       role: {
-        superadmin: "bg-purple-50 text-purple-700",
-        admin: "bg-gray-100 text-gray-600",
+        superadmin: "border-purple-200 bg-purple-50 text-purple-700",
+        admin: "border-gray-200 bg-gray-100 text-gray-600",
       },
     },
   },
@@ -145,7 +145,7 @@ export function AdminEditCard({
 
   return (
     <>
-      <div className="flex h-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300">
+      <div className="flex h-full flex-col gap-3 rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow) p-5 transition-colors hover:border-gray-300">
         <div>
           <h3 className="wrap-break-word font-semibold text-gray-900">
             {item.email}
@@ -165,8 +165,8 @@ export function AdminEditCard({
         </p>
 
         {isSelf ? (
-          <p className="mt-auto rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500">
-            Ini akun Anda — kelola dari halaman lain.
+          <p className="mt-auto rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600">
+            Ini akun Anda. Kelola dari halaman lain.
           </p>
         ) : (
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
@@ -189,7 +189,7 @@ export function AdminEditCard({
                   variant="outline"
                   onClick={() => setIsConfirmingDelete(true)}
                   aria-label={`Batalkan undangan ${item.email}`}
-                  className="h-8 w-8 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="h-8 w-8 text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -232,7 +232,7 @@ export function AdminEditCard({
                   variant="outline"
                   onClick={() => setIsConfirmingDelete(true)}
                   aria-label={`Hapus admin ${item.email}`}
-                  className="h-8 w-8 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="h-8 w-8 text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -258,7 +258,7 @@ export function AdminEditCard({
                   variant="outline"
                   onClick={() => setIsConfirmingDelete(true)}
                   aria-label={`Hapus admin ${item.email}`}
-                  className="h-8 w-8 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="h-8 w-8 text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

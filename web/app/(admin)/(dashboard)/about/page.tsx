@@ -27,8 +27,8 @@ import { useToast } from "@/hooks/useToast";
 import type { SchoolProfile } from "@/types/SchoolProfile";
 
 const photoButtonVariants = cva([
-  "relative aspect-4/3 w-full max-w-sm mx-auto overflow-hidden rounded-2xl",
-  "bg-linear-to-br bg-brand-100",
+  "relative aspect-4/3 w-full max-w-sm mx-auto overflow-hidden rounded-xl",
+  "border border-gray-200 bg-brand-100",
   "flex items-center justify-center",
   "disabled:cursor-default",
 ]);
@@ -40,14 +40,14 @@ const photoOverlayVariants = cva([
 
 const visionPhotoButtonVariants = cva([
   "relative aspect-video w-full max-w-xl overflow-hidden rounded-lg",
-  "bg-gray-100",
+  "border border-gray-200 bg-gray-100",
   "flex items-center justify-center",
   "disabled:cursor-default",
 ]);
 
 const removeMisiButtonVariants = cva([
   "rounded-xl shrink-0",
-  "text-red-500 hover:bg-red-50 hover:text-red-600",
+  "text-red-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700",
 ]);
 
 const EMPTY_PROFILE: SchoolProfile = {
@@ -240,7 +240,7 @@ export default function AdminAboutPage() {
         description="Deskripsi, visi, misi, foto, dan info kontak yang dipakai di section Tentang, Visi & Misi, Kontak, dan Footer."
       />
 
-      <p className="mb-6 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-500">
+      <p className="mb-6 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600">
         Mengatur jumlah siswa aktif atau guru &amp; staf? Angka itu ada di{" "}
         <Link
           href="/statistics"
@@ -256,7 +256,7 @@ export default function AdminAboutPage() {
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-sm font-medium text-red-700">
             Gagal memuat data profil sekolah. Coba refresh halaman.
           </p>
@@ -286,7 +286,7 @@ export default function AdminAboutPage() {
                       "flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-colors",
                       isActive
                         ? "border-brand-500 bg-brand-50 text-brand-800"
-                        : "border-gray-200 text-gray-600 hover:bg-gray-50",
+                        : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50",
                     )}
                   >
                     <option.icon className="h-4 w-4" />
@@ -516,7 +516,7 @@ export default function AdminAboutPage() {
                   size="sm"
                   variant="outline"
                   onClick={handleRemoveVisionPhoto}
-                  className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                  className="rounded-xl text-red-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                 >
                   <Trash2 className="w-4 h-4" />
                   Hapus foto latar
@@ -642,7 +642,7 @@ export default function AdminAboutPage() {
             </div>
           </AdminFormSection>
 
-          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur-sm lg:left-64">
+          <div className="fixed inset-x-0 bottom-0 z-20 border-t border-gray-300 bg-white/95 px-4 py-3 shadow-[0_-4px_12px_rgb(24_27_24/0.06)] backdrop-blur-sm sm:px-6 lg:left-64 lg:px-10">
             <div className="mx-auto flex max-w-4xl items-center justify-end gap-3">
               <p className="mr-auto hidden text-xs text-gray-500 sm:block">
                 Perubahan baru tersimpan setelah tombol ini ditekan.

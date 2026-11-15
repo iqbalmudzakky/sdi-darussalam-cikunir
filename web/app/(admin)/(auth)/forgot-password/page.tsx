@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { forgotPassword } from "@/lib/api/auth";
 
 const pageBackgroundVariants = cva([
-  "relative min-h-screen bg-paper",
+  "relative min-h-screen bg-gray-50",
   "flex items-center justify-center",
 ]);
 
@@ -20,7 +20,7 @@ const inputFieldVariants = cva([
 ]);
 
 const errorBoxVariants = cva([
-  "rounded-xl border border-red-100 bg-red-50 px-4 py-3",
+  "rounded-xl border border-red-200 bg-red-50 px-4 py-3",
   "text-sm text-red-600",
 ]);
 
@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className={pageBackgroundVariants()}>
       <div className="relative w-full max-w-md mx-4">
-        <div className="rounded-xl border border-gray-100 bg-white p-8 shadow-sm sm:p-10">
+        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-(--admin-card-shadow) sm:p-10">
           {isSubmitted ? (
             <div className="flex flex-col items-center text-center">
               <h1 className="text-xl font-bold text-gray-900">

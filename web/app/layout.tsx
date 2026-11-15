@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import { ToastProvider, Toaster } from "@/components/ui/toast";
+import { VisitTracker } from "@/components/analytics/VisitTracker";
 import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
@@ -46,6 +47,7 @@ export default function RootLayout({
         <ToastProvider>
           {children}
           <Toaster />
+          <VisitTracker />
         </ToastProvider>
       </body>
     </html>

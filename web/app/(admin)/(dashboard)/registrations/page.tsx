@@ -104,7 +104,7 @@ const actionButtonVariants = cva(
         pill: "flex-1 gap-1.5 rounded-lg px-2 py-2 text-xs",
         icon: "h-8 w-8 shrink-0 rounded-lg text-xs",
         row: "justify-start gap-2 rounded-lg px-3 py-2.5 text-sm",
-        chip: "shrink-0 gap-1.5 rounded-full px-3 py-1.5 text-xs",
+        chip: "shrink-0 gap-1.5 rounded-full border px-3 py-1.5 text-xs",
       },
     },
     defaultVariants: {
@@ -113,14 +113,14 @@ const actionButtonVariants = cva(
   },
 );
 const CONTACT_BUTTON_CLASSNAME =
-  "bg-brand-50 text-brand-700 hover:bg-brand-100";
+  "border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100";
 const viewToggleButtonVariants = cva(
   "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
   {
     variants: {
       active: {
         true: "bg-white text-brand-700 shadow-sm",
-        false: "text-gray-400 hover:text-gray-600",
+        false: "text-gray-500 hover:text-gray-900",
       },
     },
   },
@@ -316,8 +316,8 @@ export default function AdminRegistrationsPage() {
         description="Calon siswa yang mengisi formulir pendaftaran di halaman utama."
         count={isLoading || loadError ? undefined : total}
         action={
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex gap-0.5 rounded-lg border border-gray-200 bg-gray-100 p-1">
               {VIEW_MODE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -346,6 +346,7 @@ export default function AdminRegistrationsPage() {
 
             <Button
               type="button"
+              nativeButton={false}
               render={<Link href="/registrations/new" />}
             >
               <Plus className="w-4 h-4" />
@@ -358,14 +359,14 @@ export default function AdminRegistrationsPage() {
       <div className="mb-5 flex flex-col gap-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Cari nama atau NIK siswa..."
               aria-label="Cari nama atau NIK siswa"
-              className="h-9 pr-8 pl-8"
+              className="pr-9 pl-9"
             />
 
             {isRefreshing && !isLoading && (
@@ -379,7 +380,7 @@ export default function AdminRegistrationsPage() {
             onClick={() =>
               setSort((prev) => (prev === "desc" ? "asc" : "desc"))
             }
-            className="h-9 shrink-0"
+            className="shrink-0"
             title={
               sort === "desc"
                 ? "Urut dari pendaftar terbaru"
@@ -407,8 +408,8 @@ export default function AdminRegistrationsPage() {
                 className={cn(
                   actionButtonVariants({ size: "chip" }),
                   isActive
-                    ? option.activeClassName
-                    : "bg-gray-50 text-gray-500 hover:bg-gray-100",
+                    ? cn(option.activeClassName, "border-current/30")
+                    : "border-gray-200 bg-white text-gray-600 hover:bg-gray-100",
                 )}
               >
                 <option.icon className="h-3.5 w-3.5" />
@@ -421,7 +422,7 @@ export default function AdminRegistrationsPage() {
             <button
               type="button"
               onClick={() => setStatusFilter([])}
-              className="px-2 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-gray-600"
+              className="px-2 py-1.5 text-xs font-medium text-gray-500 underline-offset-2 transition-colors hover:text-gray-900 hover:underline"
             >
               Reset filter
             </button>
@@ -434,7 +435,7 @@ export default function AdminRegistrationsPage() {
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       ) : loadError ? (
-        <div className="rounded-xl border border-red-100 bg-red-50 px-5 py-4">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-sm font-medium text-red-700">
             Gagal memuat data pendaftar. Coba refresh halaman.
           </p>
@@ -463,10 +464,10 @@ export default function AdminRegistrationsPage() {
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300"
+                  className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow) p-5 transition-colors hover:border-gray-300"
                 >
                   <div>
-                    <h3 className="font-bold text-gray-900">
+                    <h3 className="font-semibold text-gray-900">
                       {item.full_name}
                     </h3>
                     <p className="text-sm text-gray-500">
@@ -516,7 +517,7 @@ export default function AdminRegistrationsPage() {
                     </a>
                   </div>
 
-                  <div className="flex gap-1.5 bg-gray-50 rounded-xl p-1">
+                  <div className="flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
                     {STATUS_OPTIONS.map((option) => {
                       const isActive = item.status === option.value;
                       return (
@@ -529,7 +530,7 @@ export default function AdminRegistrationsPage() {
                             actionButtonVariants({ size: "pill" }),
                             isActive
                               ? option.activeClassName
-                              : "text-gray-400 hover:bg-gray-100",
+                              : "text-gray-500 hover:bg-gray-100",
                           )}
                         >
                           <option.icon className="w-3.5 h-3.5" />
@@ -556,7 +557,7 @@ export default function AdminRegistrationsPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => setConfirmDeleteId(item.id)}
-                      className="rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                      className="rounded-xl text-red-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -565,12 +566,22 @@ export default function AdminRegistrationsPage() {
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <div className="flex min-w-220 flex-col gap-2">
+            <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow)">
+              <div className="flex min-w-220 flex-col">
+                {/* Lebar kolom di kepala harus sama dengan lebar di tiap baris. */}
+                <div className="flex items-center gap-3 border-b border-gray-200 bg-gray-50 px-4 py-2.5 text-[11px] font-semibold tracking-[0.06em] text-gray-500 uppercase">
+                  <span className="min-w-50 flex-1">Siswa</span>
+                  <span className="w-32 shrink-0">Masuk</span>
+                  <span className="w-24 shrink-0">Bayar</span>
+                  <span className="w-8 shrink-0 text-center">WA</span>
+                  <span className="w-[6.875rem] shrink-0">Status</span>
+                  <span className="w-15 shrink-0 text-right">Aksi</span>
+                </div>
+
                 {items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-gray-300"
+                    className="flex items-center gap-3 border-b border-gray-200 px-4 py-3 transition-colors last:border-b-0 hover:bg-gray-50"
                   >
                     <div className="min-w-50 flex-1">
                       <p className="truncate font-semibold text-gray-900">
@@ -610,7 +621,7 @@ export default function AdminRegistrationsPage() {
                       <MessageCircle className="h-3.5 w-3.5" />
                     </button>
 
-                    <div className="flex shrink-0 gap-1 rounded-lg bg-gray-50 p-1">
+                    <div className="flex shrink-0 gap-1 rounded-lg border border-gray-200 bg-gray-50 p-0.5">
                       {PRIMARY_STATUS_OPTIONS.map((option) => {
                         const isActive = item.status === option.value;
                         return (
@@ -681,7 +692,7 @@ export default function AdminRegistrationsPage() {
                         size="icon-sm"
                         variant="outline"
                         onClick={() => setConfirmDeleteId(item.id)}
-                        className="text-red-500 hover:bg-red-50 hover:text-red-600"
+                        className="text-red-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                         aria-label="Hapus"
                         title="Hapus"
                       >

@@ -79,7 +79,7 @@ export function RegistrationDetailDialog({
         {registration && (
           <div className="space-y-6">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase text-gray-400">
+              <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
                 Data Siswa
               </p>
 
@@ -134,7 +134,7 @@ export function RegistrationDetailDialog({
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase text-gray-400">
+              <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
                 Data Ayah
               </p>
 
@@ -159,7 +159,7 @@ export function RegistrationDetailDialog({
                 href={buildWhatsAppLink(registration.father_phone)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-emerald-700 hover:underline"
+                className="flex items-center gap-2 text-sm text-brand-700 hover:underline"
               >
                 <Phone className="w-4 h-4 shrink-0" />
                 {registration.father_phone}
@@ -172,7 +172,7 @@ export function RegistrationDetailDialog({
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase text-gray-400">
+              <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
                 Data Ibu
               </p>
 
@@ -197,7 +197,7 @@ export function RegistrationDetailDialog({
                 href={buildWhatsAppLink(registration.mother_phone)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-emerald-700 hover:underline"
+                className="flex items-center gap-2 text-sm text-brand-700 hover:underline"
               >
                 <Phone className="w-4 h-4 shrink-0" />
                 {registration.mother_phone}
@@ -210,7 +210,7 @@ export function RegistrationDetailDialog({
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase text-gray-400">
+              <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
                 Kontak
               </p>
 
@@ -223,7 +223,7 @@ export function RegistrationDetailDialog({
             {/* Registrations made before the payment flow have no payment row. */}
             {registration.payment_status && (
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase text-gray-400">
+                <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
                   Pembayaran
                 </p>
 

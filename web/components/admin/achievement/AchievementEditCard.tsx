@@ -45,7 +45,7 @@ export function AchievementEditCard({
 
   return (
     <>
-      <div className="group relative flex h-full flex-col rounded-xl border border-gray-200 bg-white p-5 transition-colors hover:border-gray-300">
+      <div className="group relative flex h-full flex-col rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow) p-5 transition-colors hover:border-gray-300">
         <div className="flex items-start gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-xl">
             {item.emoji}
@@ -60,7 +60,7 @@ export function AchievementEditCard({
           {item.description}
         </p>
 
-        <div className="mt-4 flex gap-2 border-t border-gray-100 pt-4">
+        <div className="mt-4 flex gap-2 border-t border-gray-200 pt-4">
           <Button
             type="button"
             size="sm"
@@ -78,7 +78,7 @@ export function AchievementEditCard({
             variant="outline"
             onClick={() => setIsConfirmingDelete(true)}
             aria-label={`Hapus prestasi ${item.title}`}
-            className="h-7 w-7 text-gray-400 hover:bg-red-50 hover:text-red-600"
+            className="h-7 w-7 text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
           >
             <Trash2 className="h-4 w-4" />
           </Button>

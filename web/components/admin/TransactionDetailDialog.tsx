@@ -27,7 +27,7 @@ export function TransactionDetailDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{item?.full_name ?? "Detail Transaksi"}</DialogTitle>
-          <DialogDescription>NIK {item?.student_nik ?? "—"}</DialogDescription>
+          <DialogDescription>NIK {item?.student_nik ?? "-"}</DialogDescription>
         </DialogHeader>
 
         {item && (
@@ -106,7 +106,7 @@ function DetailSection({
 }) {
   return (
     <div>
-      <p className="mb-2 text-[11px] font-semibold tracking-[0.12em] text-gray-400 uppercase">
+      <p className="mb-2 text-[11px] font-semibold tracking-[0.06em] text-gray-500 uppercase">
         {title}
       </p>
       <dl className="space-y-2 text-sm">{children}</dl>
@@ -124,7 +124,7 @@ function DetailRow({
   className?: string;
 }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-gray-100 pb-2 last:border-0">
+    <div className="flex justify-between gap-4 border-b border-gray-200 pb-2 last:border-0">
       <dt className="shrink-0 text-gray-500">{label}</dt>
       {/* break-all, bukan truncate: email panjang harus terbaca utuh. */}
       <dd
@@ -133,7 +133,7 @@ function DetailRow({
           className,
         )}
       >
-        {value ?? "—"}
+        {value ?? "-"}
       </dd>
     </div>
   );
@@ -147,7 +147,7 @@ function DetailPhoneRow({
   phone: string | null;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-gray-100 pb-2 last:border-0">
+    <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-2 last:border-0">
       <dt className="shrink-0 text-gray-500">{label}</dt>
       <dd className="text-right font-medium text-gray-900">
         {phone ? (
@@ -161,7 +161,7 @@ function DetailPhoneRow({
             <MessageCircle className="h-3.5 w-3.5 shrink-0" />
           </a>
         ) : (
-          "—"
+          "-"
         )}
       </dd>
     </div>

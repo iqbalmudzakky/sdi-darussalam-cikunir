@@ -9,5 +9,13 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  /*
+   * data-admin menyalakan tema dashboard di globals.css.
+   * display: contents supaya pembungkus ini tidak mengubah tata letak.
+   */
+  return (
+    <div data-admin className="contents">
+      {children}
+    </div>
+  );
 }

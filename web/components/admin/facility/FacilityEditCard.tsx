@@ -45,7 +45,7 @@ export function FacilityEditCard({
 
   return (
     <>
-      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors hover:border-gray-300">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow) transition-colors hover:border-gray-300">
         {/*
           Pratinjau memakai rasio yang sama dengan kartu di
           halaman utama, supaya admin melihat bagian foto
@@ -80,7 +80,7 @@ export function FacilityEditCard({
             </p>
           )}
 
-          <div className="mt-4 flex gap-2 border-t border-gray-100 pt-4">
+          <div className="mt-4 flex gap-2 border-t border-gray-200 pt-4">
             <Button
               type="button"
               size="sm"
@@ -98,7 +98,7 @@ export function FacilityEditCard({
               variant="outline"
               onClick={() => setIsConfirmingDelete(true)}
               aria-label={`Hapus fasilitas ${item.title}`}
-              className="h-7 w-7 text-gray-400 hover:bg-red-50 hover:text-red-600"
+              className="h-7 w-7 text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-700"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

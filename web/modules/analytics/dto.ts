@@ -1,17 +1,21 @@
 import { z } from "zod";
 
-const MAX_DURATION_MS = 6 * 60 * 60 * 1000;
-
-export const RecordDurationRequestSchema = z.object({
-  visit_id: z.uuid("visit_id tidak valid."),
-  duration_ms: z
-    .number({ message: "duration_ms harus berupa angka." })
-    .int("duration_ms harus bilangan bulat.")
-    .min(0, "duration_ms tidak boleh negatif.")
-    .max(MAX_DURATION_MS, "duration_ms di luar batas wajar."),
+/*
+ * Detak kunjungan dari browser: "start" saat halaman dibuka, "ping" berkala
+ * selama halaman terlihat, dan "end" saat ditutup. ID dibuat browser, jadi
+ * detak berikutnya cukup menyebut ID yang sama tanpa menunggu jawaban server.
+ */
+export const TrackVisitRequestSchema = z.object({
+  id: z.uuid(),
+  event: z.enum(["start", "ping", "end"]),
+  path: z.string().max(255).startsWith("/").optional(),
+  referrer: z.string().max(2000).nullish(),
+  utm: z.string().max(100).nullish(),
+  width: z.number().int().min(0).max(20000).nullish(),
+  seconds: z.number().int().min(0).nullish(),
 });
 
-export type RecordDurationRequest = z.infer<typeof RecordDurationRequestSchema>;
+export type TrackVisitRequest = z.infer<typeof TrackVisitRequestSchema>;
 
 export type VisitSummary = {
   total_visits: number;

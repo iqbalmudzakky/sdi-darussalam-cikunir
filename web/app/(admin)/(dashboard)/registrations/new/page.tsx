@@ -15,6 +15,7 @@ export default function AdminNewRegistrationPage() {
       <Button
         variant="outline"
         size="sm"
+        nativeButton={false}
         render={<Link href="/registrations" />}
         className="mb-3"
       >

@@ -40,7 +40,7 @@ function DialogBackdrop({
 const dialogContentVariants = cva(
   [
     "fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
-    "w-[calc(100%-2rem)] rounded-xl border border-gray-100 bg-white shadow-lg outline-none",
+    "w-[calc(100%-2rem)] rounded-xl border border-gray-200 bg-white shadow-lg outline-none",
     "overflow-hidden",
     "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
     "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
@@ -136,7 +136,7 @@ function DialogTitle({
 const dialogFooterVariants = cva([
   "sticky bottom-0 -mx-6 -mb-6 mt-6",
   "flex gap-2",
-  "border-t border-gray-100 bg-white",
+  "border-t border-gray-200 bg-white",
   "px-6 py-4",
 ]);
 
