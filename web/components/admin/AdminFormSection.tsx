@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 type AdminFormSectionProps = {
   title: string;
   description?: string;
+  action?: ReactNode;
   children: ReactNode;
 };
 
@@ -16,16 +17,21 @@ type AdminFormSectionProps = {
 export function AdminFormSection({
   title,
   description,
+  action,
   children,
 }: AdminFormSectionProps) {
   return (
     <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-(--admin-card-shadow)">
-      <div className="border-b border-gray-200 bg-gray-50 px-5 py-3.5 sm:px-6">
-        <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+      <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-5 py-3.5 sm:px-6">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
 
-        {description && (
-          <p className="mt-1 text-sm text-gray-500">{description}</p>
-        )}
+          {description && (
+            <p className="mt-1 text-sm text-gray-500">{description}</p>
+          )}
+        </div>
+
+        {action && <div className="shrink-0">{action}</div>}
       </div>
 
       <div className="space-y-5 px-5 py-5 sm:px-6 sm:py-6">{children}</div>

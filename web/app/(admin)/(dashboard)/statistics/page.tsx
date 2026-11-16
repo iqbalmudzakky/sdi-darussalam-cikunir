@@ -7,7 +7,7 @@ export default function AdminStatisticsPage() {
     <div className="mx-auto max-w-3xl">
       <AdminPageHeader
         title="Statistik"
-        description="Angka yang tampil sebagai statistik di halaman depan: siswa aktif, guru & staf, dan jumlah pendaftar."
+        description="Angka di halaman depan."
       />
 
       <div className="space-y-6">
