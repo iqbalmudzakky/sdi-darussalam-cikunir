@@ -1119,6 +1119,8 @@ diketik dua kali, tapi tetap bisa diubah.
 | K22 | Nomor surat: `<urut>.09/PMB-SDI-DC/<bulan Romawi>/<tahun>`. `09` = nomor unit SDI Darussalam Cikunir di yayasan                                                |
 | K23 | PDF dibuat dengan `@react-pdf/renderer`                                                                                                                        |
 | K24 | Input Pendaftar Manual tetap ada, diisi guru dengan **form lengkap** langsung                                                                                  |
+| K25 | Nomor urut surat mulai dari 001 lagi tiap tahun kalender surat                                                                                                 |
+| K26 | Nomor urut pendaftaran mulai dari 001 lagi untuk tiap TA target                                                                                                |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1202,17 +1204,17 @@ Prinsip: **menambah**, bukan mengganti. Tabel `ppdb_registrations` dan turunanny
 
 **`ppdb_registrations`**
 
-| Kolom                    | Isi                                                              |
-| ------------------------ | ---------------------------------------------------------------- |
-| `registration_number`    | Nomor pendaftaran untuk dicari CP dan ditulis di WA (format: P1) |
-| `program`                | `tahfizh` / `unggulan`                                           |
-| `academic_year`          | **Kini berarti TA target** (sudah ada, artinya diperjelas)       |
-| `contact_name`           | Nama orang tua dari form pendek                                  |
-| `contact_relation`       | `father` / `mother` / `guardian`                                 |
-| `contact_phone`          | No. WA orang tua                                                 |
-| `full_form_completed_at` | Kapan form lengkap dikirim orang tua                             |
-| `received_documents`     | `text[]` berisi kode berkas yang sudah diterima                  |
-| `status`                 | Nilai baru (11.3)                                                |
+| Kolom                    | Isi                                                               |
+| ------------------------ | ----------------------------------------------------------------- |
+| `registration_number`    | Nomor pendaftaran untuk dicari CP dan ditulis di WA (format: K19) |
+| `program`                | `tahfizh` / `unggulan`                                            |
+| `academic_year`          | **Kini berarti TA target** (sudah ada, artinya diperjelas)        |
+| `contact_name`           | Nama orang tua dari form pendek                                   |
+| `contact_relation`       | `father` / `mother` / `guardian`                                  |
+| `contact_phone`          | No. WA orang tua                                                  |
+| `full_form_completed_at` | Kapan form lengkap dikirim orang tua                              |
+| `received_documents`     | `text[]` berisi kode berkas yang sudah diterima                   |
+| `status`                 | Nilai baru (11.3)                                                 |
 
 **`ppdb_registration_students` / `_parents`** — kolom yang tidak ada di form pendek dibuat boleh
 kosong (`DROP NOT NULL`). Wajib-tidaknya dicek di zod saat form lengkap dikirim.
@@ -1420,11 +1422,7 @@ Setiap PR: **kode → review → deploy staging → uji → deploy production**,
 ### 11.10 Pertanyaan Terbuka
 
 Semua pertanyaan P1–P8 sudah dijawab 14 Nov 2026 dan masuk ke K19–K24, 11.4, dan 11.8.
-
-| #   | Asumsi yang belum dikonfirmasi                                 |
-| --- | -------------------------------------------------------------- |
-| A1  | Nomor urut surat mulai dari 001 lagi tiap tahun kalender surat |
-| A2  | Nomor urut pendaftaran mulai dari 001 per TA target            |
+Asumsi A1 dan A2 disetujui 17 Nov 2026 dan masuk ke K25–K26. Tidak ada pertanyaan terbuka.
 
 ---
 
