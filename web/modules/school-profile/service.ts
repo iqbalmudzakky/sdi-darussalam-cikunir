@@ -1,11 +1,12 @@
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
 import { removeStoragePhoto } from "@/modules/storage/storage";
+import { fetchSchoolStats } from "@/modules/sso/client";
 import type {
   SaveSchoolProfileRequest,
-  SaveSchoolProfileStatsRequest,
   SchoolProfileResponse,
   SchoolProfileStatsResponse,
+  SyncSchoolStatsResult,
 } from "./dto";
 
 const PHOTO_BUCKET = "school-profile-photos";
@@ -120,34 +121,39 @@ export async function getSchoolProfileStats(): Promise<SchoolProfileStatsRespons
     repository.get(),
   );
 
-  return {
+  const response: SchoolProfileStatsResponse = {
     active_student_count: profile?.active_student_count ?? null,
     staff_count: profile?.staff_count ?? null,
+    stats_synced_at: profile?.stats_synced_at ?? null,
   };
+
+  return response;
 }
 
-export async function saveSchoolProfileStats(
-  input: SaveSchoolProfileStatsRequest,
-): Promise<SchoolProfileStatsResponse> {
+export async function syncStatsFromSso(): Promise<SyncSchoolStatsResult> {
+  const fetched = await fetchSchoolStats();
+  if (!fetched.ok) {
+    console.error(`schoolProfile.syncStatsFromSso failed: ${fetched.message}`);
+    return { ok: false, message: fetched.message };
+  }
+
   const existing = await withDbLogging("schoolProfile.get", () =>
     repository.get(),
   );
 
-  const statsInput = {
-    activeStudentCount: input.active_student_count,
-    staffCount: input.staff_count,
-  };
-
   const saved = existing
-    ? await withDbLogging("schoolProfile.updateStats", () =>
-        repository.updateStatsById(existing.id, statsInput),
+    ? await withDbLogging("schoolProfile.updateSyncedStats", () =>
+        repository.updateSyncedStatsById(existing.id, fetched.stats),
       )
-    : await withDbLogging("schoolProfile.insertStats", () =>
-        repository.insertStats(statsInput),
+    : await withDbLogging("schoolProfile.insertSyncedStats", () =>
+        repository.insertSyncedStats(fetched.stats),
       );
 
-  return {
+  const stats: SchoolProfileStatsResponse = {
     active_student_count: saved.active_student_count,
     staff_count: saved.staff_count,
+    stats_synced_at: saved.stats_synced_at,
   };
+
+  return { ok: true, stats };
 }

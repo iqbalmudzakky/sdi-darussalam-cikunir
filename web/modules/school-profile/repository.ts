@@ -10,7 +10,7 @@ export async function get(): Promise<SchoolProfile | null> {
     `SELECT id, photo_url, vision_photo_url, hero_video_url, description, visi,
        misi, alamat, telepon, whatsapp, whatsapp_message, email,
        jam_operasional, facebook, instagram, tiktok, youtube,
-       active_student_count, staff_count, created_at, updated_at
+       active_student_count, staff_count, stats_synced_at, created_at, updated_at
      FROM school_profiles
      ORDER BY created_at
      LIMIT 1`,
@@ -53,7 +53,7 @@ export async function upsert(input: NewSchoolProfile): Promise<SchoolProfile> {
        RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
          visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
          jam_operasional, facebook, instagram, tiktok, youtube,
-         active_student_count, staff_count, created_at, updated_at`,
+         active_student_count, staff_count, stats_synced_at, created_at, updated_at`,
       [...values, existing.id],
     );
     return rows[0];
@@ -71,39 +71,42 @@ export async function upsert(input: NewSchoolProfile): Promise<SchoolProfile> {
      RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
        visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
        jam_operasional, facebook, instagram, tiktok, youtube,
-       active_student_count, staff_count, created_at, updated_at`,
+       active_student_count, staff_count, stats_synced_at, created_at, updated_at`,
     values,
   );
   return rows[0];
 }
 
-export async function insertStats(
+export async function insertSyncedStats(
   input: SchoolProfileStatsInput,
 ): Promise<SchoolProfile> {
   const rows = await sql.unsafe<SchoolProfile[]>(
-    `INSERT INTO school_profiles (active_student_count, staff_count)
-     VALUES ($1, $2)
+    `INSERT INTO school_profiles (
+       active_student_count, staff_count, stats_synced_at
+     )
+     VALUES ($1, $2, now())
      RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
        visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
        jam_operasional, facebook, instagram, tiktok, youtube,
-       active_student_count, staff_count, created_at, updated_at`,
+       active_student_count, staff_count, stats_synced_at, created_at, updated_at`,
     [input.activeStudentCount, input.staffCount],
   );
   return rows[0];
 }
 
-export async function updateStatsById(
+export async function updateSyncedStatsById(
   id: string,
   input: SchoolProfileStatsInput,
 ): Promise<SchoolProfile> {
   const rows = await sql.unsafe<SchoolProfile[]>(
     `UPDATE school_profiles
-     SET active_student_count = $1, staff_count = $2, updated_at = now()
+     SET active_student_count = $1, staff_count = $2, stats_synced_at = now(),
+       updated_at = now()
      WHERE id = $3
      RETURNING id, photo_url, vision_photo_url, hero_video_url, description,
        visi, misi, alamat, telepon, whatsapp, whatsapp_message, email,
        jam_operasional, facebook, instagram, tiktok, youtube,
-       active_student_count, staff_count, created_at, updated_at`,
+       active_student_count, staff_count, stats_synced_at, created_at, updated_at`,
     [input.activeStudentCount, input.staffCount, id],
   );
   return rows[0];

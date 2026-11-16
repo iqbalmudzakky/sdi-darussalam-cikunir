@@ -169,6 +169,21 @@ di satu layar pendek. Konsekuensinya: satu tabel disunting dari dua halaman. Itu
 secara sadar — kedua kolom ini **tidak** ditampilkan di form Profil Sekolah supaya tidak
 ada dua tempat mengubah hal yang sama.
 
+**Pembaruan 16 Nov 2026 — siswa aktif dan guru & staf kini dari SSO, tidak diedit admin.**
+
+- Cron infra memanggil `GET /api/cron/sync-school-stats` (bearer `CRON_SECRET`) tiap jam di
+  menit ke-7. Route menarik `GET {SSO_BASE_URL}/api/v1/pmb/sekolah/69881047/statistik`
+  dengan header `X-PMB-Token: {SSO_PMB_TOKEN}`, timeout 10 detik, lalu menyimpan
+  `siswa_aktif` dan `guru_staf` ke kolom yang sama, plus `stats_synced_at`.
+- Definisi dari SSO: siswa aktif = berstatus aktif dan ditempatkan di kelas pada TA aktif;
+  guru & staf = guru dan tenaga kependidikan aktif, yang cuti tidak dihitung.
+- Gagal (SSO mati, token salah, angka bukan bilangan bulat > 0) → balas **502** dan angka
+  lama tetap dipakai. Angka 0 dianggap tidak masuk akal, karena "0 Siswa aktif" lebih
+  merusak daripada angka kemarin.
+- NPSN di path, bukan id; sama di staging dan production, jadi disimpan sebagai konstanta.
+- Halaman Statistik bagian Angka Sekolah hanya menampilkan angka dan waktu sinkron terakhir.
+  `PUT /api/school-profile/stats` dihapus.
+
 ---
 
 ## 4. Model Data
@@ -327,6 +342,9 @@ Halaman ini menampung **semua angka yang tampil sebagai statistik di landing pag
 dua bagian.
 
 #### Bagian 1 — Angka sekolah
+
+> Sejak 16 Nov 2026 bagian ini hanya menampilkan angka dari SSO (3.3). Isian di bawah adalah
+> rancangan awal.
 
 - Dua kolom isian: **Siswa aktif** dan **Guru & staf**, keduanya bilangan bulat ≥ 0
 - Disimpan ke `school_profiles` (3.3, 7.4) lewat route API-nya sendiri, bukan menumpang

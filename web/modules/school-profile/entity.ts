@@ -19,13 +19,19 @@ export type SchoolProfile = {
   youtube: string;
   active_student_count: number | null;
   staff_count: number | null;
+  stats_synced_at: string | null;
   created_at: string;
   updated_at: string;
 };
 
 export type NewSchoolProfile = Omit<
   SchoolProfile,
-  "id" | "created_at" | "updated_at" | "active_student_count" | "staff_count"
+  | "id"
+  | "created_at"
+  | "updated_at"
+  | "active_student_count"
+  | "staff_count"
+  | "stats_synced_at"
 >;
 
 export type SchoolProfileStatsInput = {

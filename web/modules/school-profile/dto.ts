@@ -54,21 +54,12 @@ export type SchoolProfileResponse = {
   staff_count: number | null;
 };
 
-const NullableStatCountSchema = z
-  .number({ message: "Jumlah harus berupa angka." })
-  .int("Jumlah harus bilangan bulat.")
-  .min(0, "Jumlah tidak boleh negatif.")
-  .nullable();
-
-export const SaveSchoolProfileStatsRequestSchema = z.object({
-  active_student_count: NullableStatCountSchema,
-  staff_count: NullableStatCountSchema,
-});
-export type SaveSchoolProfileStatsRequest = z.infer<
-  typeof SaveSchoolProfileStatsRequestSchema
->;
-
 export type SchoolProfileStatsResponse = {
   active_student_count: number | null;
   staff_count: number | null;
+  stats_synced_at: string | null;
 };
+
+export type SyncSchoolStatsResult =
+  | { ok: true; stats: SchoolProfileStatsResponse }
+  | { ok: false; message: string };

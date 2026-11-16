@@ -22,4 +22,5 @@ export type SchoolProfile = {
 export type SchoolProfileStats = {
   active_student_count: number | null;
   staff_count: number | null;
+  stats_synced_at: string | null;
 };
