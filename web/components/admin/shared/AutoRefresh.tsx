@@ -7,10 +7,6 @@ type AutoRefreshProps = {
   seconds: number;
 };
 
-/*
- * Memuat ulang data halaman server secara berkala selama tab terlihat,
- * supaya angka yang terus bergerak tidak perlu disegarkan dengan tangan.
- */
 export function AutoRefresh({ seconds }: AutoRefreshProps) {
   const router = useRouter();
 

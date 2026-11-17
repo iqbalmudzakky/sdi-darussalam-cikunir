@@ -16,7 +16,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { EmojiPicker } from "@/components/admin/EmojiPicker";
+import { EmojiPicker } from "@/components/admin/shared/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
 import type { ActivityItem } from "@/types/Activity";
 

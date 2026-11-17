@@ -42,10 +42,10 @@ import {
 } from "@/lib/api/registrations";
 import { useToast } from "@/hooks/useToast";
 import { formatDateTime } from "@/lib/date";
-import { RegistrationDetailDialog } from "@/components/admin/RegistrationDetailDialog";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
-import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
+import { RegistrationDetailDialog } from "@/components/admin/registrations/RegistrationDetailDialog";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
+import { PaymentStatusBadge } from "@/components/admin/shared/PaymentStatusBadge";
 import {
   REGISTRATION_TYPE_OPTIONS,
   getOptionLabel,

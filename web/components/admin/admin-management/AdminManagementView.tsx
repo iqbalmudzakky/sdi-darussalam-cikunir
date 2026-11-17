@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Loader2, ShieldCheck, UserPlus } from "lucide-react";
-import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
+import { ReadOnlyChip } from "@/components/admin/shared/ReadOnlyChip";
 import { Button } from "@/components/ui/button";
 import { AdminEditCard } from "./AdminEditCard";
 import { InviteAdminDialog } from "./InviteAdminDialog";
@@ -23,9 +24,13 @@ import type {
 
 type AdminManagementViewProps = {
   roleOptions: AdminRole[];
+  canManage: boolean;
 };
 
-export function AdminManagementView({ roleOptions }: AdminManagementViewProps) {
+export function AdminManagementView({
+  roleOptions,
+  canManage,
+}: AdminManagementViewProps) {
   const [items, setItems] = useState<AdminItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -105,10 +110,14 @@ export function AdminManagementView({ roleOptions }: AdminManagementViewProps) {
         title="Akun"
         count={isLoading || loadError ? undefined : items.length}
         action={
-          <Button type="button" onClick={() => setIsInviteOpen(true)}>
-            <UserPlus />
-            Undang
-          </Button>
+          canManage ? (
+            <Button type="button" onClick={() => setIsInviteOpen(true)}>
+              <UserPlus />
+              Undang
+            </Button>
+          ) : (
+            <ReadOnlyChip />
+          )
         }
       />
 
@@ -128,10 +137,12 @@ export function AdminManagementView({ roleOptions }: AdminManagementViewProps) {
           title="Belum ada akun lain"
           description="Undang lewat email."
           action={
-            <Button type="button" onClick={() => setIsInviteOpen(true)}>
-              <UserPlus />
-              Undang
-            </Button>
+            canManage && (
+              <Button type="button" onClick={() => setIsInviteOpen(true)}>
+                <UserPlus />
+                Undang
+              </Button>
+            )
           }
         />
       ) : (

@@ -1,18 +1,26 @@
 import type { ReactNode } from "react";
+import { cva } from "class-variance-authority";
 
 type AdminPageHeaderProps = {
   title: string;
   description?: string;
 
-  /*
-   * Jumlah item yang sedang dikelola. Ditampilkan sebagai
-   * lencana di samping judul supaya admin langsung tahu
-   * isi halaman tanpa menghitung kartu.
-   */
   count?: number;
 
   action?: ReactNode;
 };
+
+const headerVariants = cva(
+  "mb-6 flex gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:justify-between",
+  {
+    variants: {
+      inline: {
+        true: "flex-row items-center justify-between",
+        false: "flex-col sm:items-end",
+      },
+    },
+  },
+);
 
 export function AdminPageHeader({
   title,
@@ -21,7 +29,7 @@ export function AdminPageHeader({
   action,
 }: AdminPageHeaderProps) {
   return (
-    <div className="mb-6 flex flex-col gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <div className={headerVariants({ inline: !description })}>
       <div className="min-w-0">
         <div className="flex items-center gap-2.5">
           <h1 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
@@ -29,7 +37,7 @@ export function AdminPageHeader({
           </h1>
 
           {count !== undefined && (
-            <span className="rounded-full border border-gray-200 bg-white px-2 py-0.5 text-xs font-semibold text-gray-700 tabular-nums">
+            <span className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-0.5 text-sm font-bold text-brand-700 tabular-nums">
               {count}
             </span>
           )}

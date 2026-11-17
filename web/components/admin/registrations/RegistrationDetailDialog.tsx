@@ -220,7 +220,6 @@ export function RegistrationDetailDialog({
               </div>
             </div>
 
-            {/* Registrations made before the payment flow have no payment row. */}
             {registration.payment_status && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">

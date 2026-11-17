@@ -1,4 +1,4 @@
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
 import { SchoolStatsSection } from "@/components/admin/statistics/SchoolStatsSection";
 import { RegistrationStatsSection } from "@/components/admin/statistics/RegistrationStatsSection";
 

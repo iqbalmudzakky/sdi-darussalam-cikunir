@@ -84,55 +84,57 @@ export function InviteAdminDialog({
           <DialogTitle>Undang Akun</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="invite-email">Email</Label>
-          <Input
-            id="invite-email"
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError("");
-            }}
-            placeholder="nama@email.com"
-            className="rounded-xl"
-          />
-          {error && <p className="text-xs text-red-600">{error}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label>Peran</Label>
-          <div className="flex flex-wrap gap-2">
-            {roleOptions.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setRole(option)}
-                aria-pressed={role === option}
-                className={roleChipVariants({ selected: role === option })}
-              >
-                {role === option ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <span
-                    className={`h-2 w-2 rounded-full ${ADMIN_ROLE_DOT_CLASS[option]}`}
-                  />
-                )}
-                {ADMIN_ROLE_LABEL[option]}
-              </button>
-            ))}
+        <div className="space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="invite-email">Email</Label>
+            <Input
+              id="invite-email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              placeholder="nama@email.com"
+              className="rounded-xl"
+            />
+            {error && <p className="text-xs text-red-600">{error}</p>}
           </div>
-        </div>
 
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSending}
-          className="h-10 w-full"
-        >
-          <UserPlus />
-          {isSending ? "Mengirim..." : "Undang"}
-        </Button>
+          <div className="space-y-2">
+            <Label>Peran</Label>
+            <div className="flex flex-wrap gap-2">
+              {roleOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setRole(option)}
+                  aria-pressed={role === option}
+                  className={roleChipVariants({ selected: role === option })}
+                >
+                  {role === option ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <span
+                      className={`h-2 w-2 rounded-full ${ADMIN_ROLE_DOT_CLASS[option]}`}
+                    />
+                  )}
+                  {ADMIN_ROLE_LABEL[option]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSending}
+            className="h-10 w-full"
+          >
+            <UserPlus />
+            {isSending ? "Mengirim..." : "Undang"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -4,13 +4,13 @@ import * as paymentSettingsService from "@/modules/payment-settings/service";
 import { SavePaymentSettingsRequestSchema } from "@/modules/payment-settings/dto";
 
 export async function GET() {
-  const user = await requirePermission("manage_admission_settings");
+  const user = await requirePermission("view_admission_settings");
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const settings = await paymentSettingsService.getPaymentSettings();
+    const settings = await paymentSettingsService.getPaymentSettingsResponse();
     if (!settings) {
       return NextResponse.json(
         { error: "Pengaturan pembayaran belum tersedia." },
@@ -18,12 +18,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({
-      registration_fee: settings.registration_fee,
-      registration_opens_on: settings.registration_opens_on,
-      registration_closes_on: settings.registration_closes_on,
-      updated_at: settings.updated_at,
-    });
+    return NextResponse.json(settings);
   } catch (error) {
     console.error("GET /api/payment-settings failed:", error);
     return NextResponse.json(

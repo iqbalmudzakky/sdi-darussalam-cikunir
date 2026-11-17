@@ -12,7 +12,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { AdminFormSection } from "@/components/admin/AdminFormSection";
+import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
 import { useToast } from "@/hooks/useToast";
 import {
   getAcademicYears,

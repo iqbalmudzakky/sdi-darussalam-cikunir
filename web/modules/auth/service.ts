@@ -12,7 +12,12 @@ import {
   LOGIN_RATE_LIMIT_MAX_PER_IP,
   LOGIN_RATE_LIMIT_WINDOW_MINUTES,
 } from "@/modules/shared/constant/auth";
-import { ADMIN_ROLES, ROLE_PERMISSIONS } from "@/modules/shared/constant/role";
+import {
+  ADMIN_ROLES,
+  ROLE_PERMISSIONS,
+  type AdminRole,
+  type Permission,
+} from "@/modules/shared/constant/role";
 import type {
   AdminCredentials,
   AdminPatch,
@@ -231,6 +236,14 @@ export async function updateAccountPassword(
 
 export async function removeAccount(id: string): Promise<void> {
   await withDbLogging("auth.removeAdmin", () => repository.removeAdmin(id));
+}
+
+export function hasPermission(
+  role: AdminRole,
+  permission: Permission,
+): boolean {
+  const allowed = ROLE_PERMISSIONS[role].includes(permission);
+  return allowed;
 }
 
 export async function countOtherActiveAccountManagers(

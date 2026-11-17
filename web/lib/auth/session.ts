@@ -1,9 +1,7 @@
 import { verifyAccessToken } from "./tokens";
 import { getAccessTokenCookie } from "./cookies";
-import {
-  ROLE_PERMISSIONS,
-  type Permission,
-} from "@/modules/shared/constant/role";
+import { hasPermission } from "@/modules/auth/service";
+import type { Permission } from "@/modules/shared/constant/role";
 import type { SessionUser } from "@/types/Auth";
 
 export async function getSession(): Promise<SessionUser | null> {
@@ -20,6 +18,6 @@ export async function requirePermission(
   permission: Permission,
 ): Promise<SessionUser | null> {
   const user = await getSession();
-  if (!user || !ROLE_PERMISSIONS[user.role].includes(permission)) return null;
+  if (!user || !hasPermission(user.role, permission)) return null;
   return user;
 }

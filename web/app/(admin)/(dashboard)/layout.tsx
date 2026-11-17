@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { ROLE_PERMISSIONS } from "@/modules/shared/constant/role";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { SessionRefresher } from "@/components/admin/SessionRefresher";
+import { AdminSidebar } from "@/components/admin/layout/AdminSidebar";
+import { SessionRefresher } from "@/components/admin/layout/SessionRefresher";
 
 export default async function DashboardLayout({
   children,

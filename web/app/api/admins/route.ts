@@ -7,7 +7,7 @@ import {
 } from "@/modules/admin/dto";
 
 export async function GET() {
-  const user = await requirePermission("manage_accounts");
+  const user = await requirePermission("view_accounts");
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

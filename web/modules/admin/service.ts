@@ -55,6 +55,8 @@ function toAdminResponse(
 }
 
 export function listAssignableRoles(actingRole: AdminRole): AdminRole[] {
+  if (!ROLE_PERMISSIONS[actingRole].includes("manage_accounts")) return [];
+
   const canManageDeveloper = ROLE_PERMISSIONS[actingRole].includes(
     "manage_developer_accounts",
   );
@@ -77,17 +79,14 @@ export async function listAdmins(
   }
 }
 
-async function issueAndSendInviteToken(
-  userId: string,
-  email: string,
-): Promise<void> {
+async function issueAndSendInviteToken(admin: AdminSummary): Promise<void> {
   const rawToken = generateRefreshToken();
   const tokenHash = hashRefreshToken(rawToken);
   const expiresAtMs = Date.now() + INVITE_TOKEN_TTL_SECONDS * 1000;
   const expiresAt = new Date(expiresAtMs).toISOString();
 
   const newActionToken: NewAdminActionToken = {
-    user_id: userId,
+    user_id: admin.id,
     purpose: "invite",
     token_hash: tokenHash,
     expires_at: expiresAt,
@@ -98,7 +97,12 @@ async function issueAndSendInviteToken(
 
   const invitePath = `/invite/${rawToken}`;
   const inviteUrl = buildAdminUrl(invitePath);
-  const inviteEmail = { to: email, inviteUrl };
+  const inviteEmail = {
+    to: admin.email,
+    inviteUrl,
+    role: admin.role,
+    validHours: INVITE_TOKEN_TTL_SECONDS / 3600,
+  };
   await sendInviteEmail(inviteEmail);
 }
 
@@ -128,7 +132,7 @@ export async function inviteAdmin(
     const newAdmin = { email: request.email, role: request.role };
     const admin = await authService.createInvitedAccount(newAdmin);
 
-    await issueAndSendInviteToken(admin.id, admin.email);
+    await issueAndSendInviteToken(admin);
 
     return { ok: true, admin: toAdminResponse(admin, actingUser) };
   } catch (error) {
@@ -154,7 +158,7 @@ export async function resendInvite(
     await withDbLogging("admin.invalidateActiveActionTokens", () =>
       repository.invalidateActiveActionTokens(admin.id, "invite"),
     );
-    await issueAndSendInviteToken(admin.id, admin.email);
+    await issueAndSendInviteToken(admin);
 
     return { ok: true, admin: toAdminResponse(admin, actingUser) };
   } catch (error) {
@@ -277,7 +281,11 @@ export async function forgotPassword(
 
     const resetPath = `/reset-password/${rawToken}`;
     const resetUrl = buildAdminUrl(resetPath);
-    const resetEmail = { to: admin.email, resetUrl };
+    const resetEmail = {
+      to: admin.email,
+      resetUrl,
+      validHours: RESET_TOKEN_TTL_SECONDS / 3600,
+    };
     await sendPasswordResetEmail(resetEmail);
   } catch (error) {
     console.error(`admin.forgotPassword failed for ${input.email}:`, error);

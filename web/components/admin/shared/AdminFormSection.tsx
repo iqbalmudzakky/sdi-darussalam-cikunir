@@ -7,13 +7,6 @@ type AdminFormSectionProps = {
   children: ReactNode;
 };
 
-/*
- * Satu kelompok isian dalam sebuah form panjang.
- *
- * Memecah form menjadi beberapa kartu bertema jauh lebih
- * mudah dibaca daripada satu kartu berisi belasan kolom
- * yang berurutan tanpa jeda.
- */
 export function AdminFormSection({
   title,
   description,

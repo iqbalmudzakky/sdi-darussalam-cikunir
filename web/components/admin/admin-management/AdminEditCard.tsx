@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { cva } from "class-variance-authority";
-import { Calendar, Mail, Power, Trash2, type LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Calendar,
+  Loader2,
+  Mail,
+  Power,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -45,7 +45,7 @@ type ConfirmActionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
-  description: ReactNode;
+  email: string;
   confirmLabel: string;
   icon: LucideIcon;
   tone: "neutral" | "danger";
@@ -76,7 +76,19 @@ const statusDotVariants = cva("h-1.5 w-1.5 rounded-full", {
   },
 });
 
-const confirmButtonVariants = cva("flex-1 text-white", {
+const confirmIconVariants = cva(
+  "flex h-16 w-16 items-center justify-center rounded-full",
+  {
+    variants: {
+      tone: {
+        neutral: "bg-gray-100 text-gray-700",
+        danger: "bg-red-50 text-red-600",
+      },
+    },
+  },
+);
+
+const confirmButtonVariants = cva("h-10 flex-1 text-white", {
   variants: {
     tone: {
       neutral: "bg-gray-800 hover:bg-gray-900",
@@ -257,15 +269,9 @@ export function AdminEditCard({
       <ConfirmActionDialog
         open={isConfirmingDeactivate}
         onOpenChange={setIsConfirmingDeactivate}
-        title="Nonaktifkan Akun"
-        description={
-          <>
-            Yakin mau nonaktifkan{" "}
-            <span className="font-semibold">{item.email}</span>? Akun ini tidak
-            bisa login sampai diaktifkan kembali.
-          </>
-        }
-        confirmLabel="Ya, Nonaktifkan"
+        title="Nonaktifkan akun?"
+        email={item.email}
+        confirmLabel="Nonaktifkan"
         icon={Power}
         tone="neutral"
         isBusy={isBusy}
@@ -275,14 +281,9 @@ export function AdminEditCard({
       <ConfirmActionDialog
         open={isConfirmingDelete}
         onOpenChange={setIsConfirmingDelete}
-        title="Hapus Akun"
-        description={
-          <>
-            Yakin mau hapus <span className="font-semibold">{item.email}</span>?
-            Tindakan ini tidak bisa dibatalkan.
-          </>
-        }
-        confirmLabel="Ya, Hapus"
+        title="Hapus akun?"
+        email={item.email}
+        confirmLabel="Hapus"
         icon={Trash2}
         tone="danger"
         isBusy={isBusy}
@@ -334,7 +335,7 @@ function ConfirmActionDialog({
   open,
   onOpenChange,
   title,
-  description,
+  email,
   confirmLabel,
   icon: Icon,
   tone,
@@ -343,18 +344,25 @@ function ConfirmActionDialog({
 }: ConfirmActionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent size="sm">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
+      <DialogContent size="sm" showCloseButton={false}>
+        <div className="flex flex-col items-center gap-3.5 text-center">
+          <span className={confirmIconVariants({ tone })}>
+            <Icon className="h-7 w-7" />
+          </span>
+          <DialogTitle className="text-lg">{title}</DialogTitle>
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 py-1 pr-3 pl-2.5 text-sm font-semibold text-gray-700">
+            <Mail className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+            <span className="truncate">{email}</span>
+          </span>
+        </div>
+
+        <div className="mt-6 flex gap-2.5">
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isBusy}
-            className="flex-1"
+            className="h-10 flex-1"
           >
             Batal
           </Button>
@@ -364,10 +372,13 @@ function ConfirmActionDialog({
             disabled={isBusy}
             className={confirmButtonVariants({ tone })}
           >
-            <Icon className="h-4 w-4" />
-            {isBusy ? "Memproses..." : confirmLabel}
+            {isBusy ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              confirmLabel
+            )}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

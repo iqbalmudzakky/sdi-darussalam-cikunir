@@ -24,7 +24,11 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { ADMIN_ROLE_LABEL } from "@/lib/adminRoles";
+import {
+  ADMIN_ROLE_CHIP_CLASS,
+  ADMIN_ROLE_DOT_CLASS,
+  ADMIN_ROLE_LABEL,
+} from "@/lib/adminRoles";
 import { logout } from "@/lib/api/auth";
 import { getPendingFollowUpCount } from "@/lib/api/registrations";
 import type { AdminRole, Permission } from "@/modules/shared/constant/role";
@@ -98,13 +102,13 @@ const NAV_GROUPS: NavGroup[] = [
         href: "/payment",
         label: "Pembayaran",
         icon: Wallet,
-        permission: "manage_admission_settings",
+        permission: "view_admission_settings",
       },
       {
         href: "/admin-management",
         label: "Akun",
         icon: ShieldCheck,
-        permission: "manage_accounts",
+        permission: "view_accounts",
       },
     ],
   },
@@ -209,7 +213,12 @@ export function AdminSidebar({ role, permissions }: AdminSidebarProps) {
     <div className="space-y-0.5 border-t border-gray-200 px-3 py-3">
       <p className="mb-1 flex items-center justify-between px-3 py-1 text-xs text-gray-500">
         Masuk sebagai
-        <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 font-medium text-gray-700">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-2 font-semibold ${ADMIN_ROLE_CHIP_CLASS[role]}`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${ADMIN_ROLE_DOT_CLASS[role]}`}
+          />
           {ADMIN_ROLE_LABEL[role]}
         </span>
       </p>

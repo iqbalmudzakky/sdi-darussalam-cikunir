@@ -7,12 +7,6 @@ type AdminEmptyStateProps = {
   action?: React.ReactNode;
 };
 
-/*
- * Tampilan ketika sebuah daftar masih kosong.
- *
- * Dipakai bersama supaya semua halaman konten memberi
- * petunjuk yang sama, bukan hanya menampilkan ruang kosong.
- */
 export function AdminEmptyState({
   icon: Icon,
   title,

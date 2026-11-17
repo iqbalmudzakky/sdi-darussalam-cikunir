@@ -555,6 +555,9 @@ modules/<domain>/
 
 - Tailwind + `cva` untuk varian kelas; `cn()` untuk penggabungan
 - Komponen dialog dari `components/ui/dialog` (Base UI)
+- `components/admin/` tidak berisi berkas di root-nya: komponen fitur di folder fiturnya
+  (`payment/`, `statistics/`, `registrations/`, …), kerangka dashboard di `layout/`, dan
+  komponen yang dipakai banyak halaman di `shared/`
 - Komentar kode dalam Bahasa Indonesia, menjelaskan alasan, ditulis pendek
 - **Satu pelajaran yang wajib dipatuhi:** jangan mereset state yang menyusun `href` sebuah
   anchor di dalam `onClick` anchor itu sendiri. React mem-flush pembaruan state sebelum
@@ -635,7 +638,7 @@ Pelanggaran lama yang tercatat per 11 November 2026:
   (910), `(admin)/(dashboard)/about/page.tsx` (698), `modules/registration/repository.ts` (574),
   `(admin)/(dashboard)/transactions/page.tsx` (559)
 - Komponen lebih dari 200 baris: `(admin)/(dashboard)/dashboard/page.tsx` (429).
-  `components/admin/AdminSidebar.tsx` sudah dirapikan di PR 1 (17 Nov 2026)
+  `components/admin/layout/AdminSidebar.tsx` sudah dirapikan di PR 1 (17 Nov 2026)
 - Tabel `registration_payments` di-query oleh repository `payment` dan `registration`
 
 ### 6.7 Alamat halaman admin
@@ -1173,6 +1176,7 @@ Tiga penanda lain tampil sebagai chip ikon, terpisah dari status:
 
 | Hak                                  | Kepsek | Wakepsek | TU  | Guru                | Admin (dev) |
 | ------------------------------------ | ------ | -------- | --- | ------------------- | ----------- |
+| Lihat Akun & Pembayaran (Read Only)  | ✓      | ✓        |     |                     | ✓           |
 | Undang & ubah akun                   | ✓      |          |     |                     | ✓           |
 | Atur nominal & isi tetap surat       | ✓      |          |     |                     | ✓           |
 | Tandai lunas biaya pendaftaran       | ✓      | ✓        |     |                     | ✓           |
@@ -1192,6 +1196,12 @@ Tiga penanda lain tampil sebagai chip ikon, terpisah dari status:
 - Guru yang menguji boleh memutuskan hasil dan membuat surat. Yang tidak boleh untuk guru (dan
   TU): menandai lunas biaya pendaftaran — itu hanya kepsek atau wakepsek.
 
+- Wakepsek adalah panitia utama PMB, jadi ia perlu tahu siapa saja yang punya akun dan berapa
+  biaya pendaftarannya. Ia membuka Akun dan Pembayaran dengan chip **Read Only**; perubahan
+  diminta langsung ke Kepsek, tanpa fitur persetujuan di sistem (`view_accounts`,
+  `view_admission_settings`, ditambahkan 17 Nov 2026).
+- Perkiraan potongan DOKU dihitung di service `payment-settings` dan dikirim di respons
+  `GET /api/payment-settings` (`doku_estimates`), bukan di halaman.
 - Peran Admin hanya bisa diberikan, diubah, atau dihapus oleh akun Admin
   (`manage_developer_accounts`). Kepsek hanya melihat 4 pilihan peran.
 - Peran dan status akun sendiri tidak bisa diubah. Kepsek atau Admin aktif yang terakhir tidak
