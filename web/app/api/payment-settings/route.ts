@@ -16,8 +16,10 @@ export async function GET(request: Request) {
   const estimateFee = EstimateFeeQuerySchema.parse(searchParams.get("fee"));
 
   try {
-    const settings =
-      await paymentSettingsService.getPaymentSettingsResponse(estimateFee);
+    const settings = await paymentSettingsService.getPaymentSettingsResponse(
+      estimateFee,
+      user.role,
+    );
     if (!settings) {
       return NextResponse.json(
         { error: "Pengaturan pembayaran belum tersedia." },

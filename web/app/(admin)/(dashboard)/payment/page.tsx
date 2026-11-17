@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { requirePermission } from "@/lib/auth/session";
-import { hasPermission } from "@/modules/auth/service";
 import { PaymentSettingsView } from "@/components/admin/payment/PaymentSettingsView";
 
 export default async function AdminPaymentPage() {
@@ -9,7 +8,5 @@ export default async function AdminPaymentPage() {
     redirect("/dashboard");
   }
 
-  const canManage = hasPermission(user.role, "manage_admission_settings");
-
-  return <PaymentSettingsView canManage={canManage} />;
+  return <PaymentSettingsView />;
 }

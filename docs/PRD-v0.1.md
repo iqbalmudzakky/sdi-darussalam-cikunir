@@ -1494,6 +1494,9 @@ Dicatat supaya tidak diselundupkan ke pekerjaan yang sedang berjalan.
 
 **Alur pendaftaran (bab 11):**
 
+- Halaman Event dikonsep ulang seperti blog (permintaan kepsek 17 Nov 2026). Dikerjakan setelah
+  alur pendaftaran baru selesai; referensi desain dari project Google Stitch milik pemilik repo,
+  tema disesuaikan dengan hijau PMB
 - WhatsApp otomatis (pengingat & dokumen) lewat WhatsApp Business API
 - Sistem slot jadwal tes
 - QR pembayaran DOKU di layar

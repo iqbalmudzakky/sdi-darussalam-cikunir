@@ -1,6 +1,8 @@
 import { verifyAccessToken } from "./tokens";
 import { getAccessTokenCookie } from "./cookies";
 import { hasPermission } from "@/modules/auth/service";
+
+export { listPermissions } from "@/modules/auth/service";
 import type { Permission } from "@/modules/shared/constant/role";
 import type { SessionUser } from "@/types/Auth";
 

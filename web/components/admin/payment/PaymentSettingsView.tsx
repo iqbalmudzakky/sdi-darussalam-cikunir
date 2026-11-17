@@ -9,11 +9,7 @@ import { PaymentSettingsForm } from "./PaymentSettingsForm";
 import { PaymentSettingsSummary } from "./PaymentSettingsSummary";
 import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
 
-type PaymentSettingsViewProps = {
-  canManage: boolean;
-};
-
-export function PaymentSettingsView({ canManage }: PaymentSettingsViewProps) {
+export function PaymentSettingsView() {
   const [settings, setSettings] = useState<PaymentSettingsResponse | null>(
     null,
   );
@@ -44,7 +40,7 @@ export function PaymentSettingsView({ canManage }: PaymentSettingsViewProps) {
     <div className="mx-auto max-w-3xl">
       <AdminPageHeader
         title="Pembayaran"
-        action={canManage ? undefined : <ReadOnlyChip />}
+        action={settings && !settings.can_manage ? <ReadOnlyChip /> : undefined}
       />
 
       {isLoading ? (
@@ -56,7 +52,7 @@ export function PaymentSettingsView({ canManage }: PaymentSettingsViewProps) {
           Gagal memuat pengaturan pembayaran. Muat ulang halaman untuk mencoba
           lagi.
         </div>
-      ) : canManage ? (
+      ) : settings.can_manage ? (
         <PaymentSettingsForm
           key={settings.updated_at}
           settings={settings}

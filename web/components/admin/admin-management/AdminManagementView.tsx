@@ -22,16 +22,10 @@ import type {
   UpdateAdminInput,
 } from "@/types/Admin";
 
-type AdminManagementViewProps = {
-  roleOptions: AdminRole[];
-  canManage: boolean;
-};
-
-export function AdminManagementView({
-  roleOptions,
-  canManage,
-}: AdminManagementViewProps) {
+export function AdminManagementView() {
   const [items, setItems] = useState<AdminItem[]>([]);
+  const [roleOptions, setRoleOptions] = useState<AdminRole[]>([]);
+  const [canManage, setCanManage] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -43,7 +37,9 @@ export function AdminManagementView({
   async function loadAdmins() {
     try {
       const data = await listAdmins();
-      setItems(data);
+      setItems(data.admins);
+      setRoleOptions(data.role_options);
+      setCanManage(data.can_manage);
     } catch (error) {
       console.error("Failed to load admins:", error);
       setLoadError(true);
@@ -110,7 +106,7 @@ export function AdminManagementView({
         title="Akun"
         count={isLoading || loadError ? undefined : items.length}
         action={
-          canManage ? (
+          isLoading || loadError ? undefined : canManage ? (
             <Button type="button" onClick={() => setIsInviteOpen(true)}>
               <UserPlus />
               Undang

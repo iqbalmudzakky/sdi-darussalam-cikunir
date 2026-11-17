@@ -246,6 +246,11 @@ export function hasPermission(
   return allowed;
 }
 
+export function listPermissions(role: AdminRole): readonly Permission[] {
+  const permissions = ROLE_PERMISSIONS[role];
+  return permissions;
+}
+
 export async function countOtherActiveAccountManagers(
   excludeId: string,
 ): Promise<number> {

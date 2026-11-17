@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { SessionUser, TokenPair } from "@/modules/auth/dto";
+import type { AdminSummary } from "@/modules/auth/entity";
+import type { AdminActionToken } from "./entity";
 import { ADMIN_ROLES, type AdminRole } from "@/modules/shared/constant/role";
 
 export type AdminStatus = "invited" | "active" | "deactivated";
@@ -71,6 +73,12 @@ export type AdminResponse = {
   can_manage: boolean;
 };
 
+export type AdminListResponse = {
+  admins: AdminResponse[];
+  role_options: AdminRole[];
+  can_manage: boolean;
+};
+
 export type AdminMutationFailure =
   "self" | "forbidden_role" | "last_manager" | "not_found";
 
@@ -89,6 +97,12 @@ export type InviteAdminResult =
       reason: "already_exists" | "forbidden_role";
       message: string;
     };
+
+export type ActionTokenStatus = "valid" | "invalid_token" | "expired";
+
+export type CheckedActionToken =
+  | { status: "valid"; actionToken: AdminActionToken; admin: AdminSummary }
+  | { status: "invalid_token" | "expired" };
 
 export type CredentialFlowResult =
   | { ok: true; tokens: TokenPair }

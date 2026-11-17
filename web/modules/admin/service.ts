@@ -21,13 +21,20 @@ import {
 } from "@/modules/shared/constant/role";
 import type { AdminSummary } from "@/modules/auth/entity";
 import type { SessionUser } from "@/modules/auth/dto";
-import type { CountActionTokensInput, NewAdminActionToken } from "./entity";
+import type {
+  AdminActionTokenPurpose,
+  CountActionTokensInput,
+  NewAdminActionToken,
+} from "./entity";
 import type {
   AcceptInviteRequest,
+  AdminListResponse,
   AdminMutationResult,
   AdminResponse,
   CredentialFlowResult,
+  ActionTokenStatus,
   AdminTargetInput,
+  CheckedActionToken,
   ForgotPasswordRequest,
   InviteAdminInput,
   InviteAdminResult,
@@ -68,10 +75,14 @@ export function listAssignableRoles(actingRole: AdminRole): AdminRole[] {
 
 export async function listAdmins(
   actingUser: SessionUser,
-): Promise<AdminResponse[]> {
+): Promise<AdminListResponse> {
   try {
     const admins = await authService.listAccounts();
-    const response = admins.map((admin) => toAdminResponse(admin, actingUser));
+    const response: AdminListResponse = {
+      admins: admins.map((admin) => toAdminResponse(admin, actingUser)),
+      role_options: listAssignableRoles(actingUser.role),
+      can_manage: authService.hasPermission(actingUser.role, "manage_accounts"),
+    };
     return response;
   } catch (error) {
     console.error("admin.listAdmins failed:", error);
@@ -171,33 +182,21 @@ async function completeTokenFlow(
   input: AcceptInviteRequest,
   purpose: "invite" | "reset",
 ): Promise<CredentialFlowResult> {
-  const tokenHash = hashRefreshToken(input.token);
-  const actionToken = await withDbLogging("admin.findActionTokenByHash", () =>
-    repository.findActionTokenByHash(tokenHash, purpose),
-  );
-  if (!actionToken || actionToken.used_at) {
-    return {
+  const checked = await checkActionToken(input.token, purpose);
+  if (checked.status !== "valid") {
+    const message =
+      checked.status === "expired"
+        ? "Link expired."
+        : "Link tidak valid atau sudah digunakan.";
+    const failure: CredentialFlowResult = {
       ok: false,
-      reason: "invalid_token",
-      message: "Link tidak valid atau sudah digunakan.",
+      reason: checked.status,
+      message,
     };
-  }
-  if (new Date(actionToken.expires_at).getTime() < Date.now()) {
-    return {
-      ok: false,
-      reason: "expired",
-      message: "Link expired.",
-    };
+    return failure;
   }
 
-  const admin = await authService.findAccountById(actionToken.user_id);
-  if (!admin || (purpose === "reset" && admin.status !== "active")) {
-    return {
-      ok: false,
-      reason: "invalid_token",
-      message: "Link tidak valid.",
-    };
-  }
+  const { actionToken, admin } = checked;
 
   const passwordHash = await hashPassword(input.password);
   const updated =
@@ -217,6 +216,19 @@ async function completeTokenFlow(
   const tokens = await authService.issueTokenPair(user);
   const result: CredentialFlowResult = { ok: true, tokens };
   return result;
+}
+
+export async function getActionTokenStatus(
+  rawToken: string,
+  purpose: AdminActionTokenPurpose,
+): Promise<ActionTokenStatus> {
+  try {
+    const checked = await checkActionToken(rawToken, purpose);
+    return checked.status;
+  } catch (error) {
+    console.error(`admin.getActionTokenStatus failed for ${purpose}:`, error);
+    throw error;
+  }
 }
 
 export async function acceptInvite(
@@ -420,4 +432,27 @@ export async function cleanupStaleActionTokens(): Promise<number> {
     console.error("admin.cleanupStaleActionTokens failed:", error);
     throw error;
   }
+}
+
+async function checkActionToken(
+  rawToken: string,
+  purpose: AdminActionTokenPurpose,
+): Promise<CheckedActionToken> {
+  const tokenHash = hashRefreshToken(rawToken);
+  const actionToken = await withDbLogging("admin.findActionTokenByHash", () =>
+    repository.findActionTokenByHash(tokenHash, purpose),
+  );
+  if (!actionToken || actionToken.used_at) return { status: "invalid_token" };
+
+  if (new Date(actionToken.expires_at).getTime() < Date.now()) {
+    return { status: "expired" };
+  }
+
+  const admin = await authService.findAccountById(actionToken.user_id);
+  if (!admin || (purpose === "reset" && admin.status !== "active")) {
+    return { status: "invalid_token" };
+  }
+
+  const checked: CheckedActionToken = { status: "valid", actionToken, admin };
+  return checked;
 }

@@ -13,6 +13,12 @@ export type AdminItem = {
   can_manage: boolean;
 };
 
+export type AdminListResponse = {
+  admins: AdminItem[];
+  role_options: AdminRole[];
+  can_manage: boolean;
+};
+
 export type InviteAdminInput = {
   email: string;
   role: AdminRole;

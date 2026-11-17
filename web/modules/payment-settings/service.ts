@@ -4,6 +4,8 @@ import {
   DOKU_MDR_METHODS,
   DOKU_PPN_RATE,
 } from "@/modules/shared/constant/doku";
+import * as authService from "@/modules/auth/service";
+import type { AdminRole } from "@/modules/shared/constant/role";
 import * as repository from "./repository";
 import type { PaymentSettings, PaymentSettingsUpdateInput } from "./entity";
 import type { DokuEstimate, PaymentSettingsResponse } from "./dto";
@@ -32,6 +34,7 @@ export async function getPaymentSettings(): Promise<PaymentSettings | null> {
 
 export async function getPaymentSettingsResponse(
   estimateFee: number | null,
+  actingRole: AdminRole,
 ): Promise<PaymentSettingsResponse | null> {
   const settings = await withDbLogging("paymentSettings.get", () =>
     repository.get(),
@@ -56,6 +59,10 @@ export async function getPaymentSettingsResponse(
     registration_closes_on: settings.registration_closes_on,
     updated_at: settings.updated_at,
     doku_estimates: dokuEstimates,
+    can_manage: authService.hasPermission(
+      actingRole,
+      "manage_admission_settings",
+    ),
   };
   return response;
 }

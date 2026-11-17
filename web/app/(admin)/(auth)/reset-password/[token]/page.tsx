@@ -1,29 +1,15 @@
-"use client";
-
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { KeyRound, Send } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
 import { SetPasswordForm } from "@/components/admin/auth/SetPasswordForm";
-import { resetPassword } from "@/lib/api/auth";
+import { getLinkStatus } from "@/lib/actions/auth";
 
-export default function ResetPasswordPage() {
-  const { token } = useParams<{ token: string }>();
+export default async function ResetPasswordPage({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await params;
+  const status = await getLinkStatus(token, "reset");
 
   return (
-    <SetPasswordForm
-      icon={KeyRound}
-      title="Password baru"
-      linkProblemAction={
-        <Link
-          href="/forgot-password"
-          className={buttonVariants({ className: "h-11 w-full font-semibold" })}
-        >
-          <Send className="h-4 w-4" />
-          Minta link baru
-        </Link>
-      }
-      onSubmit={(password) => resetPassword(token, password)}
-    />
+    <SetPasswordForm purpose="reset" token={token} initialStatus={status} />
   );
 }

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Check, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check, Clock, KeyRound, Send, UserPlus, Users } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { acceptInvite, resetPassword } from "@/lib/api/auth";
 import {
   AuthCard,
   AuthError,
@@ -12,32 +14,38 @@ import {
   BackToLoginLink,
   PasswordInput,
 } from "./AuthCard";
-import type { LucideIcon } from "lucide-react";
 
-type SetPasswordResult =
-  | { ok: true }
-  | { ok: false; error: string; reason?: "invalid_token" | "expired" };
+type LinkStatus = "valid" | "invalid_token" | "expired";
 
 type SetPasswordFormProps = {
-  icon: LucideIcon;
-  title: string;
-  linkProblemAction: ReactNode;
-  onSubmit: (password: string) => Promise<SetPasswordResult>;
+  purpose: "invite" | "reset";
+  token: string;
+  initialStatus: LinkStatus;
+};
+
+const PURPOSE_CONFIG = {
+  invite: { icon: UserPlus, title: "Buat password", submit: acceptInvite },
+  reset: { icon: KeyRound, title: "Password baru", submit: resetPassword },
+};
+
+const LINK_PROBLEM_TITLE: Record<Exclude<LinkStatus, "valid">, string> = {
+  expired: "Link expired",
+  invalid_token: "Link tidak valid",
 };
 
 export function SetPasswordForm({
-  icon,
-  title,
-  linkProblemAction,
-  onSubmit,
+  purpose,
+  token,
+  initialStatus,
 }: SetPasswordFormProps) {
   const router = useRouter();
+  const config = PURPOSE_CONFIG[purpose];
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const [error, setError] = useState("");
-  const [linkProblem, setLinkProblem] = useState<string | null>(null);
+  const [linkStatus, setLinkStatus] = useState<LinkStatus>(initialStatus);
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -55,26 +63,22 @@ export function SetPasswordForm({
 
     setIsLoading(true);
     try {
-      const result = await onSubmit(password);
-      if (!result.ok && result.reason === "expired") {
-        setLinkProblem("Link expired");
-        return;
-      }
-      if (!result.ok && result.reason === "invalid_token") {
-        setLinkProblem("Link tidak valid");
-        return;
-      }
-      if (!result.ok) {
-        setError(result.error);
+      const result = await config.submit(token, password);
+      if (result.ok) {
+        router.replace("/dashboard");
+        router.refresh();
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
-    } catch {
-      setError("Gagal terhubung ke server");
-    } finally {
       setIsLoading(false);
+      if (result.reason) {
+        setLinkStatus(result.reason);
+        return;
+      }
+      setError(result.error);
+    } catch {
+      setIsLoading(false);
+      setError("Gagal terhubung ke server");
     }
   }
 
@@ -86,13 +90,30 @@ export function SetPasswordForm({
     );
   }
 
-  if (linkProblem) {
+  if (linkStatus !== "valid") {
     return (
       <AuthCard>
         <div className="flex flex-col items-center gap-[18px] text-center">
           <AuthIcon icon={Clock} tone="danger" />
-          <h1 className="text-[22px] font-bold text-gray-900">{linkProblem}</h1>
-          {linkProblemAction}
+          <h1 className="text-[22px] font-bold text-gray-900">
+            {LINK_PROBLEM_TITLE[linkStatus]}
+          </h1>
+          {purpose === "reset" ? (
+            <Link
+              href="/forgot-password"
+              className={buttonVariants({
+                className: "h-11 w-full font-semibold",
+              })}
+            >
+              <Send className="h-4 w-4" />
+              Minta link baru
+            </Link>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 py-1.5 pr-3.5 pl-3 text-[13px] font-semibold text-brand-700">
+              <Users className="h-4 w-4" />
+              Minta undangan baru ke Kepsek
+            </span>
+          )}
           <BackToLoginLink />
         </div>
       </AuthCard>
@@ -105,8 +126,8 @@ export function SetPasswordForm({
         onSubmit={handleSubmit}
         className="flex flex-col items-center gap-[18px]"
       >
-        <AuthIcon icon={icon} tone="brand" />
-        <h1 className="text-[22px] font-bold text-gray-900">{title}</h1>
+        <AuthIcon icon={config.icon} tone="brand" />
+        <h1 className="text-[22px] font-bold text-gray-900">{config.title}</h1>
 
         <div className="w-full space-y-[18px]">
           <PasswordInput

@@ -56,4 +56,5 @@ export type PaymentSettingsResponse = {
   registration_closes_on: string | null;
   updated_at: string;
   doku_estimates: DokuEstimate[];
+  can_manage: boolean;
 };
