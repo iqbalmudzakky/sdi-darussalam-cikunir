@@ -33,13 +33,13 @@ import {
   toDateOnly,
 } from "@/lib/date";
 import { formatAmount, formatMethod, isOrphaned } from "@/lib/payment";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import {
   PAYMENT_STATUS_META,
   PaymentStatusBadge,
-} from "@/components/admin/PaymentStatusBadge";
-import { TransactionDetailDialog } from "@/components/admin/TransactionDetailDialog";
+} from "@/components/admin/shared/PaymentStatusBadge";
+import { TransactionDetailDialog } from "@/components/admin/transactions/TransactionDetailDialog";
 import type {
   ListPaymentsParams,
   Payment,

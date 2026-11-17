@@ -29,30 +29,3 @@ export async function getSchoolProfileStats(): Promise<SchoolProfileStats> {
     throw error;
   }
 }
-
-export async function saveSchoolProfileStats(
-  input: SchoolProfileStats,
-): Promise<
-  { ok: true; data: SchoolProfileStats } | { ok: false; error: string }
-> {
-  try {
-    const res = await fetch("/api/school-profile/stats", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      return {
-        ok: false,
-        error: data.error ?? "Gagal menyimpan angka sekolah.",
-      };
-    }
-
-    return { ok: true, data: await res.json() };
-  } catch (error) {
-    console.error("saveSchoolProfileStats failed:", error);
-    return { ok: false, error: "Gagal menyimpan angka sekolah." };
-  }
-}

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Loader2, Plus, Building2 } from "lucide-react";
-import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
 import { Button } from "@/components/ui/button";
 import { FacilityEditCard } from "@/components/admin/facility/FacilityEditCard";
 import { FacilityFormDialog } from "@/components/admin/facility/FacilityFormDialog";

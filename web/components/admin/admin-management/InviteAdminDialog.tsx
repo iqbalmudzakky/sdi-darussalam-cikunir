@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Send } from "lucide-react";
+import { useState } from "react";
+import { cva } from "class-variance-authority";
+import { Check, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,36 +11,52 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
-import type { AdminItem } from "@/types/Admin";
+import { ADMIN_ROLE_DOT_CLASS, ADMIN_ROLE_LABEL } from "@/lib/adminRoles";
+import type { AdminItem, AdminRole, InviteAdminInput } from "@/types/Admin";
 
 type InviteAdminDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  roleOptions: AdminRole[];
   onSubmit: (
-    email: string,
+    input: InviteAdminInput,
   ) => Promise<{ ok: true; admin: AdminItem } | { ok: false; error: string }>;
 };
+
+const roleChipVariants = cva(
+  "inline-flex h-9 items-center gap-2 rounded-full border pr-3.5 pl-3 text-sm transition-colors",
+  {
+    variants: {
+      selected: {
+        true: "border-brand-600 bg-brand-50 font-semibold text-brand-800",
+        false: "border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+      },
+    },
+  },
+);
 
 export function InviteAdminDialog({
   open,
   onOpenChange,
+  roleOptions,
   onSubmit,
 }: InviteAdminDialogProps) {
   const toast = useToast();
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState<AdminRole>("teacher");
   const [error, setError] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  useEffect(() => {
-    if (open) {
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
       setEmail("");
+      setRole("teacher");
       setError("");
     }
-  }, [open]);
+    onOpenChange(nextOpen);
+  }
 
   async function handleSubmit() {
     if (!email.trim()) {
@@ -48,64 +65,76 @@ export function InviteAdminDialog({
     }
 
     setIsSending(true);
-    const result = await onSubmit(email.trim());
+    const result = await onSubmit({ email: email.trim(), role });
     setIsSending(false);
 
     if (!result.ok) {
-      toast.error("Gagal mengundang admin", result.error);
+      toast.error("Gagal mengundang", result.error);
       return;
     }
 
-    toast.success("Undangan terkirim", `Tautan dikirim ke ${email.trim()}.`);
-    onOpenChange(false);
+    toast.success("Undangan terkirim", `Link dikirim ke ${email.trim()}.`);
+    handleOpenChange(false);
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Undang Admin</DialogTitle>
-          <DialogDescription>
-            Tautan untuk mengatur password akan dikirim ke email ini.
-          </DialogDescription>
+          <DialogTitle>Undang Akun</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="invite-email">Email</Label>
-          <Input
-            id="invite-email"
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError("");
-            }}
-            placeholder="admin@sdidarussalamcikunir.sch.id"
-            className="rounded-xl"
-          />
-          {error && <p className="text-xs text-red-600">{error}</p>}
-        </div>
+        <div className="space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="invite-email">Email</Label>
+            <Input
+              id="invite-email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
+              placeholder="nama@email.com"
+              className="rounded-xl"
+            />
+            {error && <p className="text-xs text-red-600">{error}</p>}
+          </div>
 
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            disabled={isSending}
-            className="flex-1"
-          >
-            Batal
-          </Button>
+          <div className="space-y-2">
+            <Label>Peran</Label>
+            <div className="flex flex-wrap gap-2">
+              {roleOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setRole(option)}
+                  aria-pressed={role === option}
+                  className={roleChipVariants({ selected: role === option })}
+                >
+                  {role === option ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <span
+                      className={`h-2 w-2 rounded-full ${ADMIN_ROLE_DOT_CLASS[option]}`}
+                    />
+                  )}
+                  {ADMIN_ROLE_LABEL[option]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Button
             type="button"
             onClick={handleSubmit}
             disabled={isSending}
-            className="flex-1 bg-brand-600 text-white hover:bg-brand-700"
+            className="h-10 w-full"
           >
-            <Send className="w-4 h-4" />
-            {isSending ? "Mengirim..." : "Kirim Undangan"}
+            <UserPlus />
+            {isSending ? "Mengirim..." : "Undang"}
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

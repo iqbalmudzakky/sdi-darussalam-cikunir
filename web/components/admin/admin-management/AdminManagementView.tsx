@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Plus, ShieldCheck } from "lucide-react";
-import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { Loader2, ShieldCheck, UserPlus } from "lucide-react";
+import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
+import { ReadOnlyChip } from "@/components/admin/shared/ReadOnlyChip";
 import { Button } from "@/components/ui/button";
 import { AdminEditCard } from "./AdminEditCard";
 import { InviteAdminDialog } from "./InviteAdminDialog";
@@ -14,16 +15,17 @@ import {
   deleteAdmin,
   resendInvite,
 } from "@/lib/api/admins";
-import type { AdminItem, UpdateAdminInput } from "@/types/Admin";
+import type {
+  AdminItem,
+  AdminRole,
+  InviteAdminInput,
+  UpdateAdminInput,
+} from "@/types/Admin";
 
-type AdminManagementViewProps = {
-  currentUserId: string;
-};
-
-export function AdminManagementView({
-  currentUserId,
-}: AdminManagementViewProps) {
+export function AdminManagementView() {
   const [items, setItems] = useState<AdminItem[]>([]);
+  const [roleOptions, setRoleOptions] = useState<AdminRole[]>([]);
+  const [canManage, setCanManage] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
@@ -35,7 +37,9 @@ export function AdminManagementView({
   async function loadAdmins() {
     try {
       const data = await listAdmins();
-      setItems(data);
+      setItems(data.admins);
+      setRoleOptions(data.role_options);
+      setCanManage(data.can_manage);
     } catch (error) {
       console.error("Failed to load admins:", error);
       setLoadError(true);
@@ -46,9 +50,9 @@ export function AdminManagementView({
 
   const NETWORK_ERROR = "Gagal terhubung ke server. Periksa koneksi Anda.";
 
-  async function handleInvite(email: string) {
+  async function handleInvite(input: InviteAdminInput) {
     try {
-      const result = await inviteAdmin({ email });
+      const result = await inviteAdmin(input);
       if (result.ok) {
         setItems((prev) => [...prev, result.admin]);
       }
@@ -99,19 +103,17 @@ export function AdminManagementView({
   return (
     <div className="max-w-6xl mx-auto">
       <AdminPageHeader
-        title="Kelola Admin"
-        description="Undang, ubah peran, atau nonaktifkan akun admin panel."
+        title="Akun"
         count={isLoading || loadError ? undefined : items.length}
         action={
-          <Button
-            type="button"
-            variant="gradient"
-            onClick={() => setIsInviteOpen(true)}
-            className="w-full sm:w-auto"
-          >
-            <Plus />
-            Undang Admin
-          </Button>
+          isLoading || loadError ? undefined : canManage ? (
+            <Button type="button" onClick={() => setIsInviteOpen(true)}>
+              <UserPlus />
+              Undang
+            </Button>
+          ) : (
+            <ReadOnlyChip />
+          )
         }
       />
 
@@ -122,23 +124,21 @@ export function AdminManagementView({
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-sm font-medium text-red-700">
-            Gagal memuat daftar admin. Coba refresh halaman.
+            Gagal memuat daftar akun. Coba refresh halaman.
           </p>
         </div>
       ) : items.length === 0 ? (
         <AdminEmptyState
           icon={ShieldCheck}
-          title="Belum ada admin lain"
-          description="Undang admin baru lewat email untuk membantu kelola konten website."
+          title="Belum ada akun lain"
+          description="Undang lewat email."
           action={
-            <Button
-              type="button"
-              variant="gradient"
-              onClick={() => setIsInviteOpen(true)}
-            >
-              <Plus />
-              Undang Admin
-            </Button>
+            canManage && (
+              <Button type="button" onClick={() => setIsInviteOpen(true)}>
+                <UserPlus />
+                Undang
+              </Button>
+            )
           }
         />
       ) : (
@@ -147,7 +147,7 @@ export function AdminManagementView({
             <AdminEditCard
               key={item.id}
               item={item}
-              currentUserId={currentUserId}
+              roleOptions={roleOptions}
               onUpdate={handleUpdate}
               onDelete={handleDelete}
               onResendInvite={handleResendInvite}
@@ -159,6 +159,7 @@ export function AdminManagementView({
       <InviteAdminDialog
         open={isInviteOpen}
         onOpenChange={setIsInviteOpen}
+        roleOptions={roleOptions}
         onSubmit={handleInvite}
       />
     </div>

@@ -1,16 +1,25 @@
 import { NextResponse } from "next/server";
-import { requireSuperadmin } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import * as paymentSettingsService from "@/modules/payment-settings/service";
-import { SavePaymentSettingsRequestSchema } from "@/modules/payment-settings/dto";
+import {
+  EstimateFeeQuerySchema,
+  SavePaymentSettingsRequestSchema,
+} from "@/modules/payment-settings/dto";
 
-export async function GET() {
-  const user = await requireSuperadmin();
+export async function GET(request: Request) {
+  const user = await requirePermission("view_admission_settings");
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const estimateFee = EstimateFeeQuerySchema.parse(searchParams.get("fee"));
+
   try {
-    const settings = await paymentSettingsService.getPaymentSettings();
+    const settings = await paymentSettingsService.getPaymentSettingsResponse(
+      estimateFee,
+      user.role,
+    );
     if (!settings) {
       return NextResponse.json(
         { error: "Pengaturan pembayaran belum tersedia." },
@@ -18,12 +27,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({
-      registration_fee: settings.registration_fee,
-      registration_opens_on: settings.registration_opens_on,
-      registration_closes_on: settings.registration_closes_on,
-      updated_at: settings.updated_at,
-    });
+    return NextResponse.json(settings);
   } catch (error) {
     console.error("GET /api/payment-settings failed:", error);
     return NextResponse.json(
@@ -34,7 +38,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_admission_settings");
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

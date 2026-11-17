@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
-import { requireSuperadmin } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import * as adminService from "@/modules/admin/service";
 import {
   UpdateAdminRequestSchema,
-  type DeleteAdminInput,
+  type AdminMutationFailure,
+  type AdminTargetInput,
   type UpdateAdminInput,
 } from "@/modules/admin/dto";
 
-function statusFor(reason: "self" | "last_superadmin" | "not_found") {
+function statusFor(reason: AdminMutationFailure) {
   if (reason === "not_found") return 404;
-  if (reason === "self") return 403;
+  if (reason === "self" || reason === "forbidden_role") return 403;
   return 409;
 }
 
@@ -17,7 +18,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_accounts");
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -34,7 +35,7 @@ export async function PATCH(
 
   try {
     const updateInput: UpdateAdminInput = {
-      actingUserId: user.id,
+      actingUser: user,
       targetId: id,
       patch: parsed.data,
     };
@@ -59,7 +60,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_accounts");
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -67,8 +68,8 @@ export async function DELETE(
   const { id } = await params;
 
   try {
-    const deleteInput: DeleteAdminInput = {
-      actingUserId: user.id,
+    const deleteInput: AdminTargetInput = {
+      actingUser: user,
       targetId: id,
     };
     const result = await adminService.deleteAdmin(deleteInput);

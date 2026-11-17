@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireSuperadmin } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import * as adminService from "@/modules/admin/service";
+import type { AdminTargetInput } from "@/modules/admin/dto";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_accounts");
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -14,7 +15,11 @@ export async function POST(
   const { id } = await params;
 
   try {
-    const result = await adminService.resendInvite(id);
+    const resendInput: AdminTargetInput = {
+      actingUser: user,
+      targetId: id,
+    };
+    const result = await adminService.resendInvite(resendInput);
     if (!result.ok) {
       return NextResponse.json({ error: result.message }, { status: 409 });
     }

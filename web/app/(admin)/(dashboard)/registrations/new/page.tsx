@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RegistrationForm } from "@/components/sections/RegistrationForm/RegistrationForm";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
 import { Button } from "@/components/ui/button";
 
 export default function AdminNewRegistrationPage() {

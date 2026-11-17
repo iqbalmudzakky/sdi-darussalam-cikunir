@@ -3,7 +3,7 @@ import * as adminService from "@/modules/admin/service";
 import { ForgotPasswordRequestSchema } from "@/modules/admin/dto";
 
 const GENERIC_MESSAGE =
-  "Jika email terdaftar, tautan reset password telah dikirim.";
+  "Jika email terdaftar, link reset password telah dikirim.";
 
 export async function POST(request: Request) {
   const body = await request.json();

@@ -1,5 +1,8 @@
+import type { AdminRole } from "@/modules/shared/constant/role";
+
+export type { AdminRole };
+
 export type AdminStatus = "invited" | "active" | "deactivated";
-export type AdminRole = "superadmin" | "admin";
 
 export type AdminCredentials = {
   id: string;
@@ -15,6 +18,7 @@ export type AdminSummary = Omit<AdminCredentials, "password_hash"> & {
 
 export type NewInvitedAdmin = {
   email: string;
+  role: AdminRole;
 };
 
 export type AdminPatch = {

@@ -1,10 +1,11 @@
 import type {
   AdminItem,
+  AdminListResponse,
   InviteAdminInput,
   UpdateAdminInput,
 } from "@/types/Admin";
 
-export async function listAdmins(): Promise<AdminItem[]> {
+export async function listAdmins(): Promise<AdminListResponse> {
   const res = await fetch("/api/admins");
   if (!res.ok) throw new Error(`Failed to list admins (${res.status})`);
   return res.json();

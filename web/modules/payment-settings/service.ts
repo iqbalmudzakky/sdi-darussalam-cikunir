@@ -1,7 +1,14 @@
 import { withDbLogging } from "@/modules/db/errors";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
+import {
+  DOKU_MDR_METHODS,
+  DOKU_PPN_RATE,
+} from "@/modules/shared/constant/doku";
+import * as authService from "@/modules/auth/service";
+import type { AdminRole } from "@/modules/shared/constant/role";
 import * as repository from "./repository";
 import type { PaymentSettings, PaymentSettingsUpdateInput } from "./entity";
+import type { DokuEstimate, PaymentSettingsResponse } from "./dto";
 
 /*
  * Melempar error kalau barisnya hilang, bukan memakai nilai cadangan: nominal
@@ -23,6 +30,41 @@ export async function getRegistrationFee(): Promise<number> {
 
 export async function getPaymentSettings(): Promise<PaymentSettings | null> {
   return withDbLogging("paymentSettings.get", () => repository.get());
+}
+
+export async function getPaymentSettingsResponse(
+  estimateFee: number | null,
+  actingRole: AdminRole,
+): Promise<PaymentSettingsResponse | null> {
+  const settings = await withDbLogging("paymentSettings.get", () =>
+    repository.get(),
+  );
+  if (!settings) return null;
+
+  const fee = estimateFee ?? settings.registration_fee;
+  const dokuEstimates: DokuEstimate[] = DOKU_MDR_METHODS.map((method) => {
+    const base = method.kind === "flat" ? method.value : fee * method.value;
+    const deduction = Math.round(base * (1 + DOKU_PPN_RATE));
+    const estimate: DokuEstimate = {
+      method: method.label,
+      deduction,
+      received: fee - deduction,
+    };
+    return estimate;
+  });
+
+  const response: PaymentSettingsResponse = {
+    registration_fee: settings.registration_fee,
+    registration_opens_on: settings.registration_opens_on,
+    registration_closes_on: settings.registration_closes_on,
+    updated_at: settings.updated_at,
+    doku_estimates: dokuEstimates,
+    can_manage: authService.hasPermission(
+      actingRole,
+      "manage_admission_settings",
+    ),
+  };
+  return response;
 }
 
 export async function saveSettings(

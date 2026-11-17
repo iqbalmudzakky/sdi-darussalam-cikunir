@@ -2,7 +2,6 @@ import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PaymentStatus } from "@/types/Payment";
 
-/* Semua status yang bisa dibaca dari database, dipakai untuk menampilkan. */
 export const PAYMENT_STATUS_META: Record<
   PaymentStatus,
   { label: string; icon: typeof Clock; className: string }

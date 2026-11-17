@@ -8,6 +8,14 @@ const NullableDateSchema = z
   .date("Format tanggal tidak valid.")
   .nullable();
 
+export const EstimateFeeQuerySchema = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(MAX_REGISTRATION_FEE)
+  .nullable()
+  .catch(null);
+
 export const SavePaymentSettingsRequestSchema = z
   .object({
     registration_fee: z
@@ -36,9 +44,17 @@ export type SavePaymentSettingsRequest = z.infer<
   typeof SavePaymentSettingsRequestSchema
 >;
 
+export type DokuEstimate = {
+  method: string;
+  deduction: number;
+  received: number;
+};
+
 export type PaymentSettingsResponse = {
   registration_fee: number;
   registration_opens_on: string | null;
   registration_closes_on: string | null;
   updated_at: string;
+  doku_estimates: DokuEstimate[];
+  can_manage: boolean;
 };

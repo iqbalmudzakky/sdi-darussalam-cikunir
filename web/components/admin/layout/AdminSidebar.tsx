@@ -24,8 +24,14 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import {
+  ADMIN_ROLE_CHIP_CLASS,
+  ADMIN_ROLE_DOT_CLASS,
+  ADMIN_ROLE_LABEL,
+} from "@/lib/adminRoles";
 import { logout } from "@/lib/api/auth";
 import { getPendingFollowUpCount } from "@/lib/api/registrations";
+import type { AdminRole, Permission } from "@/modules/shared/constant/role";
 
 const sidebarNavLinkVariants = cva(
   [
@@ -40,7 +46,8 @@ const sidebarNavLinkVariants = cva(
           // Penanda tegak di tepi kiri supaya halaman aktif langsung terlihat.
           "before:absolute before:inset-y-1.5 before:-left-3 before:w-1 before:rounded-r-full before:bg-brand-600",
         ],
-        false: "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900",
+        false:
+          "font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900",
       },
     },
   },
@@ -55,7 +62,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
-  superadminOnly?: boolean;
+  permission?: Permission;
 };
 
 type NavGroup = {
@@ -92,27 +99,34 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Administrasi",
     items: [
       {
-        // Sets what applicants are charged, so it stays with the superadmin.
         href: "/payment",
         label: "Pembayaran",
         icon: Wallet,
-        superadminOnly: true,
+        permission: "view_admission_settings",
       },
       {
         href: "/admin-management",
-        label: "Kelola Admin",
+        label: "Akun",
         icon: ShieldCheck,
-        superadminOnly: true,
+        permission: "view_accounts",
       },
     ],
   },
 ];
 
-type AdminSidebarProps = {
-  role: "superadmin" | "admin";
+type SidebarNavigationProps = {
+  pathname: string;
+  permissions: readonly Permission[];
+  pendingCount: number;
+  onNavigate: () => void;
 };
 
-export function AdminSidebar({ role }: AdminSidebarProps) {
+type AdminSidebarProps = {
+  role: AdminRole;
+  permissions: readonly Permission[];
+};
+
+export function AdminSidebar({ role, permissions }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -187,65 +201,25 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
   );
 
   const navigation = (
-    <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-      {NAV_GROUPS.map((group, groupIndex) => {
-        const visibleItems = group.items.filter(
-          (item) => !item.superadminOnly || role === "superadmin",
-        );
-        if (visibleItems.length === 0) return null;
-
-        return (
-          <div key={group.label ?? groupIndex}>
-            {group.label && (
-              <p className="mb-1.5 px-3 text-[11px] font-semibold tracking-[0.08em] text-gray-500 uppercase">
-                {group.label}
-              </p>
-            )}
-
-            <div className="space-y-0.5">
-              {visibleItems.map(({ href, label, icon: Icon }) => {
-                const isActive =
-                  href === "/dashboard"
-                    ? pathname === "/dashboard"
-                    : pathname.startsWith(href);
-
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    onClick={() => setIsOpen(false)}
-                    className={sidebarNavLinkVariants({ active: isActive })}
-                  >
-                    <Icon
-                      className={
-                        isActive
-                          ? "h-4 w-4 shrink-0 text-brand-600"
-                          : "h-4 w-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600"
-                      }
-                    />
-                    {label}
-
-                    {href === "/registrations" && pendingCount > 0 && (
-                      <span className={sidebarPendingBadgeVariants()}>
-                        {pendingCount}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </nav>
+    <SidebarNavigation
+      pathname={pathname}
+      permissions={permissions}
+      pendingCount={pendingCount}
+      onNavigate={() => setIsOpen(false)}
+    />
   );
 
   const footer = (
     <div className="space-y-0.5 border-t border-gray-200 px-3 py-3">
       <p className="mb-1 flex items-center justify-between px-3 py-1 text-xs text-gray-500">
         Masuk sebagai
-        <span className="rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 font-medium text-gray-700">
-          {role === "superadmin" ? "Superadmin" : "Admin"}
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-2 font-semibold ${ADMIN_ROLE_CHIP_CLASS[role]}`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${ADMIN_ROLE_DOT_CLASS[role]}`}
+          />
+          {ADMIN_ROLE_LABEL[role]}
         </span>
       </p>
 
@@ -344,5 +318,66 @@ export function AdminSidebar({ role }: AdminSidebarProps) {
         </div>
       )}
     </>
+  );
+}
+
+function SidebarNavigation({
+  pathname,
+  permissions,
+  pendingCount,
+  onNavigate,
+}: SidebarNavigationProps) {
+  return (
+    <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+      {NAV_GROUPS.map((group, groupIndex) => {
+        const visibleItems = group.items.filter(
+          (item) => !item.permission || permissions.includes(item.permission),
+        );
+        if (visibleItems.length === 0) return null;
+
+        return (
+          <div key={group.label ?? groupIndex}>
+            {group.label && (
+              <p className="mb-1.5 px-3 text-[11px] font-semibold tracking-[0.08em] text-gray-500 uppercase">
+                {group.label}
+              </p>
+            )}
+
+            <div className="space-y-0.5">
+              {visibleItems.map(({ href, label, icon: Icon }) => {
+                const isActive =
+                  href === "/dashboard"
+                    ? pathname === "/dashboard"
+                    : pathname.startsWith(href);
+
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={onNavigate}
+                    className={sidebarNavLinkVariants({ active: isActive })}
+                  >
+                    <Icon
+                      className={
+                        isActive
+                          ? "h-4 w-4 shrink-0 text-brand-600"
+                          : "h-4 w-4 shrink-0 text-gray-400 transition-colors group-hover:text-gray-600"
+                      }
+                    />
+                    {label}
+
+                    {href === "/registrations" && pendingCount > 0 && (
+                      <span className={sidebarPendingBadgeVariants()}>
+                        {pendingCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </nav>
   );
 }

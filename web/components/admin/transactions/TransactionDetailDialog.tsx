@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import { formatDateTime } from "@/lib/date";
 import { formatAmount, formatMethod, isOrphaned } from "@/lib/payment";
-import { PaymentStatusBadge } from "@/components/admin/PaymentStatusBadge";
+import { PaymentStatusBadge } from "@/components/admin/shared/PaymentStatusBadge";
 import type { Payment } from "@/types/Payment";
 
 type TransactionDetailDialogProps = {
@@ -126,7 +126,6 @@ function DetailRow({
   return (
     <div className="flex justify-between gap-4 border-b border-gray-200 pb-2 last:border-0">
       <dt className="shrink-0 text-gray-500">{label}</dt>
-      {/* break-all, bukan truncate: email panjang harus terbaca utuh. */}
       <dd
         className={cn(
           "text-right font-medium break-all text-gray-900",

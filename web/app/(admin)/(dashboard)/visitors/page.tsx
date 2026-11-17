@@ -8,8 +8,8 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { AutoRefresh } from "@/components/admin/AutoRefresh";
+import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
+import { AutoRefresh } from "@/components/admin/shared/AutoRefresh";
 import { cn } from "@/lib/utils";
 import {
   SESSION_GAP_MINUTES,

@@ -1,4 +1,6 @@
-export type AdminRole = "superadmin" | "admin";
+import type { AdminRole } from "@/modules/shared/constant/role";
+
+export type { AdminRole };
 export type AdminStatus = "invited" | "active" | "deactivated";
 
 export type AdminItem = {
@@ -7,10 +9,19 @@ export type AdminItem = {
   role: AdminRole;
   status: AdminStatus;
   created_at: string;
+  is_self: boolean;
+  can_manage: boolean;
+};
+
+export type AdminListResponse = {
+  admins: AdminItem[];
+  role_options: AdminRole[];
+  can_manage: boolean;
 };
 
 export type InviteAdminInput = {
   email: string;
+  role: AdminRole;
 };
 
 export type UpdateAdminInput = {
