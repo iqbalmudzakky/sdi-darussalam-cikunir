@@ -73,7 +73,7 @@ export function InviteAdminDialog({
       return;
     }
 
-    toast.success("Undangan terkirim", `Tautan dikirim ke ${email.trim()}.`);
+    toast.success("Undangan terkirim", `Link dikirim ke ${email.trim()}.`);
     handleOpenChange(false);
   }
 

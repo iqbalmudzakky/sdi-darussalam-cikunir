@@ -1,28 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { cva } from "class-variance-authority";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Clock, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AuthCard,
+  AuthError,
+  AuthIcon,
+  AuthLoading,
+  BackToLoginLink,
+  authInputClassName,
+} from "@/components/admin/auth/AuthCard";
 import { forgotPassword } from "@/lib/api/auth";
-
-const pageBackgroundVariants = cva([
-  "relative min-h-screen bg-gray-50",
-  "flex items-center justify-center",
-]);
-
-const inputFieldVariants = cva([
-  "h-11 rounded-lg px-4",
-  "focus-visible:border-brand-500 focus-visible:ring-brand-500/50",
-]);
-
-const errorBoxVariants = cva([
-  "rounded-xl border border-red-200 bg-red-50 px-4 py-3",
-  "text-sm text-red-600",
-]);
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -38,92 +29,79 @@ export default function ForgotPasswordPage() {
       await forgotPassword(email);
       setIsSubmitted(true);
     } catch {
-      setError("Gagal mengirim, periksa koneksi Anda dan coba lagi.");
+      setError("Gagal terhubung ke server");
     } finally {
       setIsLoading(false);
     }
   }
 
-  return (
-    <div className={pageBackgroundVariants()}>
-      <div className="relative w-full max-w-md mx-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-(--admin-card-shadow) sm:p-10">
-          {isSubmitted ? (
-            <div className="flex flex-col items-center text-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                Cek Email Anda
-              </h1>
-              <p className="mt-2 text-sm text-gray-500">
-                Jika email <span className="font-medium">{email}</span>{" "}
-                terdaftar, tautan reset password sudah dikirim.
-              </p>
-              <Link
-                href="/masuk-sekolah"
-                className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Kembali ke login
-              </Link>
-            </div>
-          ) : isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-16">
-              <Loader2 className="w-12 h-12 text-brand-600 animate-spin" />
-              <p className="text-sm text-gray-500">Memproses...</p>
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col items-center text-center mb-8">
-                <img
-                  src="/logo.png"
-                  alt="Logo SDI Darussalam Cikunir"
-                  className="w-14 h-14 mb-4 rounded-full object-cover"
-                />
-                <h1 className="text-xl font-bold text-gray-900">
-                  Lupa Password
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                  Masukkan email admin Anda, kami kirimkan tautan reset
-                  password.
-                </p>
-              </div>
+  if (isLoading) {
+    return (
+      <AuthCard>
+        <AuthLoading />
+      </AuthCard>
+    );
+  }
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@sdidarussalamcikunir.sch.id"
-                    className={inputFieldVariants()}
-                  />
-                </div>
-
-                {error && <p className={errorBoxVariants()}>{error}</p>}
-
-                <Button
-                  type="submit"
-                  variant="gradient"
-                  disabled={isLoading}
-                  className="w-full font-semibold"
-                >
-                  Kirim Tautan Reset
-                </Button>
-
-                <Link
-                  href="/masuk-sekolah"
-                  className="flex items-center justify-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Kembali ke login
-                </Link>
-              </form>
-            </>
-          )}
+  if (isSubmitted) {
+    return (
+      <AuthCard>
+        <div className="flex flex-col items-center gap-3.5 text-center">
+          <AuthIcon icon={Mail} tone="brand" />
+          <h1 className="text-[22px] font-bold text-gray-900">Cek email</h1>
+          <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 py-1 pr-3 pl-2.5 text-[13px] font-semibold text-gray-700">
+            <Mail className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+            <span className="truncate">{email}</span>
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-[13px] text-gray-500">
+            <Clock className="h-4 w-4" />
+            Berlaku 1 jam
+          </span>
+          <div className="pt-3">
+            <BackToLoginLink />
+          </div>
         </div>
-      </div>
-    </div>
+      </AuthCard>
+    );
+  }
+
+  return (
+    <AuthCard>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col items-center gap-[18px]"
+      >
+        <img
+          src="/logo.png"
+          alt="Logo SD Islam Darussalam Cikunir"
+          className="h-14 w-14 rounded-full object-cover"
+        />
+        <h1 className="text-[22px] font-bold text-gray-900">Lupa Password</h1>
+
+        <div className="w-full space-y-[18px]">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="nama@email.com"
+              className={authInputClassName}
+            />
+          </div>
+
+          {error && <AuthError message={error} />}
+
+          <Button type="submit" className="h-11 w-full font-semibold">
+            <Send className="h-4 w-4" />
+            Kirim
+          </Button>
+        </div>
+
+        <BackToLoginLink />
+      </form>
+    </AuthCard>
   );
 }

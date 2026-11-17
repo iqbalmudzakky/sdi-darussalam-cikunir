@@ -179,14 +179,14 @@ async function completeTokenFlow(
     return {
       ok: false,
       reason: "invalid_token",
-      message: "Tautan tidak valid atau sudah digunakan.",
+      message: "Link tidak valid atau sudah digunakan.",
     };
   }
   if (new Date(actionToken.expires_at).getTime() < Date.now()) {
     return {
       ok: false,
       reason: "expired",
-      message: "Tautan sudah kedaluwarsa.",
+      message: "Link expired.",
     };
   }
 
@@ -195,7 +195,7 @@ async function completeTokenFlow(
     return {
       ok: false,
       reason: "invalid_token",
-      message: "Tautan tidak valid.",
+      message: "Link tidak valid.",
     };
   }
 

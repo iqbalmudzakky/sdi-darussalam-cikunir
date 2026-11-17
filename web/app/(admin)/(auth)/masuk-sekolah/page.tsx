@@ -2,40 +2,25 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { cva } from "class-variance-authority";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AuthCard,
+  AuthError,
+  AuthLoading,
+  PasswordInput,
+  authInputClassName,
+} from "@/components/admin/auth/AuthCard";
 import { login } from "@/lib/api/auth";
-import { cn } from "@/lib/utils";
-
-const pageBackgroundVariants = cva([
-  "relative min-h-screen bg-gray-50",
-  "flex items-center justify-center",
-]);
-
-const inputFieldVariants = cva([
-  "h-11 rounded-lg px-4",
-  "focus-visible:border-brand-500 focus-visible:ring-brand-500/50",
-]);
-
-const togglePasswordVariants = cva([
-  "absolute right-1 top-1/2 -translate-y-1/2",
-  "text-gray-400 hover:bg-transparent hover:text-gray-600",
-]);
-
-const errorBoxVariants = cva([
-  "rounded-xl border border-red-200 bg-red-50 px-4 py-3",
-  "text-sm text-red-600",
-]);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,98 +39,69 @@ export default function LoginPage() {
     window.location.replace("/dashboard");
   }
 
+  if (isLoading) {
+    return (
+      <AuthCard>
+        <AuthLoading />
+      </AuthCard>
+    );
+  }
+
   return (
-    <div className={pageBackgroundVariants()}>
-      <div className="relative w-full max-w-md mx-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-(--admin-card-shadow) sm:p-10">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-16">
-              <Loader2 className="w-12 h-12 text-brand-600 animate-spin" />
-              <p className="text-sm text-gray-500">Memproses login...</p>
+    <AuthCard>
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col items-center gap-[18px]"
+      >
+        <img
+          src="/logo.png"
+          alt="Logo SD Islam Darussalam Cikunir"
+          className="h-14 w-14 rounded-full object-cover"
+        />
+        <h1 className="text-[22px] font-bold text-gray-900">Masuk</h1>
+
+        <div className="w-full space-y-[18px]">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="nama@email.com"
+              className={authInputClassName}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <PasswordInput
+              id="password"
+              label="Password"
+              value={password}
+              placeholder="••••••••"
+              isVisible={isVisible}
+              onChange={setPassword}
+              onToggleVisible={() => setIsVisible((prev) => !prev)}
+            />
+            <div className="flex justify-end">
+              <Link
+                href="/forgot-password"
+                className="text-[13px] font-semibold text-brand-600 hover:underline"
+              >
+                Lupa password?
+              </Link>
             </div>
-          ) : (
-            <>
-              <div className="flex flex-col items-center text-center mb-8">
-                <img
-                  src="/logo.png"
-                  alt="Logo SD Islam Darussalam Cikunir"
-                  className="w-14 h-14 mb-4 rounded-full object-cover"
-                />
-                <h1 className="text-xl font-bold text-gray-900">
-                  SD Islam Darussalam Cikunir
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                  Masuk ke panel admin untuk kelola konten website
-                </p>
-              </div>
+          </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@sdidarussalam.sch.id"
-                    className={inputFieldVariants()}
-                  />
-                </div>
+          {error && <AuthError message={error} />}
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="password">Password</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className={cn(inputFieldVariants(), "pr-11")}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      aria-label={
-                        showPassword
-                          ? "Sembunyikan password"
-                          : "Tampilkan password"
-                      }
-                      className={togglePasswordVariants()}
-                    >
-                      {showPassword ? <EyeOff /> : <Eye />}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Link
-                    href="/forgot-password"
-                    className="text-xs font-medium text-brand-600 hover:underline"
-                  >
-                    Lupa password?
-                  </Link>
-                </div>
-
-                {error && <p className={errorBoxVariants()}>{error}</p>}
-
-                <Button
-                  type="submit"
-                  variant="gradient"
-                  disabled={isLoading}
-                  className="w-full font-semibold"
-                >
-                  Masuk
-                </Button>
-              </form>
-            </>
-          )}
+          <Button type="submit" className="h-11 w-full font-semibold">
+            <LogIn className="h-4 w-4" />
+            Masuk
+          </Button>
         </div>
-      </div>
-    </div>
+      </form>
+    </AuthCard>
   );
 }
