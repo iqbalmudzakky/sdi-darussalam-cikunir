@@ -12,6 +12,7 @@ import {
   LOGIN_RATE_LIMIT_MAX_PER_IP,
   LOGIN_RATE_LIMIT_WINDOW_MINUTES,
 } from "@/modules/shared/constant/auth";
+import { ADMIN_ROLES, ROLE_PERMISSIONS } from "@/modules/shared/constant/role";
 import type {
   AdminCredentials,
   AdminPatch,
@@ -190,9 +191,8 @@ export async function listAccounts(): Promise<AdminSummary[]> {
 }
 
 export async function createInvitedAccount(
-  email: string,
+  newAdmin: NewInvitedAdmin,
 ): Promise<AdminSummary> {
-  const newAdmin: NewInvitedAdmin = { email };
   const admin = await withDbLogging("auth.insertInvitedAdmin", () =>
     repository.insertInvitedAdmin(newAdmin),
   );
@@ -233,11 +233,14 @@ export async function removeAccount(id: string): Promise<void> {
   await withDbLogging("auth.removeAdmin", () => repository.removeAdmin(id));
 }
 
-export async function countActiveSuperadmins(
+export async function countOtherActiveAccountManagers(
   excludeId: string,
 ): Promise<number> {
-  const count = await withDbLogging("auth.countActiveSuperadmins", () =>
-    repository.countActiveSuperadmins(excludeId),
+  const managerRoles = ADMIN_ROLES.filter((role) =>
+    ROLE_PERMISSIONS[role].includes("manage_accounts"),
+  );
+  const count = await withDbLogging("auth.countActiveByRoles", () =>
+    repository.countActiveByRoles(managerRoles, excludeId),
   );
   return count;
 }

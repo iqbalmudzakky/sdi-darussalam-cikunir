@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireSuperadmin } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import * as paymentSettingsService from "@/modules/payment-settings/service";
 import { SavePaymentSettingsRequestSchema } from "@/modules/payment-settings/dto";
 
 export async function GET() {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_admission_settings");
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -34,7 +34,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_admission_settings");
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

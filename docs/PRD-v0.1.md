@@ -634,8 +634,8 @@ Pelanggaran lama yang tercatat per 11 November 2026:
 - Berkas lebih dari 500 baris: `RegistrationForm.tsx` (1164), `(admin)/(dashboard)/registrations/page.tsx`
   (910), `(admin)/(dashboard)/about/page.tsx` (698), `modules/registration/repository.ts` (574),
   `(admin)/(dashboard)/transactions/page.tsx` (559)
-- Komponen lebih dari 200 baris: `(admin)/(dashboard)/dashboard/page.tsx` (429),
-  `components/admin/AdminSidebar.tsx` (345)
+- Komponen lebih dari 200 baris: `(admin)/(dashboard)/dashboard/page.tsx` (429).
+  `components/admin/AdminSidebar.tsx` sudah dirapikan di PR 1 (17 Nov 2026)
 - Tabel `registration_payments` di-query oleh repository `payment` dan `registration`
 
 ### 6.7 Alamat halaman admin
@@ -1121,6 +1121,7 @@ diketik dua kali, tapi tetap bisa diubah.
 | K24 | Input Pendaftar Manual tetap ada, diisi guru dengan **form lengkap** langsung                                                                                  |
 | K25 | Nomor urut surat mulai dari 001 lagi tiap tahun kalender surat                                                                                                 |
 | K26 | Nomor urut pendaftaran mulai dari 001 lagi untuk tiap TA target                                                                                                |
+| K27 | Terhitung **pendaftar** setelah **form lengkap** dikirim (`full_form_completed_at` terisi). Form pendek belum dihitung                                         |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1191,8 +1192,19 @@ Tiga penanda lain tampil sebagai chip ikon, terpisah dari status:
 - Guru yang menguji boleh memutuskan hasil dan membuat surat. Yang tidak boleh untuk guru (dan
   TU): menandai lunas biaya pendaftaran — itu hanya kepsek atau wakepsek.
 
+- Peran Admin hanya bisa diberikan, diubah, atau dihapus oleh akun Admin
+  (`manage_developer_accounts`). Kepsek hanya melihat 4 pilihan peran.
+- Peran dan status akun sendiri tidak bisa diubah. Kepsek atau Admin aktif yang terakhir tidak
+  bisa diturunkan, dinonaktifkan, atau dihapus, supaya halaman Akun selalu punya pengelola.
+- Halaman "Kelola Admin" berganti nama jadi **"Akun"**. Peran dipilih langsung di kartu akun dan
+  di dialog undang (desain: halaman "Akun — Peran" di `docs/design/sdi-darussalam-cikunir.figcraft`).
+- Token login menyimpan peran. Setelah PR 1 rilis, token lama berperan `superadmin`/`admin`
+  ditolak, jadi semua akun login ulang lewat `/masuk-sekolah` (token akses paling lama 8 jam).
+
 **Pemetaan akun lama** (lewat migrasi): `superadmin` → `principal`, `admin` → `teacher`. Setelah
-deploy, peran yang tidak pas diubah dari halaman Akun (akun developer dibuat dari situ juga).
+deploy, peran yang tidak pas diubah dari halaman Akun. Akun Admin pertama tidak bisa dibuat
+dari halaman Akun (hanya Admin yang boleh memberi peran Admin), jadi pemilik repo mengubah
+peran akunnya sendiri sekali lewat SQL di staging dan production.
 
 ---
 
@@ -1260,6 +1272,11 @@ pendaftar sudah ada lebih dulu. Kolom baru `recorded_by` (akun yang menandai lun
 landing page otomatis menampilkan TA yang sedang dibuka. `offline_count` tetap ada untuk
 pendaftar kertas yang tidak diinput.
 
+Yang dihitung hanya baris dengan `full_form_completed_at` terisi (K27). Saat mengisi form lengkap, orang tua
+sudah tahu ada tes, wawancara, dan biaya pendaftaran, jadi datanya serius. Menunggu lunas terlalu lama,
+apalagi saat open house atau gelombang pendaftaran. Input Pendaftar Manual (K24) langsung terhitung
+karena diisi dengan form lengkap.
+
 ---
 
 ### 11.6 Daftar Fitur
@@ -1273,8 +1290,8 @@ pendaftar kertas yang tidak diinput.
 
 - Tombol "Daftar" membuka pilihan **PMB / Siswa Pindahan**.
 - Form pendek (K3). Tetap ada pengecekan duplikat dan pembatas per IP.
-- Setelah kirim: halaman terima kasih singkat (ada tes & wawancara, biaya pendaftaran
-  Rp … dibayar di sekolah saat tes), lalu **langsung dibuka WA CP PMB** dengan pesan:
+- Setelah kirim: tampil **alur pendaftaran** (form lengkap → tes & wawancara, biaya pendaftaran
+  Rp … dibayar di sekolah saat tes → hasil). Tombol "Oke" membuka **WA CP PMB** dengan pesan:
   nama anak, nomor pendaftaran, program, TA.
 - PMB: bila usia anak per 1 Juli TA target di bawah 6 tahun, tampil chip singkat
   "Di bawah 6 tahun — persyaratan khusus, hubungi sekolah". Form tetap bisa dikirim.
@@ -1357,7 +1374,7 @@ pendaftar kertas yang tidak diinput.
 
 #### F19 — Statistik pendaftar
 
-- Rincian per **TA target**: total, per status (alur Baru → Terjadwal → Sudah Tes → Diterima),
+- Rincian per **TA target**: form pendek masuk vs form lengkap (yang dihitung, K27), per status (alur Baru → Terjadwal → Sudah Tes → Diterima),
   per program, PMB/Pindahan, online/offline.
 - Didesain dulu di FigCraft (HP, tablet, desktop) sebelum dikodekan. Data harus cepat dibaca:
   angka utama besar, perbandingan dengan bar, bukan tabel panjang.
@@ -1376,6 +1393,10 @@ Karena itu perubahan nilai `CHECK` dibuat **dua langkah**:
 Berlaku untuk `admin_users.role` dan `ppdb_registrations.status`.
 
 `DROP NOT NULL` dan kolom/tabel baru aman langsung.
+
+**Hitungan pendaftar lama tetap:** semua baris lama berasal dari form lengkap, jadi
+`full_form_completed_at` di-backfill dengan `created_at`. Begitu juga pendaftaran dari sesi DOKU lama
+yang selesai setelah F8 rilis.
 
 **Pembayaran DOKU yang menggantung:** saat F8 rilis, sesi DOKU lama (bayar dulu, data belum
 tersimpan) yang masih `pending` dibiarkan bisa selesai sampai kedaluwarsa. Jalur

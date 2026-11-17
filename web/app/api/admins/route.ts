@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
-import { requireSuperadmin } from "@/lib/auth/session";
+import { requirePermission } from "@/lib/auth/session";
 import * as adminService from "@/modules/admin/service";
-import { InviteAdminRequestSchema } from "@/modules/admin/dto";
+import {
+  InviteAdminRequestSchema,
+  type InviteAdminInput,
+} from "@/modules/admin/dto";
 
 export async function GET() {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_accounts");
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   try {
-    const admins = await adminService.listAdmins();
+    const admins = await adminService.listAdmins(user);
     return NextResponse.json(admins);
   } catch (error) {
     console.error("GET /api/admins failed:", error);
@@ -22,7 +25,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await requireSuperadmin();
+  const user = await requirePermission("manage_accounts");
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -37,9 +40,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = await adminService.inviteAdmin(parsed.data);
+    const inviteInput: InviteAdminInput = {
+      actingUser: user,
+      request: parsed.data,
+    };
+    const result = await adminService.inviteAdmin(inviteInput);
     if (!result.ok) {
-      return NextResponse.json({ error: result.message }, { status: 409 });
+      const status = result.reason === "forbidden_role" ? 403 : 409;
+      return NextResponse.json({ error: result.message }, { status });
     }
     return NextResponse.json(result.admin, { status: 201 });
   } catch (error) {

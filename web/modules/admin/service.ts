@@ -14,6 +14,11 @@ import {
   FORGOT_PASSWORD_RATE_LIMIT_MAX,
   FORGOT_PASSWORD_RATE_LIMIT_WINDOW_MINUTES,
 } from "@/modules/shared/constant/auth";
+import {
+  ADMIN_ROLES,
+  ROLE_PERMISSIONS,
+  type AdminRole,
+} from "@/modules/shared/constant/role";
 import type { AdminSummary } from "@/modules/auth/entity";
 import type { SessionUser } from "@/modules/auth/dto";
 import type { CountActionTokensInput, NewAdminActionToken } from "./entity";
@@ -22,28 +27,49 @@ import type {
   AdminMutationResult,
   AdminResponse,
   CredentialFlowResult,
-  DeleteAdminInput,
+  AdminTargetInput,
   ForgotPasswordRequest,
-  InviteAdminRequest,
+  InviteAdminInput,
   InviteAdminResult,
   ResetPasswordRequest,
   UpdateAdminInput,
 } from "./dto";
 
-function toAdminResponse(admin: AdminSummary): AdminResponse {
-  return {
+function toAdminResponse(
+  admin: AdminSummary,
+  actingUser: SessionUser,
+): AdminResponse {
+  const isSelf = admin.id === actingUser.id;
+  const canManage =
+    !isSelf && listAssignableRoles(actingUser.role).includes(admin.role);
+  const response: AdminResponse = {
     id: admin.id,
     email: admin.email,
     role: admin.role,
     status: admin.status,
     created_at: admin.created_at,
+    is_self: isSelf,
+    can_manage: canManage,
   };
+  return response;
 }
 
-export async function listAdmins(): Promise<AdminResponse[]> {
+export function listAssignableRoles(actingRole: AdminRole): AdminRole[] {
+  const canManageDeveloper = ROLE_PERMISSIONS[actingRole].includes(
+    "manage_developer_accounts",
+  );
+  const roles = ADMIN_ROLES.filter(
+    (role) => role !== "developer" || canManageDeveloper,
+  );
+  return roles;
+}
+
+export async function listAdmins(
+  actingUser: SessionUser,
+): Promise<AdminResponse[]> {
   try {
     const admins = await authService.listAccounts();
-    const response = admins.map(toAdminResponse);
+    const response = admins.map((admin) => toAdminResponse(admin, actingUser));
     return response;
   } catch (error) {
     console.error("admin.listAdmins failed:", error);
@@ -77,37 +103,51 @@ async function issueAndSendInviteToken(
 }
 
 export async function inviteAdmin(
-  input: InviteAdminRequest,
+  input: InviteAdminInput,
 ): Promise<InviteAdminResult> {
+  const { actingUser, request } = input;
   try {
-    const existing = await authService.findAccountByEmail(input.email);
+    const assignableRoles = listAssignableRoles(actingUser.role);
+    if (!assignableRoles.includes(request.role)) {
+      return {
+        ok: false,
+        reason: "forbidden_role",
+        message: "Peran Admin hanya bisa diberikan oleh akun Admin.",
+      };
+    }
+
+    const existing = await authService.findAccountByEmail(request.email);
     if (existing) {
       return {
         ok: false,
         reason: "already_exists",
-        message: "Email sudah terdaftar sebagai admin.",
+        message: "Email sudah terdaftar.",
       };
     }
 
-    const admin = await authService.createInvitedAccount(input.email);
+    const newAdmin = { email: request.email, role: request.role };
+    const admin = await authService.createInvitedAccount(newAdmin);
 
     await issueAndSendInviteToken(admin.id, admin.email);
 
-    return { ok: true, admin: toAdminResponse(admin) };
+    return { ok: true, admin: toAdminResponse(admin, actingUser) };
   } catch (error) {
-    console.error(`admin.inviteAdmin failed for ${input.email}:`, error);
+    console.error(`admin.inviteAdmin failed for ${request.email}:`, error);
     throw error;
   }
 }
 
-export async function resendInvite(id: string): Promise<InviteAdminResult> {
+export async function resendInvite(
+  input: AdminTargetInput,
+): Promise<InviteAdminResult> {
+  const { actingUser, targetId } = input;
   try {
-    const admin = await authService.findAccountById(id);
+    const admin = await authService.findAccountById(targetId);
     if (!admin || admin.status !== "invited") {
       return {
         ok: false,
         reason: "already_exists",
-        message: "Admin tidak ditemukan atau sudah aktif.",
+        message: "Akun tidak ditemukan atau sudah aktif.",
       };
     }
 
@@ -116,9 +156,9 @@ export async function resendInvite(id: string): Promise<InviteAdminResult> {
     );
     await issueAndSendInviteToken(admin.id, admin.email);
 
-    return { ok: true, admin: toAdminResponse(admin) };
+    return { ok: true, admin: toAdminResponse(admin, actingUser) };
   } catch (error) {
-    console.error(`admin.resendInvite failed for ${id}:`, error);
+    console.error(`admin.resendInvite failed for ${targetId}:`, error);
     throw error;
   }
 }
@@ -248,26 +288,9 @@ export async function forgotPassword(
 export async function updateAdmin(
   input: UpdateAdminInput,
 ): Promise<AdminMutationResult> {
-  const { actingUserId, targetId, patch } = input;
+  const { actingUser, targetId, patch } = input;
   try {
-    const target = await authService.findAccountById(targetId);
-    if (!target) {
-      return {
-        ok: false,
-        reason: "not_found",
-        message: "Admin tidak ditemukan.",
-      };
-    }
-
-    const isSelf = targetId === actingUserId;
-    const selfDemotion =
-      isSelf &&
-      patch.role &&
-      patch.role !== "superadmin" &&
-      target.role === "superadmin";
-    const selfDeactivation =
-      isSelf && patch.status && patch.status !== "active";
-    if (selfDemotion || selfDeactivation) {
+    if (targetId === actingUser.id) {
       return {
         ok: false,
         reason: "self",
@@ -275,27 +298,50 @@ export async function updateAdmin(
       };
     }
 
-    const leavesActiveSuperadmin =
-      target.role === "superadmin" && target.status === "active";
-    const removesSuperadminStatus =
-      (patch.role && patch.role !== "superadmin") ||
-      (patch.status && patch.status !== "active");
-    if (leavesActiveSuperadmin && removesSuperadminStatus) {
-      const remaining = await authService.countActiveSuperadmins(targetId);
-      if (remaining === 0) {
-        return {
-          ok: false,
-          reason: "last_superadmin",
-          message: "Tidak bisa mengubah superadmin aktif terakhir.",
-        };
-      }
+    const target = await authService.findAccountById(targetId);
+    if (!target) {
+      return {
+        ok: false,
+        reason: "not_found",
+        message: "Akun tidak ditemukan.",
+      };
+    }
+
+    const assignableRoles = listAssignableRoles(actingUser.role);
+    const allowedTarget = assignableRoles.includes(target.role);
+    const allowedNextRole = !patch.role || assignableRoles.includes(patch.role);
+    if (!allowedTarget || !allowedNextRole) {
+      return {
+        ok: false,
+        reason: "forbidden_role",
+        message: "Peran Admin hanya bisa diatur oleh akun Admin.",
+      };
+    }
+
+    const isActiveManager =
+      target.status === "active" &&
+      ROLE_PERMISSIONS[target.role].includes("manage_accounts");
+    const nextRole = patch.role ?? target.role;
+    const losesManagement =
+      !ROLE_PERMISSIONS[nextRole].includes("manage_accounts") ||
+      patch.status === "deactivated";
+    const remainingManagers =
+      isActiveManager && losesManagement
+        ? await authService.countOtherActiveAccountManagers(targetId)
+        : null;
+    if (remainingManagers === 0) {
+      return {
+        ok: false,
+        reason: "last_manager",
+        message: "Tidak bisa mengubah kepsek atau admin aktif terakhir.",
+      };
     }
 
     const updated = await authService.updateAccount(targetId, patch);
     if (patch.status === "deactivated") {
       await authService.revokeAllSessions(targetId);
     }
-    return { ok: true, admin: toAdminResponse(updated) };
+    return { ok: true, admin: toAdminResponse(updated, actingUser) };
   } catch (error) {
     console.error(`admin.updateAdmin failed for ${targetId}:`, error);
     throw error;
@@ -303,11 +349,11 @@ export async function updateAdmin(
 }
 
 export async function deleteAdmin(
-  input: DeleteAdminInput,
+  input: AdminTargetInput,
 ): Promise<AdminMutationResult> {
-  const { actingUserId, targetId } = input;
+  const { actingUser, targetId } = input;
   try {
-    if (targetId === actingUserId) {
+    if (targetId === actingUser.id) {
       return {
         ok: false,
         reason: "self",
@@ -320,23 +366,35 @@ export async function deleteAdmin(
       return {
         ok: false,
         reason: "not_found",
-        message: "Admin tidak ditemukan.",
+        message: "Akun tidak ditemukan.",
       };
     }
 
-    if (target.role === "superadmin" && target.status === "active") {
-      const remaining = await authService.countActiveSuperadmins(targetId);
-      if (remaining === 0) {
-        return {
-          ok: false,
-          reason: "last_superadmin",
-          message: "Tidak bisa menghapus superadmin aktif terakhir.",
-        };
-      }
+    const assignableRoles = listAssignableRoles(actingUser.role);
+    if (!assignableRoles.includes(target.role)) {
+      return {
+        ok: false,
+        reason: "forbidden_role",
+        message: "Akun Admin hanya bisa dihapus oleh akun Admin.",
+      };
+    }
+
+    const isActiveManager =
+      target.status === "active" &&
+      ROLE_PERMISSIONS[target.role].includes("manage_accounts");
+    const remainingManagers = isActiveManager
+      ? await authService.countOtherActiveAccountManagers(targetId)
+      : null;
+    if (remainingManagers === 0) {
+      return {
+        ok: false,
+        reason: "last_manager",
+        message: "Tidak bisa menghapus kepsek atau admin aktif terakhir.",
+      };
     }
 
     await authService.removeAccount(targetId);
-    return { ok: true, admin: toAdminResponse(target) };
+    return { ok: true, admin: toAdminResponse(target, actingUser) };
   } catch (error) {
     console.error(`admin.deleteAdmin failed for ${targetId}:`, error);
     throw error;

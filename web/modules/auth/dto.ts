@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { AdminRole } from "@/modules/shared/constant/role";
 
 export const LoginRequestSchema = z.object({
   email: z
@@ -14,7 +15,7 @@ export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type SessionUser = {
   id: string;
   email: string;
-  role: "superadmin" | "admin";
+  role: AdminRole;
 };
 
 export type TokenPair = {

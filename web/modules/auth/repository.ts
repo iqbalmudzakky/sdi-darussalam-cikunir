@@ -2,6 +2,7 @@ import { sql } from "@/modules/db/postgres";
 import type {
   AdminCredentials,
   AdminPatch,
+  AdminRole,
   AdminSummary,
   CountLoginAttemptsInput,
   LoginAttemptCounts,
@@ -82,10 +83,10 @@ export async function insertInvitedAdmin(
   input: NewInvitedAdmin,
 ): Promise<AdminSummary> {
   const rows = await sql.unsafe<AdminSummary[]>(
-    `INSERT INTO admin_users (email, status, password_hash)
-     VALUES ($1, 'invited', NULL)
+    `INSERT INTO admin_users (email, role, status, password_hash)
+     VALUES ($1, $2, 'invited', NULL)
      RETURNING id, email, role, status, created_at`,
-    [input.email],
+    [input.email, input.role],
   );
   return rows[0];
 }
@@ -138,13 +139,14 @@ export async function removeAdmin(id: string): Promise<void> {
   await sql.unsafe(`DELETE FROM admin_users WHERE id = $1`, [id]);
 }
 
-export async function countActiveSuperadmins(
+export async function countActiveByRoles(
+  roles: AdminRole[],
   excludeId: string,
 ): Promise<number> {
   const rows = await sql.unsafe<{ count: number }[]>(
     `SELECT COUNT(*)::int AS count FROM admin_users
-     WHERE role = 'superadmin' AND status = 'active' AND id != $1`,
-    [excludeId],
+     WHERE role = ANY($1) AND status = 'active' AND id != $2`,
+    [roles, excludeId],
   );
   return rows[0].count;
 }

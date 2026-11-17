@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
+import { ADMIN_ROLES } from "@/modules/shared/constant/role";
 import { randomBytes, createHash } from "crypto";
 import type { SessionUser } from "@/types/Auth";
 
@@ -23,17 +24,15 @@ export async function verifyAccessToken(
 ): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(token, getAccessSecret());
-    const { sub, email, role } = payload;
+    const { sub, email } = payload;
+    const role = ADMIN_ROLES.find((item) => item === payload.role);
 
-    if (
-      typeof sub !== "string" ||
-      typeof email !== "string" ||
-      (role !== "superadmin" && role !== "admin")
-    ) {
+    if (typeof sub !== "string" || typeof email !== "string" || !role) {
       return null;
     }
 
-    return { id: sub, email, role };
+    const user: SessionUser = { id: sub, email, role };
+    return user;
   } catch {
     return null;
   }

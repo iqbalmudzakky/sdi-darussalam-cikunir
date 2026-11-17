@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type AdminPageHeaderProps = {
   title: string;
-  description: string;
+  description?: string;
 
   /*
    * Jumlah item yang sedang dikelola. Ditampilkan sebagai
@@ -35,7 +35,11 @@ export function AdminPageHeader({
           )}
         </div>
 
-        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-gray-500">{description}</p>
+        {description && (
+          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-gray-500">
+            {description}
+          </p>
+        )}
       </div>
 
       {action && <div className="shrink-0">{action}</div>}

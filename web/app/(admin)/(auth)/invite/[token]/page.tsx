@@ -148,9 +148,7 @@ export default function AcceptInvitePage() {
                   <div className={errorBoxVariants()}>
                     <p>{error}</p>
                     {expired && (
-                      <p className="mt-1">
-                        Minta superadmin kirim ulang undangan.
-                      </p>
+                      <p className="mt-1">Minta kepsek kirim ulang undangan.</p>
                     )}
                   </div>
                 )}
