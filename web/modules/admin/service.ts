@@ -79,7 +79,9 @@ export async function listAdmins(
   try {
     const admins = await authService.listAccounts();
     const response: AdminListResponse = {
-      admins: admins.map((admin) => toAdminResponse(admin, actingUser)),
+      admins: admins
+        .map((admin) => toAdminResponse(admin, actingUser))
+        .sort((a, b) => Number(b.is_self) - Number(a.is_self)),
       role_options: listAssignableRoles(actingUser.role),
       can_manage: authService.hasPermission(actingUser.role, "manage_accounts"),
     };

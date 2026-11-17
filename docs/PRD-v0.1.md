@@ -1494,6 +1494,8 @@ Dicatat supaya tidak diselundupkan ke pekerjaan yang sedang berjalan.
 
 **Alur pendaftaran (bab 11):**
 
+- Nama tampilan akun: sapaan dashboard ("Halo, sutoyomim7012") sekarang diambil dari bagian depan
+  email. Butuh kolom nama di `admin_users` yang diisi saat undang dan bisa diubah (diminta 17 Nov 2026)
 - Halaman Event dikonsep ulang seperti blog (permintaan kepsek 17 Nov 2026). Dikerjakan setelah
   alur pendaftaran baru selesai; referensi desain dari project Google Stitch milik pemilik repo,
   tema disesuaikan dengan hijau PMB

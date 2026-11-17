@@ -100,8 +100,29 @@ const confirmButtonVariants = cva("h-10 flex-1 text-white", {
 const iconButtonClassName = "h-9 w-9 text-gray-500";
 const deleteButtonClassName =
   "h-9 w-9 text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-700";
-const readOnlyRoleClassName =
-  "flex h-9 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-semibold text-gray-900";
+const cardVariants = cva(
+  "flex h-full flex-col gap-3 rounded-xl p-4 shadow-(--admin-card-shadow) transition-colors",
+  {
+    variants: {
+      self: {
+        true: "border-[1.5px] border-brand-300 bg-brand-50",
+        false: "border border-gray-200 bg-white hover:border-gray-300",
+      },
+    },
+  },
+);
+
+const readOnlyRoleVariants = cva(
+  "mt-auto flex h-9 items-center gap-2 rounded-lg border px-3 text-sm font-semibold text-gray-900",
+  {
+    variants: {
+      self: {
+        true: "border-brand-200 bg-white",
+        false: "border-gray-200 bg-gray-50",
+      },
+    },
+  },
+);
 
 const STATUS_LABEL: Record<AdminItem["status"], string> = {
   invited: "Diundang",
@@ -177,7 +198,7 @@ export function AdminEditCard({
 
   return (
     <>
-      <div className="flex h-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-(--admin-card-shadow) transition-colors hover:border-gray-300">
+      <div className={cardVariants({ self: item.is_self })}>
         <h3 className="font-semibold wrap-break-word text-gray-900">
           {item.email}
         </h3>
@@ -188,8 +209,8 @@ export function AdminEditCard({
             {STATUS_LABEL[item.status]}
           </span>
           {item.is_self ? (
-            <span className="text-xs font-semibold text-brand-700">
-              Akun Anda
+            <span className="rounded-full bg-brand-600 px-2.5 py-0.5 text-xs font-bold text-white">
+              Anda
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 text-xs text-gray-500">
@@ -257,7 +278,7 @@ export function AdminEditCard({
             </Button>
           </div>
         ) : (
-          <div className={`mt-auto ${readOnlyRoleClassName}`}>
+          <div className={readOnlyRoleVariants({ self: item.is_self })}>
             <span
               className={`h-2 w-2 rounded-full ${ADMIN_ROLE_DOT_CLASS[item.role]}`}
             />
