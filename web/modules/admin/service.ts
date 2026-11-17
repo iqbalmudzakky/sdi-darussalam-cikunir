@@ -207,6 +207,7 @@ async function completeTokenFlow(
   await withDbLogging("admin.markActionTokenUsed", () =>
     repository.markActionTokenUsed(actionToken.id),
   );
+  await authService.revokeAllSessions(admin.id);
 
   const user: SessionUser = {
     id: updated.id,

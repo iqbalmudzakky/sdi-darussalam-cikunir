@@ -30,13 +30,15 @@ export async function getPaymentSettings(): Promise<PaymentSettings | null> {
   return withDbLogging("paymentSettings.get", () => repository.get());
 }
 
-export async function getPaymentSettingsResponse(): Promise<PaymentSettingsResponse | null> {
+export async function getPaymentSettingsResponse(
+  estimateFee: number | null,
+): Promise<PaymentSettingsResponse | null> {
   const settings = await withDbLogging("paymentSettings.get", () =>
     repository.get(),
   );
   if (!settings) return null;
 
-  const fee = settings.registration_fee;
+  const fee = estimateFee ?? settings.registration_fee;
   const dokuEstimates: DokuEstimate[] = DOKU_MDR_METHODS.map((method) => {
     const base = method.kind === "flat" ? method.value : fee * method.value;
     const deduction = Math.round(base * (1 + DOKU_PPN_RATE));
@@ -49,7 +51,7 @@ export async function getPaymentSettingsResponse(): Promise<PaymentSettingsRespo
   });
 
   const response: PaymentSettingsResponse = {
-    registration_fee: fee,
+    registration_fee: settings.registration_fee,
     registration_opens_on: settings.registration_opens_on,
     registration_closes_on: settings.registration_closes_on,
     updated_at: settings.updated_at,

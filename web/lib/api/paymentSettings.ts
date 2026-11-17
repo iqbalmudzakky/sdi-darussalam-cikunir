@@ -1,7 +1,10 @@
 import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
 
-export async function getPaymentSettings(): Promise<PaymentSettingsResponse> {
-  const res = await fetch("/api/payment-settings");
+export async function getPaymentSettings(
+  estimateFee?: number,
+): Promise<PaymentSettingsResponse> {
+  const query = estimateFee ? `?fee=${estimateFee}` : "";
+  const res = await fetch(`/api/payment-settings${query}`);
   if (!res.ok)
     throw new Error(`Failed to load payment settings (${res.status})`);
   return res.json();

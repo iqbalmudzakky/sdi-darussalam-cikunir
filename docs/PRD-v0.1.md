@@ -1201,13 +1201,19 @@ Tiga penanda lain tampil sebagai chip ikon, terpisah dari status:
   diminta langsung ke Kepsek, tanpa fitur persetujuan di sistem (`view_accounts`,
   `view_admission_settings`, ditambahkan 17 Nov 2026).
 - Perkiraan potongan DOKU dihitung di service `payment-settings` dan dikirim di respons
-  `GET /api/payment-settings` (`doku_estimates`), bukan di halaman.
+  `GET /api/payment-settings` (`doku_estimates`), bukan di halaman. Saat Kepsek mengetik
+  nominal baru, form memanggil route yang sama dengan `?fee=` (jeda 400 ms) supaya perkiraan
+  terlihat sebelum Simpan.
 - Peran Admin hanya bisa diberikan, diubah, atau dihapus oleh akun Admin
   (`manage_developer_accounts`). Kepsek hanya melihat 4 pilihan peran.
 - Peran dan status akun sendiri tidak bisa diubah. Kepsek atau Admin aktif yang terakhir tidak
   bisa diturunkan, dinonaktifkan, atau dihapus, supaya halaman Akun selalu punya pengelola.
 - Halaman "Kelola Admin" berganti nama jadi **"Akun"**. Peran dipilih langsung di kartu akun dan
   di dialog undang (desain: halaman "Akun — Peran" di `docs/design/sdi-darussalam-cikunir.figcraft`).
+- Setelah password baru disimpan lewat tautan reset (atau undangan), semua sesi lama akun itu
+  dicabut. Perangkat lain keluar paling lambat saat token aksesnya habis (8 jam), karena token
+  akses tidak dicek ke database. "Lupa password" sendiri tidak mengubah apa pun: password lama
+  tetap berlaku sampai password baru disimpan.
 - Token login menyimpan peran. Setelah PR 1 rilis, token lama berperan `superadmin`/`admin`
   ditolak, jadi semua akun login ulang lewat `/masuk-sekolah` (token akses paling lama 8 jam).
 

@@ -1,16 +1,23 @@
 import { NextResponse } from "next/server";
 import { requirePermission } from "@/lib/auth/session";
 import * as paymentSettingsService from "@/modules/payment-settings/service";
-import { SavePaymentSettingsRequestSchema } from "@/modules/payment-settings/dto";
+import {
+  EstimateFeeQuerySchema,
+  SavePaymentSettingsRequestSchema,
+} from "@/modules/payment-settings/dto";
 
-export async function GET() {
+export async function GET(request: Request) {
   const user = await requirePermission("view_admission_settings");
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const estimateFee = EstimateFeeQuerySchema.parse(searchParams.get("fee"));
+
   try {
-    const settings = await paymentSettingsService.getPaymentSettingsResponse();
+    const settings =
+      await paymentSettingsService.getPaymentSettingsResponse(estimateFee);
     if (!settings) {
       return NextResponse.json(
         { error: "Pengaturan pembayaran belum tersedia." },

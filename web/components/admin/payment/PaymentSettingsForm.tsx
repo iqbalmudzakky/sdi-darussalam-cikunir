@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,10 @@ import { Label } from "@/components/ui/label";
 import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
 import { DateField } from "@/components/sections/RegistrationForm/fields";
 import { useToast } from "@/hooks/useToast";
-import { savePaymentSettings } from "@/lib/api/paymentSettings";
+import {
+  getPaymentSettings,
+  savePaymentSettings,
+} from "@/lib/api/paymentSettings";
 import { DokuEstimateTable } from "./DokuEstimateTable";
 import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
 
@@ -29,9 +32,33 @@ export function PaymentSettingsForm({
     settings.registration_closes_on ?? "",
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [estimates, setEstimates] = useState(settings.doku_estimates);
 
   const parsedFee = Number(fee);
   const isValidFee = Number.isInteger(parsedFee) && parsedFee > 0;
+
+  useEffect(() => {
+    if (!isValidFee) return;
+
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      const load = async () => {
+        try {
+          const data = await getPaymentSettings(parsedFee);
+          if (!cancelled) setEstimates(data.doku_estimates);
+        } catch (error) {
+          console.error("Failed to load DOKU estimates:", error);
+        }
+      };
+
+      load();
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [parsedFee, isValidFee]);
   const isValidWindow = !opensOn || !closesOn || closesOn >= opensOn;
 
   async function handleSave() {
@@ -127,7 +154,7 @@ export function PaymentSettingsForm({
       </AdminFormSection>
 
       <AdminFormSection title="Diterima Sekolah jika Bayar via DOKU">
-        <DokuEstimateTable estimates={settings.doku_estimates} />
+        <DokuEstimateTable estimates={estimates} />
       </AdminFormSection>
 
       <div className="flex justify-end">

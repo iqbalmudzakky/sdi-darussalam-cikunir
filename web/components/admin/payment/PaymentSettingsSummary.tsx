@@ -1,6 +1,6 @@
 import { CalendarDays, Wallet } from "lucide-react";
 import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
-import { formatDateOnly } from "@/lib/date";
+import { parseDateOnly } from "@/lib/date";
 import { formatAmount } from "@/lib/payment";
 import { DokuEstimateTable } from "./DokuEstimateTable";
 import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
@@ -45,7 +45,13 @@ export function PaymentSettingsSummary({
               <div className="min-w-0">
                 <p className="text-xs text-gray-500">{date.label}</p>
                 <p className="text-sm font-semibold text-gray-900">
-                  {date.value ? formatDateOnly(date.value) : "-"}
+                  {date.value
+                    ? (parseDateOnly(date.value)?.toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      }) ?? date.value)
+                    : "-"}
                 </p>
               </div>
             </div>

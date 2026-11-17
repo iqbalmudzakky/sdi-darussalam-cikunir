@@ -8,6 +8,14 @@ const NullableDateSchema = z
   .date("Format tanggal tidak valid.")
   .nullable();
 
+export const EstimateFeeQuerySchema = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(MAX_REGISTRATION_FEE)
+  .nullable()
+  .catch(null);
+
 export const SavePaymentSettingsRequestSchema = z
   .object({
     registration_fee: z

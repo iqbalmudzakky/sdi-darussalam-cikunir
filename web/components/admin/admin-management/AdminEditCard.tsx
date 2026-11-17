@@ -91,7 +91,7 @@ const confirmIconVariants = cva(
 const confirmButtonVariants = cva("h-10 flex-1 text-white", {
   variants: {
     tone: {
-      neutral: "bg-gray-800 hover:bg-gray-900",
+      neutral: "bg-brand-600 hover:bg-brand-700",
       danger: "bg-red-600 hover:bg-red-700",
     },
   },
