@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     if (!result.ok) {
       const failure = REGISTRATION_FAILURE[result.reason];
       return NextResponse.json(
-        { error: failure.message },
+        { error: failure.message, whatsapp_url: result.whatsapp_url },
         { status: failure.status },
       );
     }

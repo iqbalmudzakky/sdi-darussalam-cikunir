@@ -38,6 +38,9 @@ export function useShortRegistrationForm({
   const [options, setOptions] = useState<ShortFormOptions | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [submitWhatsAppUrl, setSubmitWhatsAppUrl] = useState<string | null>(
+    null,
+  );
 
   const academicYears = options?.academic_years ?? [];
   const academicYear = values.academic_year || academicYears[0] || "";
@@ -79,6 +82,7 @@ export function useShortRegistrationForm({
 
     setIsSubmitting(true);
     setSubmitError("");
+    setSubmitWhatsAppUrl(null);
 
     const input: ShortRegistrationInput = {
       ...values,
@@ -95,6 +99,7 @@ export function useShortRegistrationForm({
       }
       setFieldErrors(result.fieldErrors);
       setSubmitError(result.error);
+      setSubmitWhatsAppUrl(result.whatsappUrl);
     } catch (error) {
       console.error("Failed to submit short registration:", error);
       setSubmitError("Gagal mengirim. Coba lagi.");
@@ -112,6 +117,7 @@ export function useShortRegistrationForm({
     underAge: options?.under_age ?? null,
     isSubmitting,
     submitError,
+    submitWhatsAppUrl,
     setField,
     handleSubmit,
   };

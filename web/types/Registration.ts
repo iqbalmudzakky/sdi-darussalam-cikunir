@@ -226,6 +226,7 @@ export type ShortRegistrationResult =
       ok: false;
       error: string;
       fieldErrors: Record<string, string>;
+      whatsappUrl: string | null;
     };
 
 export type ShortRegistrationFormInput = {

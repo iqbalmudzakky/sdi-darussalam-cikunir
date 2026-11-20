@@ -72,6 +72,7 @@ export async function submitShortRegistration(
       ok: false,
       error: data.error ?? "Gagal mengirim pendaftaran.",
       fieldErrors: data.field_errors ?? {},
+      whatsappUrl: data.whatsapp_url ?? null,
     };
     return failure;
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { cva } from "class-variance-authority";
 import { AlertTriangle, Loader2, MessageCircle, Send } from "lucide-react";
 import { useShortRegistrationForm } from "@/hooks/useRegistrations";
@@ -9,7 +10,6 @@ import {
 } from "@/lib/registrationOptions";
 import type {
   RegistrationType,
-  ShortFormOptions,
   ShortRegistrationReceipt,
 } from "@/types/Registration";
 import { ChoiceField, DateField, SelectField, TextField } from "./fields";
@@ -26,12 +26,12 @@ const submitButtonVariants = cva([
   "disabled:cursor-not-allowed disabled:opacity-60",
 ]);
 
-const underAgeNoticeVariants = cva([
+const noticeVariants = cva([
   "flex items-center gap-2.5 rounded-xl border border-amber-200",
   "bg-amber-50 px-3 py-2.5",
 ]);
 
-const underAgeLinkVariants = cva([
+const noticeLinkVariants = cva([
   "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
   "bg-green-600 text-white transition-colors hover:bg-green-700",
 ]);
@@ -107,7 +107,18 @@ export function ShortRegistrationForm({
         error={fieldErrors.date_of_birth}
       />
 
-      {form.underAge && <UnderAgeNotice underAge={form.underAge} />}
+      {form.underAge && (
+        <WhatsAppNotice
+          whatsappUrl={form.underAge.whatsapp_url}
+          linkLabel="Tanya panitia lewat WhatsApp"
+        >
+          <span className="block font-semibold">
+            Usia di bawah {form.underAge.minimum_years} tahun per 1 Juli{" "}
+            {form.underAge.cutoff_year}
+          </span>
+          Tanya panitia
+        </WhatsAppNotice>
+      )}
 
       <TextField
         id="short-previous-school"
@@ -186,7 +197,16 @@ export function ShortRegistrationForm({
         error={fieldErrors.parent_email}
       />
 
-      {form.submitError && (
+      {form.submitError && form.submitWhatsAppUrl && (
+        <WhatsAppNotice
+          whatsappUrl={form.submitWhatsAppUrl}
+          linkLabel="Hubungi panitia lewat WhatsApp"
+        >
+          <span className="font-semibold">{form.submitError}</span>
+        </WhatsAppNotice>
+      )}
+
+      {form.submitError && !form.submitWhatsAppUrl && (
         <p role="alert" className="text-center text-sm text-red-600">
           {form.submitError}
         </p>
@@ -208,28 +228,30 @@ export function ShortRegistrationForm({
   );
 }
 
-type UnderAgeNoticeProps = {
-  underAge: NonNullable<ShortFormOptions["under_age"]>;
+type WhatsAppNoticeProps = {
+  whatsappUrl: string | null;
+  linkLabel: string;
+  children: ReactNode;
 };
 
-function UnderAgeNotice({ underAge }: UnderAgeNoticeProps) {
+function WhatsAppNotice({
+  whatsappUrl,
+  linkLabel,
+  children,
+}: WhatsAppNoticeProps) {
   return (
-    <div className={underAgeNoticeVariants()}>
+    <div role="alert" className={noticeVariants()}>
       <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700" />
       <p className="min-w-0 flex-1 text-xs leading-snug text-amber-800">
-        <span className="block font-semibold">
-          Usia di bawah {underAge.minimum_years} tahun per 1 Juli{" "}
-          {underAge.cutoff_year}
-        </span>
-        Tanya panitia
+        {children}
       </p>
-      {underAge.whatsapp_url && (
+      {whatsappUrl && (
         <a
-          href={underAge.whatsapp_url}
+          href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Tanya panitia lewat WhatsApp"
-          className={underAgeLinkVariants()}
+          aria-label={linkLabel}
+          className={noticeLinkVariants()}
         >
           <MessageCircle className="h-4 w-4" />
         </a>

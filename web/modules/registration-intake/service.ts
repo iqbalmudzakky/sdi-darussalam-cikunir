@@ -116,6 +116,10 @@ export async function createShortRegistration(
       const blocked: CreateShortRegistrationResult = {
         ok: false,
         reason: blockReason,
+        whatsapp_url:
+          blockReason === "duplicate"
+            ? await buildDuplicateWhatsAppUrl(input)
+            : null,
       };
       return blocked;
     }
@@ -224,6 +228,26 @@ async function insertShortRegistrationWithin(
   };
   await registrationService.insertShortWithin(tx, registration);
   return registrationNumber;
+}
+
+async function buildDuplicateWhatsAppUrl(
+  input: CreateShortRegistrationInput,
+): Promise<string | null> {
+  const { request } = input;
+  const contactPhone = await getAdmissionContactPhone();
+  if (!contactPhone) return null;
+
+  const childLines = [
+    `Nama anak: ${request.full_name}`,
+    `Tanggal lahir: ${request.date_of_birth}`,
+    `Masuk tahun ajaran: ${request.academic_year}`,
+  ].join("\n");
+  const message = [
+    "Assalamu'alaikum, saya ingin mendaftarkan anak saya di SDI Darussalam Cikunir, tapi muncul pemberitahuan sudah terdaftar.",
+    childLines,
+    "Mohon bantuannya untuk dicek.",
+  ].join("\n\n");
+  return buildWhatsAppLink(contactPhone, message);
 }
 
 async function listTargetAcademicYears(): Promise<string[]> {

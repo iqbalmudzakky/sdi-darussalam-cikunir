@@ -88,6 +88,7 @@ export type CreateShortRegistrationResult =
   | {
       ok: false;
       reason: ShortRegistrationBlockReason;
+      whatsapp_url: string | null;
     };
 
 export const ShortFormOptionsQuerySchema = z.object({

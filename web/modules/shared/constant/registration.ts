@@ -83,7 +83,7 @@ export const REGISTRATION_FAILURE = {
   },
   duplicate: {
     status: 409,
-    message: "Anak ini sudah terdaftar. Silakan hubungi panitia.",
+    message: "Anak ini sudah terdaftar, Silahkan hubungi panitia",
   },
   not_found: { status: 404, message: "Pendaftar tidak ditemukan." },
   invalid_state: {
