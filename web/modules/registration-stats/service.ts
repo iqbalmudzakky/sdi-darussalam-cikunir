@@ -89,6 +89,22 @@ export async function findCurrentAcademicYearWithin(
   );
 }
 
+export async function getCurrentAcademicYear(): Promise<string | null> {
+  const current = await withDbLogging("registrationStats.getCurrent", () =>
+    repository.getCurrent(),
+  );
+  return current?.academic_year ?? null;
+}
+
+export async function ensureAcademicYearWithin(
+  tx: TransactionSql,
+  academicYear: string,
+): Promise<void> {
+  await withDbLogging("registrationStats.ensureExistsWithin", () =>
+    repository.ensureExistsWithin(tx, academicYear),
+  );
+}
+
 export async function setCurrentAcademicYear(
   academicYear: string,
 ): Promise<AcademicYearSummaryResponse> {

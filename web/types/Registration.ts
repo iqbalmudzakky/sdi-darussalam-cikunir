@@ -1,8 +1,30 @@
-export type RegistrationStatus =
-  | "pending"
-  | "in_progress"
-  | "not_registered"
-  | "registered";
+import type {
+  RegistrationDetailResponse,
+  RegistrationDocumentResponse,
+  RegistrationListItemResponse,
+  RegistrationListResponse,
+  UpdateRegistrationRequest,
+} from "@/modules/registration-admin/dto";
+import type {
+  CreateShortRegistrationResult,
+  ShortFormOptionsResponse,
+} from "@/modules/registration-intake/dto";
+
+export type Registration = RegistrationListItemResponse;
+
+export type RegistrationDetail = RegistrationDetailResponse;
+
+export type RegistrationDocument = RegistrationDocumentResponse;
+
+export type RegistrationListPage = RegistrationListResponse;
+
+export type ShortFormOptions = ShortFormOptionsResponse;
+
+export type UpdateRegistrationInput = UpdateRegistrationRequest;
+
+export type RegistrationStatus = Registration["status"];
+
+export type RegistrationProgram = NonNullable<Registration["program"]>;
 
 export type RegistrationType = "siswa_baru" | "pindahan";
 
@@ -11,87 +33,6 @@ export type Gender = "laki_laki" | "perempuan";
 export type PhysicalDisability = "tidak_ada" | "ada";
 
 export type ParentRelationship = "kandung" | "tiri" | "angkat" | "wali";
-
-type RegistrationBiodata = {
-  registration_type: RegistrationType;
-
-  full_name: string;
-
-  student_nik: string;
-
-  gender: Gender;
-
-  place_of_birth: string;
-
-  date_of_birth: string;
-
-  birth_order: number;
-
-  sibling_count: number;
-
-  current_address: string;
-
-  physical_disability: PhysicalDisability;
-
-  previous_school: string;
-
-  nisn: string | null;
-
-  father_status: ParentRelationship;
-
-  father_name: string;
-
-  father_nik: string;
-
-  father_place_of_birth: string;
-
-  father_date_of_birth: string;
-
-  father_phone: string;
-
-  father_income: number;
-
-  mother_status: ParentRelationship;
-
-  mother_name: string;
-
-  mother_nik: string;
-
-  mother_place_of_birth: string;
-
-  mother_date_of_birth: string;
-
-  mother_phone: string;
-
-  mother_income: number;
-
-  parent_email: string;
-};
-
-export type PaymentStatus = "pending" | "success" | "failed" | "expired";
-
-export type Registration = RegistrationBiodata & {
-  id: string;
-
-  /**
-   * Payment facts from registration_payments. Null for registrations made
-   * before the payment flow existed. Kept separate from `status`, which is the
-   * admin's own follow-up state.
-   */
-  payment_status: PaymentStatus | null;
-
-  payment_amount: number | null;
-
-  paid_at: string | null;
-
-  invoice_number: string | null;
-
-  ip_address: string | null;
-
-  status: RegistrationStatus;
-
-  created_at: string;
-};
 
 /*
  * Type baru untuk form PPDB.
@@ -236,22 +177,68 @@ export type SubmitPpdbRegistrationInput = {
 
 export type SubmitRegistrationInput = SubmitPpdbRegistrationInput;
 
-export type UpdateRegistrationStatusInput = {
-  status: RegistrationStatus;
-};
-
 export type RegistrationSortDirection = "asc" | "desc";
 
-export type ListRegistrationsParams = {
+export type RegistrationListFilters = {
+  status: RegistrationStatus | "";
+  academicYear: string;
+  program: RegistrationProgram | "";
+  registrationType: RegistrationType | "";
+};
+
+export type ListRegistrationsParams = RegistrationListFilters & {
   search: string;
-  statuses: RegistrationStatus[];
   sort: RegistrationSortDirection;
   limit: number;
   offset: number;
 };
 
-export type RegistrationListPage = {
-  items: Registration[];
-  total: number;
-  has_more: boolean;
+export type ShortRegistrationValues = {
+  full_name: string;
+  gender: Gender | "";
+  date_of_birth: string;
+  previous_school: string;
+  target_grade: string;
+  program: RegistrationProgram | "";
+  academic_year: string;
+  contact_name: string;
+  contact_phone: string;
+  parent_email: string;
+  website: string;
 };
+
+export type ShortRegistrationInput = Omit<
+  ShortRegistrationValues,
+  "target_grade"
+> & {
+  registration_type: RegistrationType;
+  target_grade: number | null;
+};
+
+export type ShortRegistrationReceipt = Omit<
+  Extract<CreateShortRegistrationResult, { ok: true }>,
+  "ok"
+>;
+
+export type ShortRegistrationResult =
+  | ({ ok: true } & ShortRegistrationReceipt)
+  | {
+      ok: false;
+      error: string;
+      fieldErrors: Record<string, string>;
+    };
+
+export type ShortRegistrationFormInput = {
+  registrationType: RegistrationType;
+  onSubmitted: (receipt: ShortRegistrationReceipt) => void;
+};
+
+export type ShortFormOptionsQuery = {
+  registration_type: RegistrationType;
+  full_name: string;
+  birth_date: string;
+  academic_year: string;
+};
+
+export type UpdateRegistrationResult =
+  { ok: true; registration: RegistrationDetail } | { ok: false; error: string };

@@ -1,20 +1,27 @@
 "use server";
 
-import * as registrationService from "@/modules/registration/service";
+import * as registrationAdminService from "@/modules/registration-admin/service";
 import type {
   ListRegistrationsQuery,
-  RegistrantRegion,
   RegistrationListResponse,
-} from "@/modules/registration/dto";
+} from "@/modules/registration-admin/dto";
+import * as registrationService from "@/modules/registration/service";
+import type { RegistrantRegion } from "@/modules/registration/dto";
 
 export async function listRegistrations(
   query: ListRegistrationsQuery,
 ): Promise<RegistrationListResponse> {
   try {
-    return await registrationService.listRegistrations(query);
+    return await registrationAdminService.listRegistrations(query);
   } catch (error) {
     console.error("lib/actions/registrations.listRegistrations failed:", error);
-    return { items: [], total: 0, has_more: false };
+    const emptyList: RegistrationListResponse = {
+      items: [],
+      total: 0,
+      has_more: false,
+      academic_years: [],
+    };
+    return emptyList;
   }
 }
 

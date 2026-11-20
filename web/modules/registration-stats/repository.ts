@@ -44,6 +44,18 @@ export async function findCurrentAcademicYearWithin(
   return rows[0]?.academic_year ?? null;
 }
 
+export async function ensureExistsWithin(
+  tx: TransactionSql,
+  academicYear: string,
+): Promise<void> {
+  await tx.unsafe(
+    `INSERT INTO registration_stats (academic_year)
+     VALUES ($1)
+     ON CONFLICT (academic_year) DO NOTHING`,
+    [academicYear],
+  );
+}
+
 export async function create(academicYear: string): Promise<RegistrationStats> {
   const rows = await sql.unsafe<RegistrationStats[]>(
     `INSERT INTO registration_stats (academic_year)

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cva } from "class-variance-authority";
 import { CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { parseDateOnly, toDateOnly, formatDate } from "@/lib/date";
+import { parseDateOnly, toDateOnly, formatNumericDate } from "@/lib/date";
 import {
   Select,
   SelectTrigger,
@@ -39,6 +39,21 @@ export const fieldInputVariants = cva(
     },
     defaultVariants: {
       invalid: false,
+    },
+  },
+);
+
+const choiceButtonVariants = cva(
+  [
+    "cursor-pointer rounded-xl border px-3 py-3 text-[15px]",
+    "transition-colors duration-200",
+  ],
+  {
+    variants: {
+      selected: {
+        true: "border-brand-600 bg-brand-600 font-medium text-white",
+        false: "border-brand-200 bg-white text-ink-700 hover:bg-brand-50",
+      },
     },
   },
 );
@@ -181,6 +196,50 @@ export function SelectField({
   );
 }
 
+type ChoiceFieldProps = {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  options: { value: string; label: string }[];
+};
+
+export function ChoiceField({
+  id,
+  label,
+  value,
+  onChange,
+  error,
+  options,
+}: ChoiceFieldProps) {
+  return (
+    <FieldWrapper id={id} label={label} error={error}>
+      <div
+        id={id}
+        role="radiogroup"
+        aria-label={label}
+        className="grid grid-cols-2 gap-2"
+      >
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={value === option.value}
+            onClick={() => onChange(option.value)}
+            className={choiceButtonVariants({
+              selected: value === option.value,
+            })}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </FieldWrapper>
+  );
+}
+
 type DateFieldProps = {
   id: string;
   label: string;
@@ -229,7 +288,7 @@ export function DateField({
           )}
         >
           <span className={cn("truncate", !selected && "text-ink-500/70")}>
-            {selected ? formatDate(selected) : "Pilih tanggal"}
+            {selected ? formatNumericDate(selected) : "Pilih tanggal"}
           </span>
 
           <CalendarDays

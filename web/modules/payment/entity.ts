@@ -105,3 +105,19 @@ export type DokuNotification = {
     amount?: number | string;
   };
 };
+
+export type RegistrationPaymentSummary = {
+  payment_status: PaymentStatus | null;
+  payment_amount: number | null;
+  paid_at: string | null;
+  invoice_number: string | null;
+};
+
+export type RegistrationPaymentSummaries = Map<
+  string,
+  RegistrationPaymentSummary
+>;
+
+export type RegistrationPaymentRow = RegistrationPaymentSummary & {
+  registration_id: string;
+};

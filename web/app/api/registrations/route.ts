@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/session";
-import * as registrationService from "@/modules/registration/service";
+import * as registrationAdminService from "@/modules/registration-admin/service";
 import * as paymentService from "@/modules/payment/service";
-import {
-  CreatePpdbRegistrationRequestSchema,
-  ListRegistrationsQuerySchema,
-} from "@/modules/registration/dto";
+import { ListRegistrationsQuerySchema } from "@/modules/registration-admin/dto";
+import { CreatePpdbRegistrationRequestSchema } from "@/modules/registration/dto";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 import { ManualPaymentRequestSchema } from "@/modules/payment/dto";
 import { getClientIp } from "@/modules/shared/clientIp";
@@ -22,6 +20,9 @@ export async function GET(request: Request) {
   const parsed = ListRegistrationsQuerySchema.safeParse({
     search: searchParams.get("search") ?? undefined,
     statuses: searchParams.getAll("status"),
+    academic_year: searchParams.get("academic_year") ?? undefined,
+    program: searchParams.get("program") ?? undefined,
+    registration_type: searchParams.get("registration_type") ?? undefined,
     sort: searchParams.get("sort") ?? undefined,
     limit: searchParams.get("limit") ?? undefined,
     offset: searchParams.get("offset") ?? undefined,
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const registrations = await registrationService.listRegistrations(
+    const registrations = await registrationAdminService.listRegistrations(
       parsed.data,
     );
 

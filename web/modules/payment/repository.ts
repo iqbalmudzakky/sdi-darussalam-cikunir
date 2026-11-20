@@ -10,6 +10,7 @@ import type {
   PaymentStatus,
   RegistrationPayment,
   RegistrationPaymentListItem,
+  RegistrationPaymentRow,
   SettlementDetails,
 } from "./entity";
 
@@ -308,4 +309,21 @@ export async function recordNotificationEvent(input: {
     [input.requestId, input.invoiceNumber, input.transactionStatus, input.body],
   );
   return rows.length > 0;
+}
+
+export async function listSummariesByRegistrationIds(
+  registrationIds: string[],
+): Promise<RegistrationPaymentRow[]> {
+  return sql.unsafe<RegistrationPaymentRow[]>(
+    `SELECT DISTINCT ON (registration_id)
+       registration_id,
+       status AS payment_status,
+       amount AS payment_amount,
+       paid_at,
+       invoice_number
+     FROM registration_payments
+     WHERE registration_id = ANY(string_to_array($1, ',')::uuid[])
+     ORDER BY registration_id, (status = 'success') DESC, created_at DESC`,
+    [registrationIds.join(",")],
+  );
 }

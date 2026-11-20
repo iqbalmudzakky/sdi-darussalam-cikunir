@@ -1,10 +1,16 @@
-export type PpdbRegistrationStatus =
-  | "pending"
-  | "in_progress"
-  | "not_registered"
-  | "registered";
+import type { RegistrationPaymentSummary } from "@/modules/payment/entity";
+import type {
+  ReceivedDocument,
+  REGISTRATION_PROGRAMS,
+  REGISTRATION_STATUSES,
+  REGISTRATION_TYPES,
+} from "@/modules/shared/constant/registration";
 
-export type RegistrationType = "siswa_baru" | "pindahan";
+export type PpdbRegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
+
+export type RegistrationType = (typeof REGISTRATION_TYPES)[number];
+
+export type RegistrationProgram = (typeof REGISTRATION_PROGRAMS)[number];
 
 export type RegistrationSource = "online" | "offline";
 
@@ -24,6 +30,14 @@ export type PpdbRegistration = {
   academic_year: string | null;
   ip_address: string | null;
   parent_email: string | null;
+  registration_number: string | null;
+  program: RegistrationProgram | null;
+  target_grade: number | null;
+  contact_name: string | null;
+  contact_phone: string | null;
+  full_form_completed_at: string | null;
+  received_documents: ReceivedDocument[];
+  status_before_cancel: PpdbRegistrationStatus | null;
   created_at: string;
   updated_at: string;
 };
@@ -37,17 +51,17 @@ export type PpdbRegistrationStudent = {
 
   nickname: string | null;
 
-  nik: string;
+  nik: string | null;
 
   nisn: string | null;
 
   gender: Gender;
 
-  place_of_birth: string;
+  place_of_birth: string | null;
 
   date_of_birth: string;
 
-  address: string;
+  address: string | null;
 
   village: string | null;
 
@@ -61,9 +75,9 @@ export type PpdbRegistrationStudent = {
 
   phone: string | null;
 
-  birth_order: number;
+  birth_order: number | null;
 
-  sibling_count: number;
+  sibling_count: number | null;
 
   orphan_status: string | null;
 
@@ -71,9 +85,9 @@ export type PpdbRegistrationStudent = {
 
   citizenship: string;
 
-  religion: string;
+  religion: string | null;
 
-  physical_disability: PhysicalDisability;
+  physical_disability: PhysicalDisability | null;
 
   previous_school: string;
 
@@ -178,11 +192,11 @@ type PpdbRegistrationOverviewBase = {
   full_name: string;
   nisn: string | null;
   gender: Gender;
-  place_of_birth: string;
+  place_of_birth: string | null;
   date_of_birth: string;
-  birth_order: number;
-  sibling_count: number;
-  physical_disability: PhysicalDisability;
+  birth_order: number | null;
+  sibling_count: number | null;
+  physical_disability: PhysicalDisability | null;
   previous_school: string;
 
   father_status: ParentRelationshipStatus | null;
@@ -202,40 +216,77 @@ type PpdbRegistrationOverviewBase = {
   mother_income: number | null;
 };
 
-/**
- * Payment facts joined from registration_payments. Null on registrations that
- * predate the payment flow — `status` on the registration itself stays the
- * admin's follow-up state and is deliberately not derived from these.
- */
-export type RegistrationPaymentSummary = {
-  payment_status: "pending" | "success" | "failed" | "expired" | null;
-  payment_amount: number | null;
-  paid_at: string | null;
-  invoice_number: string | null;
+export type PpdbRegistrationListItem = {
+  id: string;
+  registration_number: string | null;
+  registration_type: RegistrationType;
+  program: RegistrationProgram | null;
+  target_grade: number | null;
+  academic_year: string | null;
+  status: PpdbRegistrationStatus;
+  contact_name: string | null;
+  contact_phone: string | null;
+  full_form_completed_at: string | null;
+  received_documents: ReceivedDocument[];
+  created_at: string;
+  full_name: string;
 };
 
-export type PpdbRegistrationListItem = PpdbRegistrationOverviewBase &
-  RegistrationPaymentSummary & {
+export type PpdbRegistrationFullRow = PpdbRegistrationOverviewBase &
+  PpdbRegistrationListItem & {
     ip_address: string | null;
-    student_nik: string;
-    current_address: string;
+    student_nik: string | null;
+    current_address: string | null;
   };
 
-export type PpdbRegistrationExportItem = PpdbRegistrationOverviewBase &
-  RegistrationPaymentSummary & {
-    nik: string;
-    address: string;
-  };
+export type PpdbRegistrationExportRow = PpdbRegistrationOverviewBase & {
+  nik: string | null;
+  address: string | null;
+};
+
+export type PpdbRegistrationExportItem = PpdbRegistrationExportRow &
+  RegistrationPaymentSummary;
 
 export type RegistrationFilter = {
   search: string;
   statuses: PpdbRegistrationStatus[];
+  academicYear: string;
+  program: RegistrationProgram | "";
+  registrationType: RegistrationType | "";
 };
 
 export type ListRegistrationsInput = RegistrationFilter & {
   sortDirection: "asc" | "desc";
   limit: number;
   offset: number;
+};
+
+export type NewShortRegistration = {
+  registrationType: RegistrationType;
+  registrationNumber: string;
+  academicYear: string;
+  program: RegistrationProgram;
+  targetGrade: number | null;
+  contactName: string;
+  contactPhone: string;
+  parentEmail: string | null;
+  ipAddress: string;
+  fullName: string;
+  gender: Gender;
+  dateOfBirth: string;
+  previousSchool: string;
+};
+
+export type ShortRegistrationIdentity = {
+  fullName: string;
+  dateOfBirth: string;
+  academicYear: string;
+};
+
+export type InsertFullRegistrationInput = {
+  source: RegistrationSource;
+  academicYear: string | null;
+  registrationNumber: string | null;
 };
 
 export type RegistrantRegionRow = {

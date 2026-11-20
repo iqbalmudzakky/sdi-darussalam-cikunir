@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { withDbLogging } from "@/modules/db/errors";
 import { withTransaction } from "@/modules/db/postgres";
 import * as repository from "./repository";
+import * as registrationIntakeService from "@/modules/registration-intake/service";
 import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
 import {
@@ -21,6 +22,7 @@ import type {
   RegistrationPayload,
   RegistrationPayment,
   RegistrationPaymentListItem,
+  RegistrationPaymentSummaries,
   SettlementDetails,
 } from "./entity";
 import type {
@@ -44,10 +46,7 @@ export type StartPaymentResult =
   | {
       ok: false;
       reason:
-        | "registration_closed"
-        | "rate_limited"
-        | "duplicate"
-        | "gateway_error";
+        "registration_closed" | "rate_limited" | "duplicate" | "gateway_error";
       message: string;
     };
 
@@ -165,11 +164,12 @@ async function settleAsRegistration(
       ip_address: payment.ip_address ?? "unknown",
     };
 
-    const registrationId = await registrationService.insertWithin(
-      tx,
-      registrationInput,
-      "online",
-    );
+    const registrationId =
+      await registrationIntakeService.insertFullRegistrationWithin(
+        tx,
+        registrationInput,
+        "online",
+      );
 
     await repository.attachRegistrationIdWithin(tx, payment.id, registrationId);
 
@@ -178,10 +178,7 @@ async function settleAsRegistration(
 }
 
 export type NotificationOutcome =
-  | "settled"
-  | "duplicate"
-  | "ignored"
-  | "unknown_invoice";
+  "settled" | "duplicate" | "ignored" | "unknown_invoice";
 
 /*
  * Status FAILED sengaja diabaikan: halaman Checkout membolehkan pendaftar
@@ -343,11 +340,12 @@ async function insertManualRegistration(
       ip_address: input.ipAddress ?? "unknown",
     };
 
-    const registrationId = await registrationService.insertWithin(
-      tx,
-      registrationInput,
-      "offline",
-    );
+    const registrationId =
+      await registrationIntakeService.insertFullRegistrationWithin(
+        tx,
+        registrationInput,
+        "offline",
+      );
 
     await repository.insertManualWithin(tx, input, registrationId);
 
@@ -395,4 +393,19 @@ export async function getRevenueSummary(
   return withDbLogging("payment.sumRevenue", () =>
     repository.sumRevenue(filter),
   );
+}
+
+export async function getSummariesByRegistrationIds(
+  registrationIds: string[],
+): Promise<RegistrationPaymentSummaries> {
+  if (registrationIds.length === 0) return new Map();
+
+  const rows = await withDbLogging(
+    "payment.listSummariesByRegistrationIds",
+    () => repository.listSummariesByRegistrationIds(registrationIds),
+  );
+  const summaries: RegistrationPaymentSummaries = new Map(
+    rows.map(({ registration_id, ...summary }) => [registration_id, summary]),
+  );
+  return summaries;
 }

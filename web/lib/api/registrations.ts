@@ -1,9 +1,13 @@
 import type {
   ListRegistrationsParams,
+  RegistrationDetail,
   RegistrationListPage,
   RegistrationStatus,
+  ShortRegistrationInput,
+  ShortRegistrationResult,
   SubmitRegistrationInput,
-  UpdateRegistrationStatusInput,
+  UpdateRegistrationInput,
+  UpdateRegistrationResult,
 } from "@/types/Registration";
 import type { ManualPaymentInput } from "@/types/Payment";
 
@@ -16,14 +20,26 @@ function buildStatusQuery(statuses: RegistrationStatus[]): URLSearchParams {
 export async function listRegistrations(
   params: ListRegistrationsParams,
 ): Promise<RegistrationListPage> {
-  const query = buildStatusQuery(params.statuses);
+  const query = buildStatusQuery(params.status ? [params.status] : []);
   query.set("search", params.search);
+  query.set("academic_year", params.academicYear);
+  query.set("program", params.program);
+  query.set("registration_type", params.registrationType);
   query.set("sort", params.sort);
   query.set("limit", String(params.limit));
   query.set("offset", String(params.offset));
 
   const res = await fetch(`/api/registrations?${query.toString()}`);
   if (!res.ok) throw new Error(`Failed to list registrations (${res.status})`);
+  return res.json();
+}
+
+export async function getRegistration(
+  id: string,
+): Promise<RegistrationDetail | null> {
+  const res = await fetch(`/api/registrations/${id}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Failed to get registration (${res.status})`);
   return res.json();
 }
 
@@ -39,6 +55,28 @@ export function buildRegistrationsExportUrl(
 export async function deleteRegistration(id: string): Promise<void> {
   const res = await fetch(`/api/registrations/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`Failed to delete registration (${res.status})`);
+}
+
+export async function submitShortRegistration(
+  input: ShortRegistrationInput,
+): Promise<ShortRegistrationResult> {
+  const res = await fetch("/api/registrations/short", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const failure: ShortRegistrationResult = {
+      ok: false,
+      error: data.error ?? "Gagal mengirim pendaftaran.",
+      fieldErrors: data.field_errors ?? {},
+    };
+    return failure;
+  }
+
+  return data;
 }
 
 export async function createManualRegistration(
@@ -69,17 +107,21 @@ export async function createManualRegistration(
   return { ok: true };
 }
 
-export async function updateRegistrationStatus(
+export async function updateRegistration(
   id: string,
-  input: UpdateRegistrationStatusInput,
-): Promise<void> {
+  input: UpdateRegistrationInput,
+): Promise<UpdateRegistrationResult> {
   const res = await fetch(`/api/registrations/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  if (!res.ok)
-    throw new Error(`Failed to update registration status (${res.status})`);
+  const data = await res.json().catch(() => ({}));
+
+  const result: UpdateRegistrationResult = res.ok
+    ? { ok: true, registration: data }
+    : { ok: false, error: data.error ?? "Gagal menyimpan." };
+  return result;
 }
 
 export async function getPendingFollowUpCount(): Promise<number> {

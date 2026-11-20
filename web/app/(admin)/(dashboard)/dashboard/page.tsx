@@ -25,6 +25,7 @@ import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getVisitSummary } from "@/lib/actions/analytics";
 import { getSession } from "@/lib/auth/session";
 import { formatDuration } from "@/lib/date";
+import { RegistrationStatusBadge } from "@/components/admin/registrations/RegistrationStatusBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,9 @@ export default async function AdminDashboardPage() {
     listRegistrations({
       search: "",
       statuses: [],
+      academic_year: "",
+      program: "",
+      registration_type: "",
       sort: "desc",
       limit: 5,
       offset: 0,
@@ -308,24 +312,12 @@ export default async function AdminDashboardPage() {
                       {item.full_name}
                     </p>
                     <p className="mt-0.5 truncate text-xs text-gray-500">
-                      Ayah: {item.father_name}
+                      {item.contact_name ?? "-"}
                     </p>
                   </div>
 
                   <div className="shrink-0 text-right">
-                    {item.status === "pending" ? (
-                      <span className="inline-block rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">
-                        Baru
-                      </span>
-                    ) : item.status === "in_progress" ? (
-                      <span className="inline-block rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
-                        Diproses
-                      </span>
-                    ) : (
-                      <span className="inline-block rounded-full border border-brand-200 bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700">
-                        Selesai
-                      </span>
-                    )}
+                    <RegistrationStatusBadge status={item.status} />
 
                     <p className="mt-1 text-[11px] text-gray-500">
                       {formatRelativeTime(item.created_at)}

@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
 import type { PpdbRegistrationExportItem } from "@/modules/registration/entity";
+import { REGISTRATION_STATUS_LABEL } from "@/modules/shared/constant/registration";
 
 const REGISTRATION_TYPE_LABELS: Record<string, string> = {
   siswa_baru: "Siswa Baru",
@@ -29,13 +30,6 @@ const PAYMENT_STATUS_LABELS = {
   success: "Lunas",
   failed: "Gagal",
   expired: "Kedaluwarsa",
-} as const;
-
-const STATUS_LABELS = {
-  pending: "Belum",
-  in_progress: "Proses",
-  not_registered: "Tidak Jadi Daftar",
-  registered: "Sudah Daftar",
 } as const;
 
 function formatDateOnly(value: string): string {
@@ -111,7 +105,7 @@ export async function buildRegistrationsWorkbookBuffer(
     worksheet.addRow({
       number: index + 1,
       created_at: formatDateTime(registration.created_at),
-      status: STATUS_LABELS[registration.status],
+      status: REGISTRATION_STATUS_LABEL[registration.status],
       registration_type:
         REGISTRATION_TYPE_LABELS[registration.registration_type] ??
         registration.registration_type,
@@ -123,9 +117,10 @@ export async function buildRegistrationsWorkbookBuffer(
       birth_order: registration.birth_order,
       sibling_count: registration.sibling_count,
       current_address: registration.address,
-      physical_disability:
-        PHYSICAL_DISABILITY_LABELS[registration.physical_disability] ??
-        registration.physical_disability,
+      physical_disability: registration.physical_disability
+        ? (PHYSICAL_DISABILITY_LABELS[registration.physical_disability] ??
+          registration.physical_disability)
+        : "",
       previous_school: registration.previous_school,
       nisn: registration.nisn ?? "",
       father_status: registration.father_status

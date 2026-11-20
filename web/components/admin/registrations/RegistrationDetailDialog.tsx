@@ -15,50 +15,10 @@ import {
   PARENT_RELATIONSHIP_OPTIONS,
   getOptionLabel,
 } from "@/lib/registrationOptions";
-import type { Registration } from "@/types/Registration";
-
-function formatBirthDate(iso: string): string {
-  const date = parseDateOnly(iso);
-
-  return date ? formatDate(date) : "-";
-}
-
-function formatRupiah(value: number): string {
-  if (!value) return "-";
-
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-const PAYMENT_STATUS_LABELS: Record<
-  NonNullable<Registration["payment_status"]>,
-  string
-> = {
-  success: "Lunas",
-  pending: "Belum dibayar",
-  failed: "Gagal",
-  expired: "Kedaluwarsa",
-};
-
-type DetailRowProps = {
-  label: string;
-  value?: string | number | null;
-};
-
-function DetailRow({ label, value }: DetailRowProps) {
-  return (
-    <div className="grid grid-cols-2 gap-2 text-sm">
-      <span className="text-gray-500">{label}</span>
-      <span className="text-gray-900">{value || "-"}</span>
-    </div>
-  );
-}
+import type { RegistrationDetail } from "@/types/Registration";
 
 type RegistrationDetailDialogProps = {
-  registration: Registration | null;
+  registration: RegistrationDetail | null;
   onOpenChange: (open: boolean) => void;
 };
 
@@ -66,6 +26,16 @@ export function RegistrationDetailDialog({
   registration,
   onOpenChange,
 }: RegistrationDetailDialogProps) {
+  const paymentStatusLabels: Record<
+    NonNullable<RegistrationDetail["payment_status"]>,
+    string
+  > = {
+    success: "Lunas",
+    pending: "Belum dibayar",
+    failed: "Gagal",
+    expired: "Expired",
+  };
+
   return (
     <Dialog open={registration !== null} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -102,7 +72,10 @@ export function RegistrationDetailDialog({
 
               <DetailRow
                 label="Tempat, tanggal lahir"
-                value={`${registration.place_of_birth}, ${formatBirthDate(registration.date_of_birth)}`}
+                value={formatBirthDetail(
+                  registration.place_of_birth,
+                  registration.date_of_birth,
+                )}
               />
 
               <DetailRow label="Anak ke-" value={registration.birth_order} />
@@ -133,81 +106,31 @@ export function RegistrationDetailDialog({
               <DetailRow label="NISN" value={registration.nisn} />
             </div>
 
-            <div className="space-y-2">
-              <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
-                Data Ayah
-              </p>
+            <ParentSection
+              title="Ayah"
+              parent={{
+                status: registration.father_status,
+                name: registration.father_name,
+                nik: registration.father_nik,
+                placeOfBirth: registration.father_place_of_birth,
+                dateOfBirth: registration.father_date_of_birth,
+                phone: registration.father_phone,
+                income: registration.father_income,
+              }}
+            />
 
-              <DetailRow
-                label="Status"
-                value={getOptionLabel(
-                  PARENT_RELATIONSHIP_OPTIONS,
-                  registration.father_status,
-                )}
-              />
-
-              <DetailRow label="Nama" value={registration.father_name} />
-
-              <DetailRow label="NIK Ayah" value={registration.father_nik} />
-
-              <DetailRow
-                label="Tempat, tanggal lahir"
-                value={`${registration.father_place_of_birth}, ${formatBirthDate(registration.father_date_of_birth)}`}
-              />
-
-              <a
-                href={buildWhatsAppLink(registration.father_phone)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-brand-700 hover:underline"
-              >
-                <Phone className="w-4 h-4 shrink-0" />
-                {registration.father_phone}
-              </a>
-
-              <DetailRow
-                label="Penghasilan Ayah"
-                value={formatRupiah(registration.father_income)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
-                Data Ibu
-              </p>
-
-              <DetailRow
-                label="Status"
-                value={getOptionLabel(
-                  PARENT_RELATIONSHIP_OPTIONS,
-                  registration.mother_status,
-                )}
-              />
-
-              <DetailRow label="Nama" value={registration.mother_name} />
-
-              <DetailRow label="NIK Ibu" value={registration.mother_nik} />
-
-              <DetailRow
-                label="Tempat, tanggal lahir"
-                value={`${registration.mother_place_of_birth}, ${formatBirthDate(registration.mother_date_of_birth)}`}
-              />
-
-              <a
-                href={buildWhatsAppLink(registration.mother_phone)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm text-brand-700 hover:underline"
-              >
-                <Phone className="w-4 h-4 shrink-0" />
-                {registration.mother_phone}
-              </a>
-
-              <DetailRow
-                label="Penghasilan Ibu"
-                value={formatRupiah(registration.mother_income)}
-              />
-            </div>
+            <ParentSection
+              title="Ibu"
+              parent={{
+                status: registration.mother_status,
+                name: registration.mother_name,
+                nik: registration.mother_nik,
+                placeOfBirth: registration.mother_place_of_birth,
+                dateOfBirth: registration.mother_date_of_birth,
+                phone: registration.mother_phone,
+                income: registration.mother_income,
+              }}
+            />
 
             <div className="space-y-2">
               <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
@@ -228,7 +151,7 @@ export function RegistrationDetailDialog({
 
                 <DetailRow
                   label="Status"
-                  value={PAYMENT_STATUS_LABELS[registration.payment_status]}
+                  value={paymentStatusLabels[registration.payment_status]}
                 />
 
                 <DetailRow
@@ -260,4 +183,94 @@ export function RegistrationDetailDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+type DetailRowProps = {
+  label: string;
+  value?: string | number | null;
+};
+
+function DetailRow({ label, value }: DetailRowProps) {
+  return (
+    <div className="grid grid-cols-2 gap-2 text-sm">
+      <span className="text-gray-500">{label}</span>
+      <span className="text-gray-900">{value || "-"}</span>
+    </div>
+  );
+}
+
+type ParentSectionProps = {
+  title: string;
+  parent: {
+    status: string | null;
+    name: string | null;
+    nik: string | null;
+    placeOfBirth: string | null;
+    dateOfBirth: string | null;
+    phone: string | null;
+    income: number | null;
+  };
+};
+
+function ParentSection({ title, parent }: ParentSectionProps) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold tracking-[0.06em] uppercase text-gray-500">
+        Data {title}
+      </p>
+
+      <DetailRow
+        label="Status"
+        value={getOptionLabel(PARENT_RELATIONSHIP_OPTIONS, parent.status)}
+      />
+
+      <DetailRow label="Nama" value={parent.name} />
+
+      <DetailRow label={`NIK ${title}`} value={parent.nik} />
+
+      <DetailRow
+        label="Tempat, tanggal lahir"
+        value={formatBirthDetail(parent.placeOfBirth, parent.dateOfBirth)}
+      />
+
+      {parent.phone && (
+        <a
+          href={buildWhatsAppLink(parent.phone)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-sm text-brand-700 hover:underline"
+        >
+          <Phone className="w-4 h-4 shrink-0" />
+          {parent.phone}
+        </a>
+      )}
+
+      <DetailRow
+        label={`Penghasilan ${title}`}
+        value={formatRupiah(parent.income)}
+      />
+    </div>
+  );
+}
+
+function formatBirthDate(iso: string): string {
+  const date = parseDateOnly(iso);
+
+  return date ? formatDate(date) : "-";
+}
+
+function formatBirthDetail(place: string | null, date: string | null): string {
+  const parts = [place, date && formatBirthDate(date)];
+
+  return parts.filter(Boolean).join(", ");
+}
+
+function formatRupiah(value: number | null): string {
+  if (!value) return "-";
+
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
 }

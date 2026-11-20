@@ -12,12 +12,12 @@ import {
   MAX_PARENT_INCOME,
   MAX_SIBLING_NUMBER,
   MAX_WEIGHT_KG,
+  REGISTRATION_TYPES,
 } from "@/modules/shared/constant/registration";
-import type { PpdbRegistrationStatus } from "./entity";
 
-const REGISTRATION_TYPE_VALUES = ["siswa_baru", "pindahan"] as const;
+const REGISTRATION_TYPE_VALUES = REGISTRATION_TYPES;
 
-const GENDER_VALUES = ["laki_laki", "perempuan"] as const;
+export const GENDER_VALUES = ["laki_laki", "perempuan"] as const;
 
 const PHYSICAL_DISABILITY_VALUES = ["tidak_ada", "ada"] as const;
 
@@ -222,88 +222,7 @@ export type CreatePpdbRegistrationRequest = z.infer<
   ip_address: string;
 };
 
-const REGISTRATION_STATUSES: [
-  PpdbRegistrationStatus,
-  ...PpdbRegistrationStatus[],
-] = ["pending", "in_progress", "not_registered", "registered"];
-
-export const UpdatePpdbRegistrationStatusRequestSchema = z.object({
-  status: z.enum(REGISTRATION_STATUSES),
-});
-
-const SORT_DIRECTION_VALUES = ["asc", "desc"] as const;
-
-export const ListRegistrationsQuerySchema = z.object({
-  search: z.string().trim().max(100).default(""),
-  statuses: z.array(z.enum(REGISTRATION_STATUSES)).default([]),
-  sort: z.enum(SORT_DIRECTION_VALUES).default("desc"),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
-  offset: z.coerce.number().int().min(0).default(0),
-});
-
-export type ListRegistrationsQuery = z.infer<
-  typeof ListRegistrationsQuerySchema
->;
-
-export const ExportRegistrationsQuerySchema = z.object({
-  statuses: z.array(z.enum(REGISTRATION_STATUSES)).default([]),
-});
-
-export type ExportRegistrationsQuery = z.infer<
-  typeof ExportRegistrationsQuerySchema
->;
-
-export type UpdatePpdbRegistrationStatusRequest = z.infer<
-  typeof UpdatePpdbRegistrationStatusRequestSchema
->;
-
-export type RegistrationListItemResponse = {
-  id: string;
-  registration_type: "siswa_baru" | "pindahan";
-  status: PpdbRegistrationStatus;
-  ip_address: string | null;
-  parent_email: string | null;
-  created_at: string;
-
-  full_name: string;
-  student_nik: string;
-  gender: "laki_laki" | "perempuan";
-  place_of_birth: string;
-  date_of_birth: string;
-  birth_order: number;
-  sibling_count: number;
-  current_address: string;
-  physical_disability: "tidak_ada" | "ada";
-  previous_school: string;
-  nisn: string | null;
-
-  father_status: "kandung" | "tiri" | "angkat" | "wali" | null;
-  father_name: string | null;
-  father_nik: string | null;
-  father_place_of_birth: string | null;
-  father_date_of_birth: string | null;
-  father_phone: string | null;
-  father_income: number | null;
-
-  mother_status: "kandung" | "tiri" | "angkat" | "wali" | null;
-  mother_name: string | null;
-  mother_nik: string | null;
-  mother_place_of_birth: string | null;
-  mother_date_of_birth: string | null;
-  mother_phone: string | null;
-  mother_income: number | null;
-
-  payment_status: "pending" | "success" | "failed" | "expired" | null;
-  payment_amount: number | null;
-  paid_at: string | null;
-  invoice_number: string | null;
-};
-
-export type RegistrationListResponse = {
-  items: RegistrationListItemResponse[];
-  total: number;
-  has_more: boolean;
-};
+export const ACADEMIC_YEAR_PATTERN = /^\d{4}\/\d{4}$/;
 
 export type RegistrantRegion = {
   city: string;

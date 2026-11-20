@@ -44,6 +44,19 @@ export function formatDateOnly(value: string): string {
   return date ? formatDate(date) : value;
 }
 
+export function formatNumericDate(value: Date): string {
+  return value.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+export function formatNumericDateOnly(value: string): string {
+  const date = parseDateOnly(value);
+  return date ? formatNumericDate(date) : value;
+}
+
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleDateString("id-ID", {
     day: "numeric",
