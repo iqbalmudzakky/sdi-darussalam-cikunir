@@ -1,3 +1,4 @@
+import { cva } from "class-variance-authority";
 import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +19,11 @@ import type {
   RegistrationStatus,
   RegistrationType,
 } from "@/types/registration/Registration";
+
+const filterItemVariants = cva([
+  "py-2 whitespace-nowrap text-gray-700",
+  "data-selected:bg-brand-50 data-selected:font-semibold data-selected:text-brand-800",
+]);
 
 type RegistrationFiltersProps = {
   searchInput: string;
@@ -78,7 +84,7 @@ export function RegistrationFilters({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:w-136">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:w-156">
         <FilterSelect
           label="Status"
           value={filters.status}
@@ -122,19 +128,29 @@ function FilterSelect({ label, value, options, onChange }: FilterSelectProps) {
   return (
     <Select
       items={items}
-      value={value || null}
+      value={value || allValue}
       onValueChange={(next) => onChange(!next || next === allValue ? "" : next)}
     >
       <SelectTrigger
         aria-label={label}
         className="h-9 bg-white font-medium text-gray-700"
       >
-        <SelectValue placeholder={label} className="truncate" />
+        <SelectValue className="truncate">
+          {(selected: string) =>
+            items.find(
+              (item) => item.value === selected && selected !== allValue,
+            )?.label ?? label
+          }
+        </SelectValue>
       </SelectTrigger>
 
-      <SelectContent>
+      <SelectContent className="w-max min-w-(--anchor-width)">
         {items.map((item) => (
-          <SelectItem key={item.value} value={item.value}>
+          <SelectItem
+            key={item.value}
+            value={item.value}
+            className={filterItemVariants()}
+          >
             {item.label}
           </SelectItem>
         ))}
