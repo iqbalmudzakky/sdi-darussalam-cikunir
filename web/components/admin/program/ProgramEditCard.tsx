@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { ProgramFormDialog } from "./ProgramFormDialog";
 import { useToast } from "@/hooks/useToast";
-import type { ProgramItem } from "@/types/Program";
+import type { ProgramItem } from "@/types/content/Program";
 
 type ProgramEditCardProps = {
   item: ProgramItem;
@@ -104,8 +104,9 @@ export function ProgramEditCard({
           <DialogHeader>
             <DialogTitle>Hapus Program</DialogTitle>
             <DialogDescription>
-              Yakin mau hapus <span className="font-semibold">{item.title}</span>
-              ? Tindakan ini tidak bisa dibatalkan.
+              Yakin mau hapus{" "}
+              <span className="font-semibold">{item.title}</span>? Tindakan ini
+              tidak bisa dibatalkan.
             </DialogDescription>
           </DialogHeader>
 

@@ -14,7 +14,7 @@ import {
 import { EventFormDialog } from "./EventFormDialog";
 import { useToast } from "@/hooks/useToast";
 import { parseDateOnly, formatDate } from "@/lib/date";
-import type { EventItem } from "@/types/Event";
+import type { EventItem } from "@/types/content/Event";
 
 type EventEditCardProps = {
   item: EventItem;

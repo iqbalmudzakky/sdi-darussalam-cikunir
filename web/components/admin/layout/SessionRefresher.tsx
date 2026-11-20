@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { refreshSession } from "@/lib/api/auth";
+import { refreshSession } from "@/lib/api/account/auth";
 
 export function SessionRefresher() {
   useEffect(() => {

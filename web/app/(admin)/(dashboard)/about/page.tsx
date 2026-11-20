@@ -11,19 +11,22 @@ import {
   Upload,
   Video,
 } from "lucide-react";
-import { uploadPhoto } from "@/lib/api/storage";
+import { uploadPhoto } from "@/lib/api/content/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { getSchoolProfile, updateSchoolProfile } from "@/lib/api/schoolProfile";
+import {
+  getSchoolProfile,
+  updateSchoolProfile,
+} from "@/lib/api/content/schoolProfile";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
 import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
 import { extractYouTubeVideoId } from "@/lib/social/youtube";
 import { useToast } from "@/hooks/useToast";
-import type { SchoolProfile } from "@/types/SchoolProfile";
+import type { SchoolProfile } from "@/types/content/SchoolProfile";
 
 const photoButtonVariants = cva([
   "relative aspect-4/3 w-full max-w-sm mx-auto overflow-hidden rounded-xl",

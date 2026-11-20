@@ -1,4 +1,4 @@
-import type { ProgramItem } from "@/types/Program";
+import type { ProgramItem } from "@/types/content/Program";
 
 export async function listPrograms(): Promise<ProgramItem[]> {
   const res = await fetch("/api/programs");

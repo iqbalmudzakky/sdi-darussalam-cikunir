@@ -1,4 +1,4 @@
-import type { SchoolProfile, SchoolProfileStats } from "@/types/SchoolProfile";
+import type { SchoolProfile, SchoolProfileStats } from "@/types/content/SchoolProfile";
 
 export async function getSchoolProfile(): Promise<SchoolProfile> {
   const res = await fetch("/api/school-profile");

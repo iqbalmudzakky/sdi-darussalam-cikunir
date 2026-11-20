@@ -17,7 +17,10 @@ import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
-import { getRegistration, updateRegistration } from "@/lib/api/registrations";
+import {
+  getRegistration,
+  updateRegistration,
+} from "@/lib/api/registration/registrations";
 import { formatNumericDateOnly } from "@/lib/date";
 import { formatRegistrationSummary } from "@/lib/registrationOptions";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
@@ -25,7 +28,7 @@ import type {
   RegistrationDetail,
   RegistrationDocument,
   UpdateRegistrationInput,
-} from "@/types/Registration";
+} from "@/types/registration/Registration";
 import { RegistrationDetailDialog } from "./RegistrationDetailDialog";
 import { getDocumentTone } from "./RegistrationListItems";
 import { RegistrationStatusBadge } from "./RegistrationStatusBadge";

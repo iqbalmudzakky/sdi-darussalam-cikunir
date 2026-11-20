@@ -11,7 +11,7 @@ import {
 import type {
   RegistrationType,
   ShortRegistrationReceipt,
-} from "@/types/Registration";
+} from "@/types/registration/Registration";
 import { ChoiceField, DateField, SelectField, TextField } from "./fields";
 
 const sectionHeadingVariants = cva([

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, Upload } from "lucide-react";
-import { uploadPhoto } from "@/lib/api/storage";
+import { uploadPhoto } from "@/lib/api/content/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmojiPicker } from "@/components/admin/shared/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
-import type { ActivityItem } from "@/types/Activity";
+import type { ActivityItem } from "@/types/content/Activity";
 
 type ActivityFormValue = Omit<ActivityItem, "id">;
 

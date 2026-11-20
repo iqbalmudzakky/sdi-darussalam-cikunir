@@ -1,11 +1,11 @@
-import type { SubmitRegistrationInput } from "@/types/Registration";
+import type { SubmitRegistrationInput } from "@/types/registration/Registration";
 import type {
   ListPaymentsParams,
   PaymentListPage,
   PaymentRevenueSummary,
   PaymentStatusView,
   RevenueSummaryParams,
-} from "@/types/Payment";
+} from "@/types/payment/Payment";
 
 export async function startRegistrationPayment(
   input: SubmitRegistrationInput,

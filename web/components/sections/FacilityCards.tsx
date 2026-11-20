@@ -1,6 +1,6 @@
 "use client";
 
-import type { FacilityItem } from "@/types/Facility";
+import type { FacilityItem } from "@/types/content/Facility";
 import { useReveal } from "@/hooks/useReveal";
 
 type FacilityCardsProps = {

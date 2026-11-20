@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmojiPicker } from "@/components/admin/shared/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
-import type { ProgramItem } from "@/types/Program";
+import type { ProgramItem } from "@/types/content/Program";
 
 type ProgramFormValue = Omit<ProgramItem, "id">;
 

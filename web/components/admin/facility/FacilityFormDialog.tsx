@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cva } from "class-variance-authority";
 import { Check, Loader2, Upload } from "lucide-react";
-import { uploadPhoto } from "@/lib/api/storage";
+import { uploadPhoto } from "@/lib/api/content/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmojiPicker } from "@/components/admin/shared/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
-import type { FacilityItem } from "@/types/Facility";
+import type { FacilityItem } from "@/types/content/Facility";
 
 const photoButtonVariants = cva([
   "relative aspect-video w-full overflow-hidden rounded-2xl",

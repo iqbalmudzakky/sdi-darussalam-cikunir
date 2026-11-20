@@ -1,4 +1,4 @@
-import type { AchievementItem } from "@/types/Achievement";
+import type { AchievementItem } from "@/types/content/Achievement";
 
 export async function listAchievements(): Promise<AchievementItem[]> {
   const res = await fetch("/api/achievements");

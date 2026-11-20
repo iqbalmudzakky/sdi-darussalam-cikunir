@@ -8,8 +8,8 @@ import type {
   SubmitRegistrationInput,
   UpdateRegistrationInput,
   UpdateRegistrationResult,
-} from "@/types/Registration";
-import type { ManualPaymentInput } from "@/types/Payment";
+} from "@/types/registration/Registration";
+import type { ManualPaymentInput } from "@/types/payment/Payment";
 
 function buildStatusQuery(statuses: RegistrationStatus[]): URLSearchParams {
   const query = new URLSearchParams();

@@ -6,7 +6,7 @@ import {
   REGISTRATION_TYPE_LABEL,
   REGISTRATION_TYPES,
 } from "@/modules/shared/constant/registration";
-import type { Registration } from "@/types/Registration";
+import type { Registration } from "@/types/registration/Registration";
 
 export { REGISTRATION_STATUS_LABEL };
 

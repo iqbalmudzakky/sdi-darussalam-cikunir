@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { cva } from "class-variance-authority";
 import { Briefcase, Loader2, RefreshCw, Users } from "lucide-react";
 import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
-import { getSchoolProfileStats } from "@/lib/api/schoolProfile";
-import type { SchoolProfileStats } from "@/types/SchoolProfile";
+import { getSchoolProfileStats } from "@/lib/api/content/schoolProfile";
+import type { SchoolProfileStats } from "@/types/content/SchoolProfile";
 
 const statCardClassName =
   "flex items-center gap-3 rounded-[10px] border border-gray-200 bg-white p-3.5";

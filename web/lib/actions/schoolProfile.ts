@@ -1,7 +1,7 @@
 "use server";
 
 import * as schoolProfileService from "@/modules/school-profile/service";
-import type { SchoolProfile } from "@/types/SchoolProfile";
+import type { SchoolProfile } from "@/types/content/SchoolProfile";
 
 const DEFAULT_SCHOOL_PROFILE: SchoolProfile = {
   photo_url: null,

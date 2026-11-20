@@ -3,7 +3,7 @@ import type {
   AdminListResponse,
   InviteAdminInput,
   UpdateAdminInput,
-} from "@/types/Admin";
+} from "@/types/account/Admin";
 
 export async function listAdmins(): Promise<AdminListResponse> {
   const res = await fetch("/api/admins");

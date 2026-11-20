@@ -1,4 +1,4 @@
-import type { ActivityItem } from "@/types/Activity";
+import type { ActivityItem } from "@/types/content/Activity";
 
 export async function listActivities(): Promise<ActivityItem[]> {
   const res = await fetch("/api/activities");

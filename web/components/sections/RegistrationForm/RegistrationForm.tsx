@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cva } from "class-variance-authority";
 import { Check, Loader2 } from "lucide-react";
-import { startRegistrationPayment } from "@/lib/api/payments";
-import { createManualRegistration } from "@/lib/api/registrations";
-import { getPaymentSettings } from "@/lib/api/paymentSettings";
+import { startRegistrationPayment } from "@/lib/api/payment/payments";
+import { createManualRegistration } from "@/lib/api/registration/registrations";
+import { getPaymentSettings } from "@/lib/api/payment/paymentSettings";
 import { useToast } from "@/hooks/useToast";
 import { toDateOnly } from "@/lib/date";
 import {
@@ -19,7 +19,10 @@ import { TextField, SelectField, TextareaField, DateField } from "./fields";
 import { RegionSelect } from "./RegionSelect";
 import { clearDraft, isDraftMeaningful, loadDraft, saveDraft } from "./draft";
 import { buildRegistrationPayload } from "./payload";
-import type { ManualPaymentInput, ManualPaymentMethod } from "@/types/Payment";
+import type {
+  ManualPaymentInput,
+  ManualPaymentMethod,
+} from "@/types/payment/Payment";
 import {
   EMPTY_FORM,
   FIELD_LABELS,

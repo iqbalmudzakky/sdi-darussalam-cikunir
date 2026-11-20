@@ -29,8 +29,8 @@ import {
   ADMIN_ROLE_DOT_CLASS,
   ADMIN_ROLE_LABEL,
 } from "@/lib/adminRoles";
-import { logout } from "@/lib/api/auth";
-import { getPendingFollowUpCount } from "@/lib/api/registrations";
+import { logout } from "@/lib/api/account/auth";
+import { getPendingFollowUpCount } from "@/lib/api/registration/registrations";
 import type { AdminRole, Permission } from "@/modules/shared/constant/role";
 
 const sidebarNavLinkVariants = cva(

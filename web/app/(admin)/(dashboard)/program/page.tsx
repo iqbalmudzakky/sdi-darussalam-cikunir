@@ -12,8 +12,8 @@ import {
   createProgram,
   updateProgram,
   deleteProgram,
-} from "@/lib/api/programs";
-import type { ProgramItem } from "@/types/Program";
+} from "@/lib/api/content/programs";
+import type { ProgramItem } from "@/types/content/Program";
 
 const BLANK_PROGRAM = { emoji: "", title: "", description: "" };
 
@@ -105,7 +105,9 @@ export default function AdminProgramPage() {
         </div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-          <p className="text-sm font-medium text-red-700">Gagal memuat data program. Coba refresh halaman.</p>
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data program. Coba refresh halaman.
+          </p>
         </div>
       ) : items.length === 0 ? (
         <AdminEmptyState

@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 import { REGISTRATION_STATUS_LABEL } from "@/lib/registrationOptions";
-import type { RegistrationStatus } from "@/types/Registration";
+import type { RegistrationStatus } from "@/types/registration/Registration";
 
 const statusBadgeVariants = cva(
   "inline-block shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap",

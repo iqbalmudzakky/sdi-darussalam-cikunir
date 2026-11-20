@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { AchievementFormDialog } from "./AchievementFormDialog";
 import { useToast } from "@/hooks/useToast";
-import type { AchievementItem } from "@/types/Achievement";
+import type { AchievementItem } from "@/types/content/Achievement";
 
 type AchievementEditCardProps = {
   item: AchievementItem;

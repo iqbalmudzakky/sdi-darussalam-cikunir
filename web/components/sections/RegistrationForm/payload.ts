@@ -1,4 +1,4 @@
-import type { SubmitRegistrationInput } from "@/types/Registration";
+import type { SubmitRegistrationInput } from "@/types/registration/Registration";
 import { normalizeWhatsappNumber, type FormFields } from "./config";
 
 export function buildRegistrationPayload(

@@ -12,8 +12,8 @@ import {
   createEvent,
   updateEvent,
   deleteEvent,
-} from "@/lib/api/events";
-import type { EventItem } from "@/types/Event";
+} from "@/lib/api/content/events";
+import type { EventItem } from "@/types/content/Event";
 
 const BLANK_EVENT: Omit<EventItem, "id" | "slug"> = {
   title: "",

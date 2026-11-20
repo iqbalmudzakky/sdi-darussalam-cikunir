@@ -1,7 +1,7 @@
 import type {
   ShortFormOptions,
   ShortFormOptionsQuery,
-} from "@/types/Registration";
+} from "@/types/registration/Registration";
 
 /* no-store: status ini tidak boleh ikut cache ISR halaman landing. */
 export async function fetchRegistrationOpen(): Promise<boolean> {

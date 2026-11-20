@@ -1,4 +1,4 @@
-import type { FacilityItem } from "@/types/Facility";
+import type { FacilityItem } from "@/types/content/Facility";
 
 export async function listFacilities(): Promise<FacilityItem[]> {
   const res = await fetch("/api/facilities");

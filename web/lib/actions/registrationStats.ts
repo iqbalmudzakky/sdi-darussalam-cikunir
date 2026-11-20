@@ -1,7 +1,7 @@
 "use server";
 
 import * as registrationStatsService from "@/modules/registration-stats/service";
-import type { AcademicYearSummary } from "@/types/RegistrationStats";
+import type { AcademicYearSummary } from "@/types/registration/RegistrationStats";
 
 export async function getCurrentSummary(): Promise<AcademicYearSummary | null> {
   try {

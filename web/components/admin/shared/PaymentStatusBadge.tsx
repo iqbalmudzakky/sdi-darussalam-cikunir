@@ -1,6 +1,6 @@
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { PaymentStatus } from "@/types/Payment";
+import type { PaymentStatus } from "@/types/payment/Payment";
 
 export const PAYMENT_STATUS_META: Record<
   PaymentStatus,

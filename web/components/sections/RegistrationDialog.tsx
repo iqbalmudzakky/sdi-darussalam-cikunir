@@ -18,12 +18,12 @@ import {
 } from "@/components/ui/dialog";
 import { ShortRegistrationForm } from "@/components/sections/RegistrationForm/ShortRegistrationForm";
 import { useToast } from "@/hooks/useToast";
-import { fetchRegistrationOpen } from "@/lib/api/registrationWindow";
+import { fetchRegistrationOpen } from "@/lib/api/registration/registrationWindow";
 import { cn } from "@/lib/utils";
 import type {
   RegistrationType,
   ShortRegistrationReceipt,
-} from "@/types/Registration";
+} from "@/types/registration/Registration";
 
 const triggerVariants = cva(
   [

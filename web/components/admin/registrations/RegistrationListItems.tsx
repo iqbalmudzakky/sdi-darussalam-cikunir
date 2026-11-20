@@ -3,7 +3,7 @@ import { cva } from "class-variance-authority";
 import { FileText, Folder, MessageCircle, Wallet } from "lucide-react";
 import { formatRegistrationSummary } from "@/lib/registrationOptions";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
-import type { Registration } from "@/types/Registration";
+import type { Registration } from "@/types/registration/Registration";
 import { RegistrationStatusBadge } from "./RegistrationStatusBadge";
 
 const markerVariants = cva(

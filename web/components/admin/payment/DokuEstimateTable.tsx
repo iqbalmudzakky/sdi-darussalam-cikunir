@@ -1,5 +1,5 @@
 import { formatAmount } from "@/lib/payment";
-import type { DokuEstimate } from "@/types/PaymentSettings";
+import type { DokuEstimate } from "@/types/payment/PaymentSettings";
 
 type DokuEstimateTableProps = {
   estimates: DokuEstimate[];

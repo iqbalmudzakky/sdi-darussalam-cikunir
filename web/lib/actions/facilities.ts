@@ -1,7 +1,7 @@
 "use server";
 
 import * as facilityService from "@/modules/facility/service";
-import type { FacilityItem } from "@/types/Facility";
+import type { FacilityItem } from "@/types/content/Facility";
 
 export async function listFacilities(): Promise<FacilityItem[]> {
   try {

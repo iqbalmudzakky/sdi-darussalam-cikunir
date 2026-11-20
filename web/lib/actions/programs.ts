@@ -1,7 +1,7 @@
 "use server";
 
 import * as programService from "@/modules/program/service";
-import type { ProgramItem } from "@/types/Program";
+import type { ProgramItem } from "@/types/content/Program";
 
 export async function listPrograms(): Promise<ProgramItem[]> {
   try {

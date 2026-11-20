@@ -13,7 +13,7 @@ import {
   PasswordInput,
   authInputClassName,
 } from "@/components/admin/auth/AuthCard";
-import { login } from "@/lib/api/auth";
+import { login } from "@/lib/api/account/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

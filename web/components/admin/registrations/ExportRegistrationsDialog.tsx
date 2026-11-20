@@ -12,9 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { buildRegistrationsExportUrl } from "@/lib/api/registrations";
+import { buildRegistrationsExportUrl } from "@/lib/api/registration/registrations";
 import { REGISTRATION_STATUS_OPTIONS } from "@/lib/registrationOptions";
-import type { RegistrationStatus } from "@/types/Registration";
+import type { RegistrationStatus } from "@/types/registration/Registration";
 
 const statusRowVariants = cva(
   "flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",

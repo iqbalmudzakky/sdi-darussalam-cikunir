@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { cva } from "class-variance-authority";
 import EventCard from "@/components/sections/EventCard";
-import type { PublicEventItem } from "@/types/Event";
+import type { PublicEventItem } from "@/types/content/Event";
 
 const chipGroupVariants = cva([
   "-mx-5 mt-10 flex gap-2 overflow-x-auto px-5 pb-1",

@@ -1,4 +1,4 @@
-import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
+import type { PaymentSettingsResponse } from "@/types/payment/PaymentSettings";
 
 export async function getPaymentSettings(
   estimateFee?: number,

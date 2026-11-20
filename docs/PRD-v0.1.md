@@ -528,7 +528,7 @@ modules/<domain>/
 | Konsumen        | Caranya                                                                                                           |
 | --------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Halaman publik  | Server action di `lib/actions/*.ts` — memanggil service langsung, `try/catch`, kembalikan nilai kosong saat gagal |
-| Dashboard admin | Klien fetch di `lib/api/*.ts` → route API                                                                         |
+| Dashboard admin | Klien fetch di `lib/api/<kelompok>/*.ts` → route API                                                              |
 
 ### 6.3 Migrasi
 
@@ -555,6 +555,8 @@ modules/<domain>/
 
 - Tailwind + `cva` untuk varian kelas; `cn()` untuk penggabungan
 - Komponen dialog dari `components/ui/dialog` (Base UI)
+- `lib/api/` dan `types/` dikelompokkan per subfolder: `registration/`, `payment/`, `account/`,
+  `content/`. Berkas baru masuk ke kelompok yang cocok, bukan ke root
 - `components/admin/` tidak berisi berkas di root-nya: komponen fitur di folder fiturnya
   (`payment/`, `statistics/`, `registrations/`, …), kerangka dashboard di `layout/`, dan
   komponen yang dipakai banyak halaman di `shared/`

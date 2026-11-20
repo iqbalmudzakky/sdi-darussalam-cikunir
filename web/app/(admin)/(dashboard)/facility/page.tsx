@@ -12,8 +12,8 @@ import {
   createFacility,
   updateFacility,
   deleteFacility,
-} from "@/lib/api/facilities";
-import type { FacilityItem } from "@/types/Facility";
+} from "@/lib/api/content/facilities";
+import type { FacilityItem } from "@/types/content/Facility";
 
 const BLANK_FACILITY: Omit<FacilityItem, "id"> = {
   emoji: "",
@@ -111,7 +111,9 @@ export default function AdminFacilityPage() {
         </div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-          <p className="text-sm font-medium text-red-700">Gagal memuat data fasilitas. Coba refresh halaman.</p>
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data fasilitas. Coba refresh halaman.
+          </p>
         </div>
       ) : items.length === 0 ? (
         <AdminEmptyState

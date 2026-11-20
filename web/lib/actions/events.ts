@@ -1,7 +1,7 @@
 "use server";
 
 import * as eventService from "@/modules/event/service";
-import type { PublicEventItem } from "@/types/Event";
+import type { PublicEventItem } from "@/types/content/Event";
 
 export async function listPublishedEvents(): Promise<PublicEventItem[]> {
   try {

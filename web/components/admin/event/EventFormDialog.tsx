@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, ImageIcon, Loader2, Upload, CalendarDays } from "lucide-react";
-import { uploadPhoto } from "@/lib/api/storage";
+import { uploadPhoto } from "@/lib/api/content/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { parseDateOnly, toDateOnly, formatDate } from "@/lib/date";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
-import type { EventItem } from "@/types/Event";
+import type { EventItem } from "@/types/content/Event";
 
 type EventFormValue = Omit<EventItem, "id" | "slug">;
 

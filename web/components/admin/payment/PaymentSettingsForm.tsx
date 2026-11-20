@@ -11,9 +11,9 @@ import { useToast } from "@/hooks/useToast";
 import {
   getPaymentSettings,
   savePaymentSettings,
-} from "@/lib/api/paymentSettings";
+} from "@/lib/api/payment/paymentSettings";
 import { DokuEstimateTable } from "./DokuEstimateTable";
-import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
+import type { PaymentSettingsResponse } from "@/types/payment/PaymentSettings";
 
 type PaymentSettingsFormProps = {
   settings: PaymentSettingsResponse;

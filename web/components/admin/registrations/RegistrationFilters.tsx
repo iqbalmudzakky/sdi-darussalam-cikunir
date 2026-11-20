@@ -17,7 +17,7 @@ import type {
   RegistrationProgram,
   RegistrationStatus,
   RegistrationType,
-} from "@/types/Registration";
+} from "@/types/registration/Registration";
 
 type RegistrationFiltersProps = {
   searchInput: string;

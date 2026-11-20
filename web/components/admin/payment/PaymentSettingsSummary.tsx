@@ -3,7 +3,7 @@ import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
 import { parseDateOnly } from "@/lib/date";
 import { formatAmount } from "@/lib/payment";
 import { DokuEstimateTable } from "./DokuEstimateTable";
-import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
+import type { PaymentSettingsResponse } from "@/types/payment/PaymentSettings";
 
 type PaymentSettingsSummaryProps = {
   settings: PaymentSettingsResponse;

@@ -1,4 +1,4 @@
-import type { SessionInfo } from "@/types/Auth";
+import type { SessionInfo } from "@/types/account/Auth";
 
 export async function login(
   email: string,

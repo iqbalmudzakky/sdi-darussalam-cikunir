@@ -1,4 +1,4 @@
-import type { AcademicYearSummary } from "@/types/RegistrationStats";
+import type { AcademicYearSummary } from "@/types/registration/RegistrationStats";
 
 export async function getAcademicYears(): Promise<AcademicYearSummary[]> {
   try {

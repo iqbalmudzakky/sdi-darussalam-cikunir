@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmojiPicker } from "@/components/admin/shared/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
-import type { AchievementItem } from "@/types/Achievement";
+import type { AchievementItem } from "@/types/content/Achievement";
 
 type AchievementFormValue = Omit<AchievementItem, "id">;
 

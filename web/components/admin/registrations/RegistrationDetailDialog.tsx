@@ -15,7 +15,7 @@ import {
   PARENT_RELATIONSHIP_OPTIONS,
   getOptionLabel,
 } from "@/lib/registrationOptions";
-import type { RegistrationDetail } from "@/types/Registration";
+import type { RegistrationDetail } from "@/types/registration/Registration";
 
 type RegistrationDetailDialogProps = {
   registration: RegistrationDetail | null;

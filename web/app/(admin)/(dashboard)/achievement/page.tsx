@@ -12,8 +12,8 @@ import {
   createAchievement,
   updateAchievement,
   deleteAchievement,
-} from "@/lib/api/achievements";
-import type { AchievementItem } from "@/types/Achievement";
+} from "@/lib/api/content/achievements";
+import type { AchievementItem } from "@/types/content/Achievement";
 
 const BLANK_ACHIEVEMENT = { emoji: "", title: "", description: "" };
 
@@ -105,7 +105,9 @@ export default function AdminAchievementPage() {
         </div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-          <p className="text-sm font-medium text-red-700">Gagal memuat data prestasi. Coba refresh halaman.</p>
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data prestasi. Coba refresh halaman.
+          </p>
         </div>
       ) : items.length === 0 ? (
         <AdminEmptyState

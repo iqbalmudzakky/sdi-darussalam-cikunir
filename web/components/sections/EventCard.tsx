@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cva, type VariantProps } from "class-variance-authority";
 import { formatDateOnly } from "@/lib/date";
-import type { PublicEventItem } from "@/types/Event";
+import type { PublicEventItem } from "@/types/content/Event";
 
 export const categoryBadgeVariants = cva(
   [

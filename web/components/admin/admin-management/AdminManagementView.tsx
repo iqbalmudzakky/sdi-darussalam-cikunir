@@ -14,13 +14,13 @@ import {
   updateAdmin,
   deleteAdmin,
   resendInvite,
-} from "@/lib/api/admins";
+} from "@/lib/api/account/admins";
 import type {
   AdminItem,
   AdminRole,
   InviteAdminInput,
   UpdateAdminInput,
-} from "@/types/Admin";
+} from "@/types/account/Admin";
 
 export function AdminManagementView() {
   const [items, setItems] = useState<AdminItem[]>([]);

@@ -1,7 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { ADMIN_ROLES } from "@/modules/shared/constant/role";
 import { randomBytes, createHash } from "crypto";
-import type { SessionUser } from "@/types/Auth";
+import type { SessionUser } from "@/types/account/Auth";
 
 export const ACCESS_TOKEN_TTL_SECONDS = 60 * 60 * 8;
 export const REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 30;

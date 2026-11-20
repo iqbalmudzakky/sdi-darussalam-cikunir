@@ -17,7 +17,7 @@ import {
   extractYouTubeVideoId,
   getYouTubeThumbnailUrl,
 } from "@/lib/social/youtube";
-import type { ActivityItem } from "@/types/Activity";
+import type { ActivityItem } from "@/types/content/Activity";
 
 type ActivityEditCardProps = {
   item: ActivityItem;

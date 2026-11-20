@@ -13,7 +13,7 @@ import {
   BackToLoginLink,
   authInputClassName,
 } from "@/components/admin/auth/AuthCard";
-import { forgotPassword } from "@/lib/api/auth";
+import { forgotPassword } from "@/lib/api/account/auth";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

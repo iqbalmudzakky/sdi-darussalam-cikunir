@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { FacilityFormDialog } from "./FacilityFormDialog";
 import { useToast } from "@/hooks/useToast";
-import type { FacilityItem } from "@/types/Facility";
+import type { FacilityItem } from "@/types/content/Facility";
 
 type FacilityEditCardProps = {
   item: FacilityItem;

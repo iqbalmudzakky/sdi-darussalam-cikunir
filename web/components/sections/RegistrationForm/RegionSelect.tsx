@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { SelectField } from "./fields";
-import { listRegions } from "@/lib/api/regions";
-import type { Region, RegionLevel } from "@/types/Region";
+import { listRegions } from "@/lib/api/registration/regions";
+import type { Region, RegionLevel } from "@/types/registration/Region";
 
 type RegionSelectProps = {
   id: string;

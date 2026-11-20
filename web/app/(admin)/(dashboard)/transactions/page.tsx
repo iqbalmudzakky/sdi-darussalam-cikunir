@@ -24,7 +24,7 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
-import { getRevenueSummary, listPayments } from "@/lib/api/payments";
+import { getRevenueSummary, listPayments } from "@/lib/api/payment/payments";
 import { useToast } from "@/hooks/useToast";
 import {
   formatDate,
@@ -46,7 +46,7 @@ import type {
   PaymentRevenueSummary,
   PaymentSortDirection,
   PaymentStatus,
-} from "@/types/Payment";
+} from "@/types/payment/Payment";
 
 const PAGE_SIZE = 10;
 const SEARCH_DEBOUNCE_MS = 600;
@@ -527,7 +527,10 @@ function AdminDateField({
 
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-xs font-medium text-gray-600">
+      <label
+        htmlFor={id}
+        className="mb-1 block text-xs font-medium text-gray-600"
+      >
         {label}
       </label>
 

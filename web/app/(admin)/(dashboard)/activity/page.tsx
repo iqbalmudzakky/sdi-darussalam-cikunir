@@ -12,8 +12,8 @@ import {
   createActivity,
   updateActivity,
   deleteActivity,
-} from "@/lib/api/activities";
-import type { ActivityItem } from "@/types/Activity";
+} from "@/lib/api/content/activities";
+import type { ActivityItem } from "@/types/content/Activity";
 
 const BLANK_ACTIVITY: Omit<ActivityItem, "id"> = {
   emoji: "",
@@ -115,7 +115,9 @@ export default function AdminActivityPage() {
         </div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-          <p className="text-sm font-medium text-red-700">Gagal memuat data kegiatan. Coba refresh halaman.</p>
+          <p className="text-sm font-medium text-red-700">
+            Gagal memuat data kegiatan. Coba refresh halaman.
+          </p>
         </div>
       ) : items.length === 0 ? (
         <AdminEmptyState

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ProgramItem } from "@/types/Program";
+import type { ProgramItem } from "@/types/content/Program";
 import { useReveal } from "@/hooks/useReveal";
 
 type ProgramCardsProps = {

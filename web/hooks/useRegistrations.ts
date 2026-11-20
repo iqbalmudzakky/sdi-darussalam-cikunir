@@ -5,8 +5,8 @@ import { useToast } from "@/hooks/useToast";
 import {
   listRegistrations,
   submitShortRegistration,
-} from "@/lib/api/registrations";
-import { fetchShortFormOptions } from "@/lib/api/registrationWindow";
+} from "@/lib/api/registration/registrations";
+import { fetchShortFormOptions } from "@/lib/api/registration/registrationWindow";
 import type {
   ListRegistrationsParams,
   Registration,
@@ -15,7 +15,7 @@ import type {
   ShortRegistrationInput,
   ShortRegistrationFormInput,
   ShortRegistrationValues,
-} from "@/types/Registration";
+} from "@/types/registration/Registration";
 
 export function useShortRegistrationForm({
   registrationType,

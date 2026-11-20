@@ -1,4 +1,4 @@
-import type { AdminRole } from "@/types/Admin";
+import type { AdminRole } from "@/types/account/Admin";
 
 export { ADMIN_ROLE_LABEL } from "@/modules/shared/constant/role";
 

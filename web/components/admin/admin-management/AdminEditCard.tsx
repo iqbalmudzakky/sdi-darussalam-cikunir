@@ -22,7 +22,11 @@ import {
 import { useToast } from "@/hooks/useToast";
 import { ADMIN_ROLE_DOT_CLASS, ADMIN_ROLE_LABEL } from "@/lib/adminRoles";
 import { formatDate } from "@/lib/date";
-import type { AdminItem, AdminRole, UpdateAdminInput } from "@/types/Admin";
+import type {
+  AdminItem,
+  AdminRole,
+  UpdateAdminInput,
+} from "@/types/account/Admin";
 
 type ActionResult = { ok: boolean; error?: string };
 

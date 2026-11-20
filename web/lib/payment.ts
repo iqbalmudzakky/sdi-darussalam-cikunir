@@ -1,4 +1,4 @@
-import type { Payment } from "@/types/Payment";
+import type { Payment } from "@/types/payment/Payment";
 
 export function formatAmount(amount: number): string {
   return new Intl.NumberFormat("id-ID", {

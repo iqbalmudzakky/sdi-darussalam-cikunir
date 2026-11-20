@@ -1,4 +1,4 @@
-import type { EventItem } from "@/types/Event";
+import type { EventItem } from "@/types/content/Event";
 
 export async function listEvents(): Promise<EventItem[]> {
   try {

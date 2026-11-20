@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react";
-import { getPaymentStatus } from "@/lib/api/payments";
-import type { PaymentStatusView as PaymentStatus } from "@/types/Payment";
+import { getPaymentStatus } from "@/lib/api/payment/payments";
+import type { PaymentStatusView as PaymentStatus } from "@/types/payment/Payment";
 
 /*
  * Pengunjung dialihkan ke sini begitu selesai bayar, tapi notifikasi DOKU yang

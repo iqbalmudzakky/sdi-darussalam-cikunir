@@ -19,8 +19,8 @@ import {
   addAcademicYear,
   saveOfflineCount,
   setCurrentAcademicYear,
-} from "@/lib/api/registrationStats";
-import type { AcademicYearSummary } from "@/types/RegistrationStats";
+} from "@/lib/api/registration/registrationStats";
+import type { AcademicYearSummary } from "@/types/registration/RegistrationStats";
 
 export function RegistrationStatsSection() {
   const toast = useToast();

@@ -1,4 +1,4 @@
-import type { Region, RegionLevel } from "@/types/Region";
+import type { Region, RegionLevel } from "@/types/registration/Region";
 
 export async function listRegions(
   level: RegionLevel,

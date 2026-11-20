@@ -11,7 +11,7 @@ import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import { formatDateTime } from "@/lib/date";
 import { formatAmount, formatMethod, isOrphaned } from "@/lib/payment";
 import { PaymentStatusBadge } from "@/components/admin/shared/PaymentStatusBadge";
-import type { Payment } from "@/types/Payment";
+import type { Payment } from "@/types/payment/Payment";
 
 type TransactionDetailDialogProps = {
   item: Payment | null;

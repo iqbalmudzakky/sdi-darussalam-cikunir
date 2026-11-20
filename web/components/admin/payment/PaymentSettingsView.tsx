@@ -4,10 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
 import { ReadOnlyChip } from "@/components/admin/shared/ReadOnlyChip";
-import { getPaymentSettings } from "@/lib/api/paymentSettings";
+import { getPaymentSettings } from "@/lib/api/payment/paymentSettings";
 import { PaymentSettingsForm } from "./PaymentSettingsForm";
 import { PaymentSettingsSummary } from "./PaymentSettingsSummary";
-import type { PaymentSettingsResponse } from "@/types/PaymentSettings";
+import type { PaymentSettingsResponse } from "@/types/payment/PaymentSettings";
 
 export function PaymentSettingsView() {
   const [settings, setSettings] = useState<PaymentSettingsResponse | null>(

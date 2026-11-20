@@ -1,7 +1,7 @@
 "use server";
 
 import * as activityService from "@/modules/activity/service";
-import type { ActivityItem } from "@/types/Activity";
+import type { ActivityItem } from "@/types/content/Activity";
 
 export async function listActivities(): Promise<ActivityItem[]> {
   try {

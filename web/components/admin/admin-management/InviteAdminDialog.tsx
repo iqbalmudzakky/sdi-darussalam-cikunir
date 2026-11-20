@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
 import { ADMIN_ROLE_DOT_CLASS, ADMIN_ROLE_LABEL } from "@/lib/adminRoles";
-import type { AdminItem, AdminRole, InviteAdminInput } from "@/types/Admin";
+import type {
+  AdminItem,
+  AdminRole,
+  InviteAdminInput,
+} from "@/types/account/Admin";
 
 type InviteAdminDialogProps = {
   open: boolean;
