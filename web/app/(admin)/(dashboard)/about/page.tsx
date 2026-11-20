@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { cva } from "class-variance-authority";
 import {
   Check,
@@ -239,17 +238,6 @@ export default function AdminAboutPage() {
         title="Profil Sekolah"
         description="Deskripsi, visi, misi, foto, dan info kontak yang dipakai di section Tentang, Visi & Misi, Kontak, dan Footer."
       />
-
-      <p className="mb-6 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-600">
-        Mengatur jumlah siswa aktif atau guru &amp; staf? Angka itu ada di{" "}
-        <Link
-          href="/statistics"
-          className="font-medium text-brand-700 hover:underline"
-        >
-          halaman Statistik
-        </Link>
-        , bukan di sini.
-      </p>
 
       {isLoading ? (
         <div className="flex min-h-[40vh] items-center justify-center">
