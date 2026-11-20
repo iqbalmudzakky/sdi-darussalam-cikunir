@@ -72,19 +72,24 @@ export async function getShortFormOptions(
       ? entryAge.years < MINIMUM_ENTRY_AGE_YEARS
       : false;
 
-    const underAgeMessage = [
-      "Assalamu'alaikum, saya ingin bertanya syarat usia pendaftaran.",
+    const childLines = [
       query.full_name && `Nama anak: ${query.full_name}`,
       `Tanggal lahir: ${query.birth_date ?? "-"}`,
       `Masuk tahun ajaran: ${query.academic_year ?? "-"}`,
     ]
       .filter(Boolean)
       .join("\n");
+    const underAgeMessage = [
+      "Assalamu'alaikum, saya ingin bertanya mengenai syarat usia pendaftaran di SDI Darussalam Cikunir.",
+      childLines,
+      "Apakah anak saya bisa mendaftar?",
+    ].join("\n\n");
     const underAgeWhatsAppUrl = contactPhone
       ? buildWhatsAppLink(contactPhone, underAgeMessage)
       : null;
     const underAge = {
       minimum_years: MINIMUM_ENTRY_AGE_YEARS,
+      cutoff_year: Number(query.academic_year?.split("/")[0]),
       whatsapp_url: underAgeWhatsAppUrl,
     };
 
@@ -123,8 +128,7 @@ export async function createShortRegistration(
       getAdmissionContactPhone(),
     ]);
 
-    const message = [
-      "Assalamu'alaikum, saya sudah mengisi form pendaftaran.",
+    const registrationLines = [
       `Nama anak: ${request.full_name}`,
       `No. pendaftaran: ${registrationNumber}`,
       `Jenis: ${REGISTRATION_TYPE_LABEL[request.registration_type]}`,
@@ -134,6 +138,11 @@ export async function createShortRegistration(
     ]
       .filter(Boolean)
       .join("\n");
+    const message = [
+      "Assalamu'alaikum, saya sudah mengisi form pendaftaran SDI Darussalam Cikunir.",
+      registrationLines,
+      "Untuk langkah selanjutnya bagaimana ya?",
+    ].join("\n\n");
 
     const flowSteps: RegistrationFlowStepResponse[] =
       REGISTRATION_FLOW_STEPS.map((step) => ({

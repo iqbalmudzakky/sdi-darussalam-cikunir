@@ -67,7 +67,7 @@ export const MINIMUM_ENTRY_AGE_YEARS = 6;
 export const SHORT_FORM_MAX_PER_IP_PER_HOUR = 10;
 
 export const REGISTRATION_FLOW_STEPS = [
-  { label: "Form pendek", state: "done", showsFee: false },
+  { label: "Form singkat", state: "done", showsFee: false },
   { label: "Chat panitia", state: "current", showsFee: false },
   { label: "Form lengkap", state: "upcoming", showsFee: false },
   { label: "Tes & wawancara", state: "upcoming", showsFee: true },

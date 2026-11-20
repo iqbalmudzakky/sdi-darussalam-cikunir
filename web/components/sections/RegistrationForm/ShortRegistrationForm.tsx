@@ -218,7 +218,8 @@ function UnderAgeNotice({ underAge }: UnderAgeNoticeProps) {
       <AlertTriangle className="h-4 w-4 shrink-0 text-amber-700" />
       <p className="min-w-0 flex-1 text-xs leading-snug text-amber-800">
         <span className="block font-semibold">
-          Usia di bawah {underAge.minimum_years} tahun per 1 Juli
+          Usia di bawah {underAge.minimum_years} tahun per 1 Juli{" "}
+          {underAge.cutoff_year}
         </span>
         Tanya panitia
       </p>

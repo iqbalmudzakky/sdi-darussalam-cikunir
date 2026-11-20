@@ -1312,12 +1312,12 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 
 - Tombol "Daftar" membuka pilihan **PMB / Siswa Pindahan**.
 - Form pendek (K3). Tetap ada pengecekan duplikat dan pembatas per IP.
-- Setelah kirim: tampil nomor pendaftaran dan garis **Alur Pendaftaran**: Form pendek (selesai) →
+- Setelah kirim: tampil nomor pendaftaran dan garis **Alur Pendaftaran**: Form singkat (selesai) →
   Chat panitia (sekarang) → Form lengkap → Tes & wawancara (chip biaya) → Surat Keterangan Diterima.
   Tombol "Oke, lanjut ke WhatsApp" membuka **WA CP PMB** dengan pesan: nama anak, nomor
   pendaftaran, program, TA.
 - PMB: bila usia anak per 1 Juli TA target di bawah 6 tahun, tampil info "Usia di bawah 6 tahun per
-  1 Juli. Tanya panitia" dengan tombol WA. Pesan WA sudah terisi: nama anak (kalau sudah diisi),
+  1 Juli <tahun masuk>. Tanya panitia" dengan tombol WA. Pesan WA sudah terisi: nama anak (kalau sudah diisi),
   tanggal lahir, tahun masuk, dan pertanyaan soal syarat usia. Form tetap bisa dikirim.
 - Surat tidak terkirim otomatis: panitia yang mengirim link PDF lewat WA (K14).
 - Pembayaran DOKU di depan form **dihapus**.

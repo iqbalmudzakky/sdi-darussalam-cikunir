@@ -113,6 +113,7 @@ export type ShortFormOptionsResponse = {
   target_grades: number[];
   under_age: {
     minimum_years: number;
+    cutoff_year: number;
     whatsapp_url: string | null;
   } | null;
 };
