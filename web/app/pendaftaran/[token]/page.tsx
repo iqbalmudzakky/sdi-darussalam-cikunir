@@ -18,13 +18,17 @@ export default async function FullFormPage({ params }: FullFormPageProps) {
   const { token } = await params;
   const result = await getFullFormByToken(token);
 
-  return (
-    <main className="min-h-screen bg-paper px-4 py-6 sm:py-10">
-      {result.status === "valid" ? (
-        <FullRegistrationForm token={token} form={result.form} />
-      ) : (
+  if (result.status !== "valid") {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-paper px-4">
         <FullFormExpired whatsappUrl={result.whatsapp_url} />
-      )}
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-dvh bg-paper px-4 py-6 sm:py-10">
+      <FullRegistrationForm token={token} form={result.form} />
     </main>
   );
 }

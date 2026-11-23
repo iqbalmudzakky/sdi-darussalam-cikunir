@@ -33,7 +33,7 @@ type ParentsStepProps = {
 };
 
 export function ParentsStep({ form }: ParentsStepProps) {
-  const [openPanel, setOpenPanel] = useState<ParentPanelKey>("father");
+  const [openPanel, setOpenPanel] = useState<ParentPanelKey | null>("father");
   const panels = [
     { key: "father", title: "Ayah", optional: false },
     { key: "mother", title: "Ibu", optional: false },
@@ -52,7 +52,7 @@ export function ParentsStep({ form }: ParentsStepProps) {
           <section key={panel.key} className={panelVariants({ hasError })}>
             <button
               type="button"
-              onClick={() => setOpenPanel(panel.key)}
+              onClick={() => setOpenPanel(isOpen ? null : panel.key)}
               aria-expanded={isOpen}
               className="flex w-full cursor-pointer items-center gap-2 px-4 py-3.5 text-left"
             >

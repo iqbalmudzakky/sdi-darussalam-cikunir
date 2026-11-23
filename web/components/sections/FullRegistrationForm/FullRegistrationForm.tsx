@@ -45,7 +45,7 @@ const backButtonVariants = cva([
 ]);
 
 const resultCardVariants = cva([
-  "mx-auto flex max-w-md flex-col items-center rounded-2xl border",
+  "mx-auto flex w-full max-w-md flex-col items-center rounded-2xl border",
   "border-brand-100 bg-white p-6 text-center",
 ]);
 
