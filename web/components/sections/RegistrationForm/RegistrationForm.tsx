@@ -6,6 +6,7 @@ import { Check, Loader2 } from "lucide-react";
 import { startRegistrationPayment } from "@/lib/api/payment/payments";
 import { createManualRegistration } from "@/lib/api/registration/registrations";
 import { getPaymentSettings } from "@/lib/api/payment/paymentSettings";
+import { useRegions } from "@/hooks/useRegions";
 import { useToast } from "@/hooks/useToast";
 import { toDateOnly } from "@/lib/date";
 import {
@@ -33,11 +34,6 @@ import {
   type FieldErrors,
 } from "./config";
 
-/*
- * Judul bagian memakai gaya "eyebrow" yang sama dengan section di halaman
- * utama — huruf kapital kecil ber-tracking lebar — supaya formulir terasa
- * satu bahasa dengan situsnya, bukan komponen tempelan.
- */
 const sectionHeadingVariants = cva([
   "mb-1 border-b border-brand-200 pb-2",
   "text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase",
@@ -56,13 +52,6 @@ const submitButtonVariants = cva([
   "disabled:cursor-not-allowed disabled:opacity-60",
 ]);
 
-/* Sticky footer, dinonaktifkan — terasa aneh secara alur.
- * const stickyFooterVariants = cva([
- *   "sticky bottom-0 border-t border-brand-100 bg-white/95 pt-4",
- *   "backdrop-blur-sm",
- * ]);
- */
-
 const stepVariants = cva(
   [
     "flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5",
@@ -72,11 +61,8 @@ const stepVariants = cva(
   {
     variants: {
       state: {
-        /* Langkah yang sedang diisi. */
         active: "bg-brand-600 text-white",
-        /* Sudah dilewati — ditandai centang supaya kemajuan terlihat. */
         done: "bg-brand-100 text-brand-800",
-        /* Belum dijalani; sengaja paling redup agar tidak menarik perhatian. */
         upcoming: "bg-brand-50 text-brand-700/70",
       },
     },
@@ -129,16 +115,13 @@ export function RegistrationForm({
   const isManual = mode === "manual";
 
   const [form, setForm] = useState(EMPTY_FORM);
+  const provinces = useRegions("provinces", undefined, form.province);
+  const cities = useRegions("regencies", form.province_code, form.city);
+  const districts = useRegions("districts", form.city_code, form.district);
+  const villages = useRegions("villages", form.district_code, form.village);
 
   const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
 
-  /*
-   * Mengembalikan isian yang belum sempat dikirim.
-   *
-   * Formulirnya panjang, dan dialog gampang tertutup — klik di luar, tombol
-   * back, atau tab keburu ditutup. Tanpa ini, semuanya harus diketik ulang
-   * dari nol.
-   */
   useEffect(() => {
     if (isManual) return;
 
@@ -167,14 +150,6 @@ export function RegistrationForm({
         const prefill = module.DEV_PREFILL;
         if (!prefill || Object.keys(prefill).length === 0) return;
 
-        /*
-         * Menimpa draft, bukan digabung di belakangnya.
-         *
-         * Draft dipulihkan lebih dulu, jadi tanpa ini hasil percobaan
-         * sebelumnya — termasuk formulir yang sengaja dikosongkan — akan
-         * menang atas data prefill, dan formulir terbuka kosong justru saat
-         * kita ingin mengujinya.
-         */
         setForm({ ...EMPTY_FORM, ...prefill });
         setHasRestoredDraft(false);
       })
@@ -786,7 +761,7 @@ export function RegistrationForm({
             <RegionSelect
               id={fieldId("province")}
               label={FIELD_LABELS.province}
-              level="provinces"
+              regions={provinces}
               value={form.province}
               onChange={(name, code) => selectRegion("province", name, code)}
               onBlur={() => handleBlur("province")}
@@ -796,8 +771,7 @@ export function RegistrationForm({
             <RegionSelect
               id={fieldId("city")}
               label={FIELD_LABELS.city}
-              level="regencies"
-              parentCode={form.province_code || undefined}
+              regions={cities}
               value={form.city}
               onChange={(name, code) => selectRegion("city", name, code)}
               onBlur={() => handleBlur("city")}
@@ -809,8 +783,7 @@ export function RegistrationForm({
             <RegionSelect
               id={fieldId("district")}
               label={FIELD_LABELS.district}
-              level="districts"
-              parentCode={form.city_code || undefined}
+              regions={districts}
               value={form.district}
               onChange={(name, code) => selectRegion("district", name, code)}
               onBlur={() => handleBlur("district")}
@@ -820,8 +793,7 @@ export function RegistrationForm({
             <RegionSelect
               id={fieldId("village")}
               label={FIELD_LABELS.village}
-              level="villages"
-              parentCode={form.district_code || undefined}
+              regions={villages}
               value={form.village}
               onChange={(name) => selectRegion("village", name, "")}
               onBlur={() => handleBlur("village")}

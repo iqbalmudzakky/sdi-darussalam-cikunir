@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import {
   DateField,
   FormSection,
 } from "@/components/sections/RegistrationForm/fields";
 import { RegionSelect } from "@/components/sections/RegistrationForm/RegionSelect";
+import { useRegions } from "@/hooks/useRegions";
 import {
   GENDER_OPTIONS,
   LIVING_ARRANGEMENT_OPTIONS,
@@ -119,32 +119,36 @@ function ChildIdentity({ form }: StepProps) {
 }
 
 function ChildAddress({ form }: StepProps) {
-  const [regionCodes, setRegionCodes] = useState({
-    province: "",
-    city: "",
-    district: "",
-  });
   const student = form.values.student;
+  const provinces = useRegions("provinces", undefined, student.province);
+  const cities = useRegions("regencies", provinces.selectedCode, student.city);
+  const districts = useRegions(
+    "districts",
+    cities.selectedCode,
+    student.district,
+  );
+  const villages = useRegions(
+    "villages",
+    districts.selectedCode,
+    student.village,
+  );
 
-  function selectProvince(name: string, code: string) {
+  function selectProvince(name: string) {
     form.setSectionField("student", "province", name);
     form.setSectionField("student", "city", "");
     form.setSectionField("student", "district", "");
     form.setSectionField("student", "village", "");
-    setRegionCodes({ province: code, city: "", district: "" });
   }
 
-  function selectCity(name: string, code: string) {
+  function selectCity(name: string) {
     form.setSectionField("student", "city", name);
     form.setSectionField("student", "district", "");
     form.setSectionField("student", "village", "");
-    setRegionCodes((prev) => ({ ...prev, city: code, district: "" }));
   }
 
-  function selectDistrict(name: string, code: string) {
+  function selectDistrict(name: string) {
     form.setSectionField("student", "district", name);
     form.setSectionField("student", "village", "");
-    setRegionCodes((prev) => ({ ...prev, district: code }));
   }
 
   return (
@@ -174,7 +178,7 @@ function ChildAddress({ form }: StepProps) {
       <RegionSelect
         id="student-province"
         label="Provinsi"
-        level="provinces"
+        regions={provinces}
         value={student.province}
         onChange={selectProvince}
         error={form.fieldErrors["student.province"]}
@@ -182,8 +186,7 @@ function ChildAddress({ form }: StepProps) {
       <RegionSelect
         id="student-city"
         label="Kota / kabupaten"
-        level="regencies"
-        parentCode={regionCodes.province || undefined}
+        regions={cities}
         value={student.city}
         onChange={selectCity}
         error={form.fieldErrors["student.city"]}
@@ -191,8 +194,7 @@ function ChildAddress({ form }: StepProps) {
       <RegionSelect
         id="student-district"
         label="Kecamatan"
-        level="districts"
-        parentCode={regionCodes.city || undefined}
+        regions={districts}
         value={student.district}
         onChange={selectDistrict}
         error={form.fieldErrors["student.district"]}
@@ -200,8 +202,7 @@ function ChildAddress({ form }: StepProps) {
       <RegionSelect
         id="student-village"
         label="Kelurahan / desa"
-        level="villages"
-        parentCode={regionCodes.district || undefined}
+        regions={villages}
         value={student.village}
         onChange={(name) => form.setSectionField("student", "village", name)}
         error={form.fieldErrors["student.village"]}
