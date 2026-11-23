@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
+import { getLiteracySiteUrl } from "@/modules/shared/literacyUrl";
 import {
   RegistrationFormDialog,
   RegistrationTrigger,
@@ -11,12 +12,14 @@ import {
  * Anchor ditulis "/#..." karena Navbar juga dipakai di /event.
  * Di landing page tetap menggulir tanpa memuat ulang.
  */
+const literacySiteUrl = getLiteracySiteUrl();
 const NAV_LINKS = [
   { href: "/#tentang", label: "Tentang" },
   { href: "/#program", label: "Program" },
   { href: "/#fasilitas", label: "Fasilitas" },
   { href: "/#kegiatan", label: "Kegiatan" },
   { href: "/event", label: "Event" },
+  { href: literacySiteUrl, label: "Literasi" },
   { href: "/#kontak", label: "Kontak" },
 ];
 
@@ -134,8 +137,7 @@ export default function Navbar() {
           </a>
 
           {/* Navigasi desktop */}
-          {/* gap-5 di lg: enam tautan + tombol masih muat di layar 1024 px */}
-          <div className="hidden items-center gap-5 lg:flex xl:gap-7">
+          <div className="hidden items-center gap-5 xl:flex 2xl:gap-7">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.href}
@@ -179,7 +181,7 @@ export default function Navbar() {
               transition-colors
               hover:bg-brand-50
 
-              lg:hidden
+              xl:hidden
             "
           >
             <span className="relative block h-4 w-6" aria-hidden="true">
@@ -226,12 +228,12 @@ export default function Navbar() {
             type="button"
             aria-label="Tutup menu"
             onClick={() => setIsMenuOpen(false)}
-            className="mobile-menu-backdrop fixed inset-0 top-16 z-0 cursor-default bg-ink-900/30 backdrop-blur-[2px] sm:top-[72px] lg:hidden"
+            className="mobile-menu-backdrop fixed inset-0 top-16 z-0 cursor-default bg-ink-900/30 backdrop-blur-[2px] sm:top-[72px] xl:hidden"
           />
 
           <div
             id="mobile-navigation"
-            className="mobile-menu-panel relative z-10 border-t border-brand-100 bg-paper shadow-sm lg:hidden"
+            className="mobile-menu-panel relative z-10 max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-brand-100 bg-paper shadow-sm sm:max-h-[calc(100dvh-72px)] xl:hidden"
           >
             <div className="page-container pt-2 pb-6">
               <ul>

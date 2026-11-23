@@ -3,7 +3,9 @@ import { getVisitSummary } from "@/lib/actions/analytics";
 import ContactSocialLinks from "@/components/sections/ContactSocialLinks";
 import Reveal from "@/components/sections/Reveal";
 import { VisitorCounter } from "@/components/sections/VisitorCounter";
+import { getLiteracySiteUrl } from "@/modules/shared/literacyUrl";
 
+const literacySiteUrl = getLiteracySiteUrl();
 const NAV_LINKS = [
   { href: "/#tentang", label: "Tentang" },
   { href: "/#program", label: "Program" },
@@ -11,6 +13,7 @@ const NAV_LINKS = [
   { href: "/#visi-misi", label: "Visi & Misi" },
   { href: "/#kegiatan", label: "Kegiatan" },
   { href: "/event", label: "Event" },
+  { href: literacySiteUrl, label: "Literasi" },
   { href: "/#kontak", label: "Pendaftaran" },
 ];
 
