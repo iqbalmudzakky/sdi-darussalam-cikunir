@@ -1,4 +1,4 @@
-import type { StudentForm } from "./dto";
+import type { ManualStudentForm, StudentForm } from "./dto";
 import type {
   ReceivedDocument,
   REGISTRATION_PROGRAMS,
@@ -81,6 +81,7 @@ export type ListRegistrationsInput = RegistrationFilter & {
 };
 
 export type NewShortRegistration = {
+  source: RegistrationSource;
   registrationType: RegistrationType;
   registrationNumber: string;
   academicYear: string;
@@ -121,8 +122,8 @@ export type RegistrationSourceCounts = {
 
 export type UpdateRegistrationFormInput = {
   registrationId: string;
-  parentEmail: string;
-  student: StudentForm;
+  parentEmail: string | null;
+  student: StudentForm | ManualStudentForm;
 };
 
 export type PpdbRegistrationFormRow = {

@@ -98,6 +98,10 @@ export const REGISTRATION_FAILURE = {
     message: "Status pendaftar sudah berubah. Muat ulang halaman.",
   },
   expired_link: { status: 410, message: "Link sudah tidak berlaku." },
+  manual_duplicate: {
+    status: 409,
+    message: "Anak ini sudah terdaftar. Cari namanya di daftar pendaftar.",
+  },
   duplicate_nik: {
     status: 409,
     message: "NIK anak sudah terdaftar, silakan hubungi panitia",

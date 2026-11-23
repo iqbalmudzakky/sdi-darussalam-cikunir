@@ -35,13 +35,6 @@ export type Payment = {
   is_settled: boolean;
 };
 
-export type ManualPaymentInput = {
-  amount: number;
-  paymentMethod: ManualPaymentMethod;
-  receiptNumber: string | null;
-  paidAt: string;
-};
-
 export type ListPaymentsParams = {
   search: string;
   statuses: PaymentStatus[];

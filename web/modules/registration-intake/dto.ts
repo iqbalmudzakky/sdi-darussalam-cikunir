@@ -1,7 +1,9 @@
 import { z } from "zod";
+import { ManualBiodataFormSchema } from "@/modules/registration-biodata/dto";
 import {
   ACADEMIC_YEAR_PATTERN,
   GENDER_VALUES,
+  ManualStudentFormSchema,
 } from "@/modules/registration/dto";
 import {
   REGISTRATION_PROGRAMS,
@@ -22,6 +24,13 @@ const OptionalEmailSchema = z
   .nullable()
   .optional()
   .transform((value) => value || null);
+
+const TargetGradeSchema = z
+  .number({ error: "Kelas tujuan wajib dipilih." })
+  .int()
+  .refine((value) => TARGET_GRADES.some((grade) => grade === value), {
+    message: "Kelas tujuan tidak valid.",
+  });
 
 const ShortRegistrationBaseSchema = z.object({
   full_name: personName("Nama anak"),
@@ -50,15 +59,48 @@ export const ShortRegistrationRequestSchema = z.discriminatedUnion(
     }),
     ShortRegistrationBaseSchema.extend({
       registration_type: z.literal("pindahan"),
-      target_grade: z
-        .number({ error: "Kelas tujuan wajib dipilih." })
-        .int()
-        .refine((value) => TARGET_GRADES.some((grade) => grade === value), {
-          message: "Kelas tujuan tidak valid.",
-        }),
+      target_grade: TargetGradeSchema,
     }),
   ],
 );
+
+const ManualRegistrationBaseSchema = ShortRegistrationBaseSchema.pick({
+  program: true,
+  academic_year: true,
+  contact_name: true,
+  contact_phone: true,
+});
+
+export const ManualRegistrationRequestSchema = ManualBiodataFormSchema.extend({
+  registration: z.discriminatedUnion("registration_type", [
+    ManualRegistrationBaseSchema.extend({
+      registration_type: z.literal("siswa_baru"),
+      target_grade: z.null().default(null),
+    }),
+    ManualRegistrationBaseSchema.extend({
+      registration_type: z.literal("pindahan"),
+      target_grade: TargetGradeSchema,
+    }),
+  ]),
+  student: ManualStudentFormSchema,
+  parent_email: OptionalEmailSchema,
+});
+
+export type ManualRegistrationRequest = z.infer<
+  typeof ManualRegistrationRequestSchema
+>;
+
+export type CreateManualRegistrationInput = {
+  request: ManualRegistrationRequest;
+  ipAddress: string;
+};
+
+export type ManualRegistrationBlockReason =
+  "invalid_year" | "manual_duplicate" | "duplicate_nik";
+
+export type CreateManualRegistrationResult =
+  | { ok: true; id: string; registration_number: string }
+  | { ok: false; reason: ManualRegistrationBlockReason };
 
 export type ShortRegistrationRequest = z.infer<
   typeof ShortRegistrationRequestSchema

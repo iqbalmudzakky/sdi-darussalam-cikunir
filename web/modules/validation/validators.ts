@@ -56,6 +56,12 @@ export function birthDate(label: string) {
     .regex(/^\d{4}-\d{2}-\d{2}$/, `${label} wajib diisi.`);
 }
 
+export function blankable<T extends z.ZodType>(schema: T) {
+  return z
+    .preprocess((value) => (value === "" ? null : value), schema.nullish())
+    .transform((value) => value ?? null);
+}
+
 export function requiredEmail(label: string) {
   return z
     .string()

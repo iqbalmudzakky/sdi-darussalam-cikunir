@@ -49,6 +49,7 @@ function ChildIdentity({ form }: StepProps) {
         field="full_name"
         label="Nama lengkap anak"
         placeholder="Sesuai akta kelahiran"
+        required={form.mode === "manual"}
       />
       <BoundTextField
         form={form}
@@ -74,6 +75,7 @@ function ChildIdentity({ form }: StepProps) {
         field="gender"
         label="Jenis kelamin"
         options={GENDER_OPTIONS}
+        required={form.mode === "manual"}
       />
       <BoundTextField
         form={form}
@@ -93,6 +95,7 @@ function ChildIdentity({ form }: StepProps) {
           form.setSectionField("student", "date_of_birth", value)
         }
         error={form.fieldErrors["student.date_of_birth"]}
+        required={form.mode === "manual"}
       />
       <BoundSelectField
         form={form}
@@ -258,6 +261,7 @@ function ChildSchool({ form }: StepProps) {
         field="previous_school"
         label="Asal sekolah"
         placeholder="TK / PAUD"
+        required={form.mode === "manual"}
       />
       <BoundTextField
         form={form}

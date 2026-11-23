@@ -42,17 +42,21 @@ export function SubmitStep({
   stepsWithErrors,
   onEditStep,
 }: SubmitStepProps) {
-  const checkRows = [
+  const isManual = form.mode === "manual";
+  const checkRows: { step: FullFormStep; label: string }[] = [
+    ...(isManual
+      ? [{ step: "registration" as const, label: "Pendaftaran" }]
+      : []),
     { step: "child", label: "Data anak" },
     { step: "parents", label: "Data orang tua" },
-  ] as const;
+  ];
 
   return (
     <div className="space-y-8">
       <FormSection title="Kontak">
         <TextField
           id="parent_email"
-          label="Email"
+          label={isManual ? "Email (opsional)" : "Email"}
           type="email"
           inputMode="email"
           placeholder="nama@email.com"
@@ -60,12 +64,14 @@ export function SubmitStep({
           onChange={form.setParentEmail}
           error={form.fieldErrors.parent_email}
         />
-        <BoundPhoneField
-          form={form}
-          section="student"
-          field="phone"
-          label="No. HP"
-        />
+        {!isManual && (
+          <BoundPhoneField
+            form={form}
+            section="student"
+            field="phone"
+            label="No. HP"
+          />
+        )}
         <BoundTextField
           form={form}
           section="student"

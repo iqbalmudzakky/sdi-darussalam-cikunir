@@ -16,6 +16,7 @@ type BoundFieldProps = {
   section: FullFormSection;
   field: string;
   label: string;
+  required?: boolean;
 };
 
 type BoundTextFieldProps = BoundFieldProps & {
@@ -34,6 +35,7 @@ export function BoundTextField({
   section,
   field,
   label,
+  required,
   placeholder,
   inputMode,
   maxLength,
@@ -42,6 +44,7 @@ export function BoundTextField({
     <TextField
       id={`${section}-${field}`}
       label={label}
+      required={required}
       placeholder={placeholder}
       inputMode={inputMode}
       maxLength={maxLength}
@@ -57,6 +60,7 @@ export function BoundSelectField({
   section,
   field,
   label,
+  required,
   options,
   searchable,
 }: BoundOptionFieldProps) {
@@ -66,6 +70,7 @@ export function BoundSelectField({
     <Field
       id={`${section}-${field}`}
       label={label}
+      required={required}
       options={options}
       value={readValue(form, section, field)}
       onChange={(value) => form.setSectionField(section, field, value)}
@@ -79,11 +84,13 @@ export function BoundPhoneField({
   section,
   field,
   label,
+  required,
 }: BoundFieldProps) {
   return (
     <PhoneField
       id={`${section}-${field}`}
       label={label}
+      required={required}
       value={readValue(form, section, field)}
       onChange={(value) => form.setSectionField(section, field, value)}
       error={form.fieldErrors[`${section}.${field}`]}
@@ -96,12 +103,14 @@ export function BoundChoiceField({
   section,
   field,
   label,
+  required,
   options,
 }: BoundOptionFieldProps) {
   return (
     <ChoiceField
       id={`${section}-${field}`}
       label={label}
+      required={required}
       options={options}
       value={readValue(form, section, field)}
       onChange={(value) => form.setSectionField(section, field, value)}

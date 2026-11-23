@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { cva } from "class-variance-authority";
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
   CircleCheck,
   Clock,
   Loader2,
@@ -13,7 +15,7 @@ import {
   Send,
 } from "lucide-react";
 import { RegistrationFlowSteps } from "@/components/sections/RegistrationForm/RegistrationFlowSteps";
-import { useFullRegistrationForm } from "@/hooks/useRegistrations";
+import { useFullRegistrationForm } from "@/hooks/useFullRegistrationForm";
 import { useToast } from "@/hooks/useToast";
 import type {
   FullFormStep,
@@ -21,6 +23,7 @@ import type {
 } from "@/types/registration/Registration";
 import { ChildStep } from "./ChildStep";
 import { ParentsStep } from "./ParentsStep";
+import { RegistrationStep } from "./RegistrationStep";
 import { SubmitStep } from "./SubmitStep";
 
 const layoutVariants = cva([
@@ -90,17 +93,23 @@ const whatsappButtonVariants = cva([
   "px-5 py-3.5 font-medium text-white transition-colors hover:bg-green-700",
 ]);
 
-export function FullRegistrationForm({
-  token,
-  form,
-}: FullRegistrationFormInput) {
-  const steps: { key: FullFormStep; number: number; label: string }[] = [
-    { key: "child", number: 1, label: "Anak" },
-    { key: "parents", number: 2, label: "Orang tua" },
-    { key: "submit", number: 3, label: "Kirim" },
+export function FullRegistrationForm(input: FullRegistrationFormInput) {
+  const isManual = input.mode === "manual";
+  const stepLabels: { key: FullFormStep; label: string }[] = [
+    ...(isManual
+      ? [{ key: "registration" as const, label: "Pendaftaran" }]
+      : []),
+    { key: "child", label: "Anak" },
+    { key: "parents", label: "Orang tua" },
+    { key: "submit", label: isManual ? "Simpan" : "Kirim" },
   ];
+  const steps = stepLabels.map((step, index) => ({
+    ...step,
+    number: index + 1,
+  }));
+  const router = useRouter();
   const toast = useToast();
-  const controller = useFullRegistrationForm({ token, form });
+  const controller = useFullRegistrationForm(input);
   const [focusRequest, setFocusRequest] = useState(0);
   const stepIndex = steps.findIndex((step) => step.key === controller.step);
   const stepsWithErrors = findStepsWithErrors(controller.fieldErrors);
@@ -121,7 +130,14 @@ export function FullRegistrationForm({
 
   async function handleSubmit() {
     const result = await controller.submit();
-    if (!result || result.ok) return;
+    if (!result) return;
+    if (result.ok) {
+      if ("id" in result) {
+        toast.success(`Tersimpan, No. ${result.registration_number}`);
+        router.push(`/registrations/${result.id}`);
+      }
+      return;
+    }
 
     const firstErrorStep = findStepsWithErrors(result.fieldErrors)[0];
     if (!firstErrorStep) {
@@ -154,14 +170,18 @@ export function FullRegistrationForm({
       <aside className="lg:sticky lg:top-10">
         <header className="flex flex-wrap items-center gap-3 lg:flex-col lg:items-start">
           <span className="flex flex-1 items-center gap-3">
-            <Image src="/logo.png" alt="" width={28} height={28} />
+            {!isManual && (
+              <Image src="/logo.png" alt="" width={28} height={28} />
+            )}
             <h1 className="font-display text-xl font-semibold text-ink-900 lg:text-2xl">
-              Form Lengkap
+              {isManual ? "Input manual" : "Form Lengkap"}
             </h1>
           </span>
-          <span className={numberChipVariants()}>
-            No. {controller.registrationNumber ?? "-"}
-          </span>
+          {!isManual && (
+            <span className={numberChipVariants()}>
+              No. {controller.registrationNumber ?? "-"}
+            </span>
+          )}
         </header>
 
         <nav className="mt-4 mb-6 flex gap-2 lg:mt-6 lg:mb-0 lg:flex-col lg:gap-1.5">
@@ -189,6 +209,9 @@ export function FullRegistrationForm({
       </aside>
 
       <div className={formCardVariants()}>
+        {controller.step === "registration" && (
+          <RegistrationStep form={controller} />
+        )}
         {controller.step === "child" && <ChildStep form={controller} />}
         {controller.step === "parents" && <ParentsStep form={controller} />}
         {controller.step === "submit" && (
@@ -218,12 +241,16 @@ export function FullRegistrationForm({
               disabled={controller.isSubmitting}
               className={primaryButtonVariants()}
             >
-              {controller.isSubmitting ? (
+              {controller.isSubmitting && (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
+              )}
+              {!controller.isSubmitting && isManual && (
+                <Check className="h-4 w-4" />
+              )}
+              {!controller.isSubmitting && !isManual && (
                 <Send className="h-4 w-4" />
               )}
-              Kirim
+              {isManual ? "Simpan" : "Kirim"}
             </button>
           ) : (
             <button
@@ -275,6 +302,9 @@ function findStepsWithErrors(errors: Record<string, string>): FullFormStep[] {
     .map(([key]) => key);
   const contactKeys = ["parent_email", "student.phone", "student.home_phone"];
 
+  const hasRegistrationError = keys.some((key) =>
+    key.startsWith("registration."),
+  );
   const hasChildError = keys.some(
     (key) =>
       (key.startsWith("student.") || key.startsWith("details.")) &&
@@ -290,6 +320,7 @@ function findStepsWithErrors(errors: Record<string, string>): FullFormStep[] {
   );
 
   const steps: FullFormStep[] = [];
+  if (hasRegistrationError) steps.push("registration");
   if (hasChildError) steps.push("child");
   if (hasParentError) steps.push("parents");
   if (hasSubmitError) steps.push("submit");

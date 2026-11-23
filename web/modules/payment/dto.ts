@@ -35,10 +35,6 @@ export const ManualPaymentRequestSchema = z.object({
 
 export type ManualPaymentRequest = z.infer<typeof ManualPaymentRequestSchema>;
 
-export type CreateManualRegistrationWithPaymentResult =
-  | { ok: true; registration_id: string }
-  | { ok: false; reason: "duplicate"; message: string };
-
 const dateFilter = () =>
   z
     .string()

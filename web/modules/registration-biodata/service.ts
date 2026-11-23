@@ -2,7 +2,7 @@ import type { TransactionSql } from "postgres";
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
-import type { BiodataForm } from "./dto";
+import type { BiodataForm, ManualBiodataForm } from "./dto";
 import type { FormBiodata, RegistrationParentRow } from "./entity";
 
 export async function listParentsByRegistrationIds(
@@ -48,7 +48,7 @@ export async function getDetailsAndAchievements(
 export async function replaceWithin(
   tx: TransactionSql,
   registrationId: string,
-  form: BiodataForm,
+  form: BiodataForm | ManualBiodataForm,
 ): Promise<void> {
   await withDbLogging("registrationBiodata.replaceWithin", async () => {
     await repository.replaceParentsWithin(tx, registrationId, form);

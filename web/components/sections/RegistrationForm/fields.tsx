@@ -62,7 +62,7 @@ const choiceButtonVariants = cva(
 type FieldWrapperProps = {
   id: string;
   label: string;
-  optional?: boolean;
+  required?: boolean;
   error?: string;
   children: React.ReactNode;
 };
@@ -70,14 +70,15 @@ type FieldWrapperProps = {
 function FieldWrapper({
   id,
   label,
-  optional,
+  required,
   error,
   children,
 }: FieldWrapperProps) {
   return (
     <div className="min-w-0">
       <label htmlFor={id} className={fieldLabelVariants()}>
-        {label}{" "}
+        {label}
+        {required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
 
       {children}
@@ -94,11 +95,11 @@ function FieldWrapper({
 type TextFieldProps = {
   id: string;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
   error?: string;
-  optional?: boolean;
   type?: string;
   placeholder?: string;
   autoComplete?: string;
@@ -109,11 +110,11 @@ type TextFieldProps = {
 export function TextField({
   id,
   label,
+  required,
   value,
   onChange,
   onBlur,
   error,
-  optional,
   type = "text",
   placeholder,
   autoComplete,
@@ -121,7 +122,7 @@ export function TextField({
   maxLength,
 }: TextFieldProps) {
   return (
-    <FieldWrapper id={id} label={label} optional={optional} error={error}>
+    <FieldWrapper id={id} label={label} required={required} error={error}>
       <input
         id={id}
         type={type}
@@ -143,6 +144,7 @@ export function TextField({
 type SelectFieldProps = {
   id: string;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
@@ -153,6 +155,7 @@ type SelectFieldProps = {
 export function SelectField({
   id,
   label,
+  required,
   value,
   onChange,
   onBlur,
@@ -160,7 +163,7 @@ export function SelectField({
   options,
 }: SelectFieldProps) {
   return (
-    <FieldWrapper id={id} label={label} error={error}>
+    <FieldWrapper id={id} label={label} required={required} error={error}>
       <Select
         items={options}
         value={value || null}
@@ -200,6 +203,7 @@ export function SelectField({
 type ChoiceFieldProps = {
   id: string;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   error?: string;
@@ -209,13 +213,14 @@ type ChoiceFieldProps = {
 export function ChoiceField({
   id,
   label,
+  required,
   value,
   onChange,
   error,
   options,
 }: ChoiceFieldProps) {
   return (
-    <FieldWrapper id={id} label={label} error={error}>
+    <FieldWrapper id={id} label={label} required={required} error={error}>
       <div
         id={id}
         role="radiogroup"
@@ -245,6 +250,7 @@ export function ChoiceField({
 type SearchSelectFieldProps = {
   id: string;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   error?: string;
@@ -255,6 +261,7 @@ type SearchSelectFieldProps = {
 export function SearchSelectField({
   id,
   label,
+  required,
   value,
   onChange,
   error,
@@ -262,7 +269,7 @@ export function SearchSelectField({
   disabled,
 }: SearchSelectFieldProps) {
   return (
-    <FieldWrapper id={id} label={label} error={error}>
+    <FieldWrapper id={id} label={label} required={required} error={error}>
       <SearchSelect
         id={id}
         value={value}
@@ -279,6 +286,7 @@ export function SearchSelectField({
 type DateFieldProps = {
   id: string;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
@@ -291,6 +299,7 @@ type DateFieldProps = {
 export function DateField({
   id,
   label,
+  required,
   value,
   onChange,
   onBlur,
@@ -304,7 +313,7 @@ export function DateField({
   const selected = parseDateOnly(value);
 
   return (
-    <FieldWrapper id={id} label={label} error={error}>
+    <FieldWrapper id={id} label={label} required={required} error={error}>
       <Popover
         open={isOpen}
         onOpenChange={(open) => {

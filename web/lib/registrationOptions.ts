@@ -14,7 +14,6 @@ import {
   INCOME_RANGE_LABEL,
   LIVING_ARRANGEMENT_LABEL,
   PARENT_OCCUPATION_LABEL,
-  PARENT_RELATIONSHIP_LABEL,
   SPECIAL_NEEDS_LABEL,
   TRANSPORTATION_LABEL,
 } from "@/modules/shared/constant/registrationForm";
@@ -22,11 +21,6 @@ import type { Registration } from "@/types/registration/Registration";
 
 export { REGISTRATION_STATUS_LABEL };
 export { PHONE_COUNTRIES } from "@/modules/shared/constant/phoneCountry";
-
-export const REGISTRATION_TYPE_OPTIONS = [
-  { value: "siswa_baru", label: "Siswa Baru" },
-  { value: "pindahan", label: "Pindahan" },
-];
 
 export const REGISTRATION_STATUS_OPTIONS = REGISTRATION_STATUSES.map(
   (value) => ({ value, label: REGISTRATION_STATUS_LABEL[value] }),
@@ -62,22 +56,6 @@ export const ACHIEVEMENT_CATEGORY_OPTIONS = toOptions(
   ACHIEVEMENT_CATEGORY_LABEL,
 );
 export const ACHIEVEMENT_LEVEL_OPTIONS = toOptions(ACHIEVEMENT_LEVEL_LABEL);
-
-export const PHYSICAL_DISABILITY_OPTIONS = [
-  { value: "tidak_ada", label: "Tidak Ada" },
-  { value: "ada", label: "Ada" },
-];
-
-export const PARENT_RELATIONSHIP_OPTIONS = toOptions(PARENT_RELATIONSHIP_LABEL);
-
-export function getOptionLabel(
-  options: { value: string; label: string }[],
-  value: string | null,
-): string {
-  return (
-    options.find((option) => option.value === value)?.label ?? value ?? "-"
-  );
-}
 
 export function formatRegistrationSummary(
   item: Pick<

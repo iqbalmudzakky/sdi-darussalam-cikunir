@@ -122,12 +122,13 @@ export async function insertShortWithin(
        registration_type, ip_address, parent_email, source, academic_year,
        registration_number, program, target_grade, contact_name, contact_phone
      )
-     VALUES ($1, $2, $3, 'online', $4, $5, $6, $7, $8, $9)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING id`,
     [
       input.registrationType,
       input.ipAddress,
       input.parentEmail,
+      input.source,
       input.academicYear,
       input.registrationNumber,
       input.program,

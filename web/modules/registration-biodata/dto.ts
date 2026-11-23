@@ -17,7 +17,11 @@ import {
   SPECIAL_NEEDS_LABEL,
   TRANSPORTATION_LABEL,
 } from "@/modules/shared/constant/registrationForm";
-import { personName, phoneNumber } from "@/modules/validation/validators";
+import {
+  blankable,
+  personName,
+  phoneNumber,
+} from "@/modules/validation/validators";
 
 const currentYear = new Date().getFullYear();
 
@@ -137,3 +141,36 @@ export const BiodataFormSchema = z.object({
 });
 
 export type BiodataForm = z.infer<typeof BiodataFormSchema>;
+
+const ManualParentFormSchema = ParentFormSchema.extend({
+  birth_year: blankable(parentBirthYear),
+  special_needs: blankable(z.enum(optionKeys(SPECIAL_NEEDS_LABEL))),
+  nik: blankable(
+    z
+      .string()
+      .trim()
+      .regex(/^d{16}$/, "NIK harus 16 digit angka."),
+  ),
+  occupation: blankable(occupation),
+  education: blankable(education),
+  income_range: blankable(incomeRange),
+});
+
+const ManualDetailsFormSchema = z.object({
+  living_with: blankable(DetailsFormSchema.shape.living_with),
+  transportation_method: blankable(
+    DetailsFormSchema.shape.transportation_method,
+  ),
+  height: blankable(DetailsFormSchema.shape.height),
+  weight: blankable(DetailsFormSchema.shape.weight),
+  distance_km: blankable(DetailsFormSchema.shape.distance_km),
+  travel_time_minutes: blankable(DetailsFormSchema.shape.travel_time_minutes),
+});
+
+export const ManualBiodataFormSchema = BiodataFormSchema.extend({
+  father: ManualParentFormSchema.nullable().default(null),
+  mother: ManualParentFormSchema.nullable().default(null),
+  details: ManualDetailsFormSchema,
+});
+
+export type ManualBiodataForm = z.infer<typeof ManualBiodataFormSchema>;

@@ -1,37 +1,19 @@
-"use client";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { RegistrationForm } from "@/components/sections/RegistrationForm/RegistrationForm";
-import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
-import { Button } from "@/components/ui/form/button";
+import { FullRegistrationForm } from "@/components/sections/FullRegistrationForm/FullRegistrationForm";
 
 export default function AdminNewRegistrationPage() {
-  const router = useRouter();
-
   return (
-    <div className="mx-auto max-w-3xl">
-      <Button
-        variant="outline"
-        size="sm"
-        nativeButton={false}
-        render={<Link href="/registrations" />}
-        className="mb-3"
+    <div className="mx-auto max-w-6xl space-y-4">
+      <Link
+        href="/registrations"
+        className="flex w-fit items-center gap-2.5 font-semibold text-gray-900"
       >
-        <ArrowLeft className="h-4 w-4" />
-        Daftar Pendaftar
-      </Button>
+        <ArrowLeft className="h-5 w-5 text-gray-700" />
+        Pendaftar
+      </Link>
 
-      <AdminPageHeader
-        title="Input Pendaftar Manual"
-        description="Untuk calon siswa yang mendaftar dan membayar tunai/transfer langsung di sekolah."
-      />
-
-      <RegistrationForm
-        mode="manual"
-        onSuccess={() => router.push("/registrations")}
-      />
+      <FullRegistrationForm mode="manual" />
     </div>
   );
 }

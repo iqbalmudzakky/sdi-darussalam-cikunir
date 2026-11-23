@@ -4,6 +4,7 @@ import {
   phoneNumber,
   birthPlace,
   birthDate,
+  blankable,
   requiredEmail,
 } from "@/modules/validation/validators";
 import {
@@ -315,3 +316,29 @@ export const StudentFormSchema = z.object({
 });
 
 export type StudentForm = z.infer<typeof StudentFormSchema>;
+
+export const ManualStudentFormSchema = StudentFormSchema.extend({
+  nik: blankable(nik("NIK anak")),
+  place_of_birth: blankable(birthPlace("Tempat lahir")),
+  religion: blankable(z.enum(RELIGION_VALUES)),
+  physical_disability: blankable(z.enum(SPECIAL_NEEDS_VALUES)),
+  address: blankable(requiredText("Alamat", 200)),
+  rt_rw: blankable(requiredText("RT/RW", 20)),
+  village: blankable(requiredText("Kelurahan", 80)),
+  district: blankable(requiredText("Kecamatan", 80)),
+  city: blankable(requiredText("Kabupaten/Kota", 80)),
+  province: blankable(requiredText("Provinsi", 80)),
+  phone: blankable(phoneNumber("No. HP")),
+  sibling_count: blankable(
+    z
+      .number()
+      .int()
+      .min(0, "Jumlah saudara tidak valid.")
+      .max(
+        MAX_SIBLING_NUMBER,
+        `Jumlah saudara maksimal ${MAX_SIBLING_NUMBER}.`,
+      ),
+  ),
+});
+
+export type ManualStudentForm = z.infer<typeof ManualStudentFormSchema>;

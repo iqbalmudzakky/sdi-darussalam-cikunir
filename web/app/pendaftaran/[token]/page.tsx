@@ -28,7 +28,7 @@ export default async function FullFormPage({ params }: FullFormPageProps) {
 
   return (
     <main className="flex min-h-dvh flex-col bg-paper px-4 py-6 sm:py-10">
-      <FullRegistrationForm token={token} form={result.form} />
+      <FullRegistrationForm mode="link" token={token} form={result.form} />
     </main>
   );
 }

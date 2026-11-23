@@ -2,17 +2,17 @@ import type {
   FullFormInput,
   FullFormSubmitResult,
   ListRegistrationsParams,
+  ManualRegistrationInput,
+  ManualRegistrationSubmitResult,
   SendFormLinkResult,
   RegistrationDetail,
   RegistrationListPage,
   RegistrationStatus,
   ShortRegistrationInput,
   ShortRegistrationResult,
-  SubmitRegistrationInput,
   UpdateRegistrationInput,
   UpdateRegistrationResult,
 } from "@/types/registration/Registration";
-import type { ManualPaymentInput } from "@/types/payment/Payment";
 
 function buildStatusQuery(statuses: RegistrationStatus[]): URLSearchParams {
   const query = new URLSearchParams();
@@ -84,31 +84,26 @@ export async function submitShortRegistration(
 }
 
 export async function createManualRegistration(
-  input: SubmitRegistrationInput,
-  payment: ManualPaymentInput,
-): Promise<{ ok: true } | { ok: false; error: string }> {
-  const body = {
-    ...input,
-    payment: {
-      amount: payment.amount,
-      payment_method: payment.paymentMethod,
-      receipt_number: payment.receiptNumber,
-      paid_at: payment.paidAt,
-    },
-  };
-
+  input: ManualRegistrationInput,
+): Promise<ManualRegistrationSubmitResult> {
   const res = await fetch("/api/registrations", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(input),
   });
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    return { ok: false, error: data.error ?? "Gagal menyimpan pendaftaran." };
+    const failure: ManualRegistrationSubmitResult = {
+      ok: false,
+      error: data.error ?? "Gagal menyimpan pendaftaran.",
+      fieldErrors: data.field_errors ?? {},
+    };
+    return failure;
   }
 
-  return { ok: true };
+  const result: ManualRegistrationSubmitResult = { ok: true, ...data };
+  return result;
 }
 
 export async function updateRegistration(

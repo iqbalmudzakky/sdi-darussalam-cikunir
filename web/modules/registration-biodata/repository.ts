@@ -1,7 +1,7 @@
 import type { TransactionSql } from "postgres";
 import { sql } from "@/modules/db/postgres";
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
-import type { BiodataForm } from "./dto";
+import type { BiodataForm, ManualBiodataForm } from "./dto";
 import type {
   AchievementRow,
   DetailsFormRow,
@@ -67,7 +67,7 @@ export async function listAchievements(
 export async function replaceParentsWithin(
   tx: TransactionSql,
   registrationId: string,
-  form: BiodataForm,
+  form: BiodataForm | ManualBiodataForm,
 ): Promise<void> {
   await tx.unsafe(
     "DELETE FROM ppdb_registration_parents WHERE registration_id = $1",
@@ -75,10 +75,12 @@ export async function replaceParentsWithin(
   );
 
   const parents = [
-    { parent_type: "father", ...form.father },
-    { parent_type: "mother", ...form.mother },
+    ...(form.father ? [{ parent_type: "father", ...form.father }] : []),
+    ...(form.mother ? [{ parent_type: "mother", ...form.mother }] : []),
     ...(form.guardian ? [{ parent_type: "guardian", ...form.guardian }] : []),
   ];
+  if (parents.length === 0) return;
+
   await tx.unsafe(
     `INSERT INTO ppdb_registration_parents (
        registration_id, parent_type, name, nik, birth_year, special_needs,
@@ -97,7 +99,7 @@ export async function replaceParentsWithin(
 export async function replaceDetailsWithin(
   tx: TransactionSql,
   registrationId: string,
-  details: BiodataForm["details"],
+  details: (BiodataForm | ManualBiodataForm)["details"],
 ): Promise<void> {
   await tx.unsafe(
     "DELETE FROM ppdb_registration_details WHERE registration_id = $1",
@@ -113,7 +115,7 @@ export async function replaceDetailsWithin(
       registrationId,
       details.living_with,
       details.transportation_method,
-      String(details.distance_km),
+      details.distance_km === null ? null : String(details.distance_km),
       details.travel_time_minutes,
       details.height,
       details.weight,

@@ -1139,6 +1139,8 @@ diketik dua kali, tapi tetap bisa diubah.
 | K31 | Ayah, ibu, wali cukup **tahun lahir**. Penghasilan dipilih dari **rentang** (Dapodik), bukan diketik                                                                          |
 | K32 | NIS, no. seri ijazah, SKHUN, no. UN tidak ditanyakan (anak TK belum punya)                                                                                                    |
 | K33 | Link form lengkap berlaku **14 hari** sejak dikirim sampai PR 3, lalu sampai hari tes. Kirim ulang mematikan link lama                                                        |
+| K34 | Input manual (K24): orang tua datang langsung, panitia isi form lengkap saat itu. Yang wajib hanya isian form pendek (K3); sisanya dan email boleh kosong, dilengkapi guru nanti |
+| K35 | Rilis production dipercepat (23 Nov 2026): PR 2 + jadwal & pewawancara (F11). Tes, lunas, dan hasil sementara dikerjakan guru manual di luar website sampai fiturnya rilis    |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1346,7 +1348,7 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Daftar: cari nama/nomor, saring status, TA target, program, PMB/Pindahan.
 - Detail: biodata, chip Form lengkap/Lunas/Berkas, jadwal, pewawancara, tombol aksi sesuai tahap.
 - Centang berkas kertas (K8).
-- **Input Pendaftar Manual** (K24): guru langsung mengisi form lengkap, sumber `offline`, status
+- **Input Pendaftar Manual** (K24, K34): guru langsung mengisi form lengkap, sumber `offline`, status
   Baru. Tidak ada isian pembayaran di sini lagi — lunas dicatat lewat F12.
 - `registrations/page.tsx` (910 baris) dipecah karena disentuh.
 
@@ -1355,9 +1357,13 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - CP mengisi tanggal + jam → status Terjadwal.
 - Pewawancara anak & ortu: dropdown dengan kolom cari dari akun PMB; tombol **"Ambil"** untuk
   diri sendiri.
-- Dashboard: kartu **"Jadwal hari ini & besok"** dengan tombol WA pengingat per pendaftar.
+- Dashboard: kartu **"Jadwal hari ini & besok"** dengan tombol WA pengingat per pendaftar dan
+  tanda **Sudah diingatkan**. Setelah ditandai, pendaftar itu hilang dari daftar pengingat
+  (dicatat siapa dan kapan).
 - Email pengingat H-1 ke orang tua yang punya email: route cron
   `/api/cron/send-test-reminders`, sekali sehari. Dicatat supaya tidak terkirim dua kali.
+  **Ditunda sampai setelah rilis K35** (butuh cron dari infra); sementara panitia mengingatkan
+  lewat WA dari kartu di atas.
 
 #### F12 — Pembayaran biaya pendaftaran
 
@@ -1455,9 +1461,9 @@ Setiap PR: **kode → review → deploy staging → uji → deploy production**,
 
 - **PR 1 rilis sendiri ke production.** Tidak mengubah alur pendaftar, dan peran baru perlu
   dicoba di production sebelum alur baru bergantung padanya.
-- **PR 2–5 ditahan di `staging`, lalu dirilis ke production bersamaan** setelah PR 5 lolos uji.
-  PR 2 membuang pembayaran di depan. Kalau rilis sendiri, pendaftar masuk tanpa bayar padahal
-  layar tes, lunas, dan surat belum ada — sekolah terjebak di alur setengah jadi.
+- **PR 2 dan F11 dari PR 3 dirilis ke production bersamaan** (K35, diubah 23 Nov 2026; sebelumnya
+  PR 2–5 ditahan sampai PR 5 lolos). Pendaftar bisa daftar sampai dapat jadwal tes. Tes, lunas,
+  dan hasil dicatat guru manual seperti sekarang sampai F12–F17 rilis menyusul.
 - **PR 6 rilis sendiri** setelah alur baru berjalan di production (membuang nilai lama `CHECK`
   harus menunggu container lama benar-benar hilang).
 - Selama PR 2–5 ditahan, perbaikan mendesak untuk production dibuat dari branch `main`
@@ -1521,5 +1527,10 @@ Dicatat supaya tidak diselundupkan ke pekerjaan yang sedang berjalan.
   tema disesuaikan dengan hijau PMB
 - WhatsApp otomatis (pengingat & dokumen) lewat WhatsApp Business API
 - Sistem slot jadwal tes
+- **Login panitia pakai akun SSO** (diusulkan 23 Nov 2026), dikerjakan setelah F12–F17 rilis.
+  Kepsek/wakepsek memilih orang dari daftar guru & staf SSO lalu memberi peran PMB; yang dipilih
+  masuk dengan akun sekolah yang sama dengan LMS, tanpa email aktivasi. Butuh dari pemilik SSO:
+  PMB terdaftar sebagai aplikasi login SSO dan endpoint daftar guru & staf. Akun panitia lama
+  dicocokkan lewat email. Pesan ke SSO disiapkan saat mulai dikerjakan
 - QR pembayaran DOKU di layar
 - Daftar indikator observasi bisa diubah dari website

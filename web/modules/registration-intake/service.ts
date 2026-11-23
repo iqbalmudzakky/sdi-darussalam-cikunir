@@ -12,6 +12,7 @@ import type {
   NewShortRegistration,
   RegistrationSource,
   ShortRegistrationIdentity,
+  UpdateRegistrationFormInput,
 } from "@/modules/registration/entity";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
 import * as schoolProfileService from "@/modules/school-profile/service";
@@ -28,11 +29,16 @@ import {
 import { calculateEntryAge } from "@/modules/shared/entryAge";
 import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
 import type {
+  CreateManualRegistrationInput,
+  CreateManualRegistrationResult,
   CreateShortRegistrationInput,
   CreateShortRegistrationResult,
+  ManualRegistrationBlockReason,
+  ManualRegistrationRequest,
   ShortFormOptionsQuery,
   ShortFormOptionsResponse,
   ShortRegistrationBlockReason,
+  ShortRegistrationRequest,
 } from "./dto";
 
 export async function insertFullRegistrationWithin(
@@ -120,7 +126,7 @@ export async function getShortFormOptions(
 export async function createShortRegistration(
   input: CreateShortRegistrationInput,
 ): Promise<CreateShortRegistrationResult> {
-  const { request } = input;
+  const { request, ipAddress } = input;
   try {
     const blockReason = await findShortRegistrationBlock(input);
     if (blockReason) {
@@ -135,8 +141,8 @@ export async function createShortRegistration(
       return blocked;
     }
 
-    const registrationNumber = await withTransaction((tx) =>
-      insertShortRegistrationWithin(tx, input),
+    const { registrationNumber } = await withTransaction((tx) =>
+      insertShortRegistrationWithin(tx, request, ipAddress, "online"),
     );
     const [registrationFee, contactPhone] = await Promise.all([
       getRegistrationFee(),
@@ -176,6 +182,64 @@ export async function createShortRegistration(
   }
 }
 
+export async function createManualRegistration(
+  input: CreateManualRegistrationInput,
+): Promise<CreateManualRegistrationResult> {
+  const { request, ipAddress } = input;
+  try {
+    const blockReason = await findManualRegistrationBlock(request);
+    if (blockReason) {
+      const blocked: CreateManualRegistrationResult = {
+        ok: false,
+        reason: blockReason,
+      };
+      return blocked;
+    }
+
+    const shortRequest: ShortRegistrationRequest = {
+      ...request.registration,
+      full_name: request.student.full_name,
+      gender: request.student.gender,
+      date_of_birth: request.student.date_of_birth,
+      previous_school: request.student.previous_school,
+      parent_email: request.parent_email,
+    };
+    const created = await withTransaction(async (tx) => {
+      const inserted = await insertShortRegistrationWithin(
+        tx,
+        shortRequest,
+        ipAddress,
+        "offline",
+      );
+      const formInput: UpdateRegistrationFormInput = {
+        registrationId: inserted.registrationId,
+        parentEmail: request.parent_email,
+        student: {
+          ...request.student,
+          phone: request.student.phone ?? request.registration.contact_phone,
+        },
+      };
+      await registrationService.updateFormWithin(tx, formInput);
+      await registrationBiodataService.replaceWithin(
+        tx,
+        inserted.registrationId,
+        request,
+      );
+      return inserted;
+    });
+
+    const result: CreateManualRegistrationResult = {
+      ok: true,
+      id: created.registrationId,
+      registration_number: created.registrationNumber,
+    };
+    return result;
+  } catch (error) {
+    console.error("registrationIntake.createManualRegistration failed:", error);
+    throw error;
+  }
+}
+
 async function findShortRegistrationBlock(
   input: CreateShortRegistrationInput,
 ): Promise<ShortRegistrationBlockReason | null> {
@@ -202,11 +266,34 @@ async function findShortRegistrationBlock(
   return isDuplicate ? "duplicate" : null;
 }
 
+async function findManualRegistrationBlock(
+  request: ManualRegistrationRequest,
+): Promise<ManualRegistrationBlockReason | null> {
+  const academicYears = await listTargetAcademicYears();
+  if (!academicYears.includes(request.registration.academic_year)) {
+    return "invalid_year";
+  }
+
+  const identity: ShortRegistrationIdentity = {
+    fullName: request.student.full_name,
+    dateOfBirth: request.student.date_of_birth,
+    academicYear: request.registration.academic_year,
+  };
+  const nik = request.student.nik;
+  const [isDuplicate, isDuplicateNik] = await Promise.all([
+    registrationService.existsShortDuplicate(identity),
+    nik ? registrationService.existsDuplicateByNik(nik) : false,
+  ]);
+  if (isDuplicate) return "manual_duplicate";
+  return isDuplicateNik ? "duplicate_nik" : null;
+}
+
 async function insertShortRegistrationWithin(
   tx: TransactionSql,
-  input: CreateShortRegistrationInput,
-): Promise<string> {
-  const { request, ipAddress } = input;
+  request: ShortRegistrationRequest,
+  ipAddress: string,
+  source: RegistrationSource,
+): Promise<{ registrationId: string; registrationNumber: string }> {
   await registrationStatsService.ensureAcademicYearWithin(
     tx,
     request.academic_year,
@@ -218,6 +305,7 @@ async function insertShortRegistrationWithin(
     );
 
   const registration: NewShortRegistration = {
+    source,
     registrationType: request.registration_type,
     registrationNumber,
     academicYear: request.academic_year,
@@ -232,8 +320,12 @@ async function insertShortRegistrationWithin(
     dateOfBirth: request.date_of_birth,
     previousSchool: request.previous_school,
   };
-  await registrationService.insertShortWithin(tx, registration);
-  return registrationNumber;
+  const registrationId = await registrationService.insertShortWithin(
+    tx,
+    registration,
+  );
+  const inserted = { registrationId, registrationNumber };
+  return inserted;
 }
 
 async function buildDuplicateWhatsAppUrl(

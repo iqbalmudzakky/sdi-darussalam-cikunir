@@ -11,12 +11,9 @@ import {
 } from "@/modules/payment-settings/service";
 import { sendPaymentReceiptEmail } from "@/modules/email/email";
 import { buildAdminUrl } from "@/modules/shared/siteUrl";
-import { jakartaMidnight } from "@/modules/shared/jakartaDate";
-import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 import type {
   DokuNotification,
   ListPaymentsInput,
-  NewManualPayment,
   PaymentFilter,
   PaymentStatus,
   RegistrationPayload,
@@ -26,9 +23,7 @@ import type {
   SettlementDetails,
 } from "./entity";
 import type {
-  CreateManualRegistrationWithPaymentResult,
   ListPaymentsRequest,
-  ManualPaymentRequest,
   PaymentListItemResponse,
   PaymentListResponse,
   PaymentRevenueSummaryResponse,
@@ -294,63 +289,6 @@ function toPaymentListItemResponse(
 
     is_settled: item.registration_id !== null,
   };
-}
-
-export async function createManualRegistrationWithPayment(
-  registrationInput: CreatePpdbRegistrationRequest,
-  paymentInput: ManualPaymentRequest,
-): Promise<CreateManualRegistrationWithPaymentResult> {
-  const nik = registrationInput.student.nik;
-
-  const isDuplicate = await registrationService.existsDuplicateByNik(nik);
-  if (isDuplicate) {
-    return {
-      ok: false,
-      reason: "duplicate",
-      message: "NIK ini sudah terdaftar atas nama pendaftar lain.",
-    };
-  }
-
-  const { ip_address, ...payload } = registrationInput;
-
-  const insertInput: NewManualPayment = {
-    invoiceNumber: generateInvoiceNumber("MANUAL"),
-    amount: paymentInput.amount,
-    payload,
-    ipAddress: ip_address,
-    paymentMethod: paymentInput.payment_method,
-    receiptNumber: paymentInput.receipt_number,
-    paidAt: jakartaMidnight(paymentInput.paid_at),
-  };
-
-  // Tidak ada email struk untuk jalur manual — itu khusus pembayaran online.
-  const registrationId = await withDbLogging("payment.insertManual", () =>
-    insertManualRegistration(insertInput),
-  );
-
-  return { ok: true, registration_id: registrationId };
-}
-
-async function insertManualRegistration(
-  input: NewManualPayment,
-): Promise<string> {
-  return withTransaction(async (tx) => {
-    const registrationInput = {
-      ...input.payload,
-      ip_address: input.ipAddress ?? "unknown",
-    };
-
-    const registrationId =
-      await registrationIntakeService.insertFullRegistrationWithin(
-        tx,
-        registrationInput,
-        "offline",
-      );
-
-    await repository.insertManualWithin(tx, input, registrationId);
-
-    return registrationId;
-  });
 }
 
 export async function listPayments(

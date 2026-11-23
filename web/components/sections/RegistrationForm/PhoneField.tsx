@@ -36,6 +36,7 @@ const flagVariants = cva("h-3.5 w-5 shrink-0 rounded-[2px] shadow-sm");
 type PhoneFieldProps = {
   id: string;
   label: string;
+  required?: boolean;
   value: string;
   onChange: (value: string) => void;
   error?: string;
@@ -44,6 +45,7 @@ type PhoneFieldProps = {
 export function PhoneField({
   id,
   label,
+  required,
   value,
   onChange,
   error,
@@ -114,6 +116,7 @@ export function PhoneField({
         className="mb-2 block text-sm font-medium text-ink-700"
       >
         {label}
+        {required && <span className="ml-0.5 text-red-500">*</span>}
       </label>
       <div className="flex gap-2">
         <SearchSelect

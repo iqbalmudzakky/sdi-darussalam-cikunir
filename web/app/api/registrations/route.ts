@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/session";
 import * as registrationAdminService from "@/modules/registration-admin/service";
-import * as paymentService from "@/modules/payment/service";
+import * as registrationIntakeService from "@/modules/registration-intake/service";
 import { ListRegistrationsQuerySchema } from "@/modules/registration-admin/dto";
-import { CreatePpdbRegistrationRequestSchema } from "@/modules/registration/dto";
-import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
-import { ManualPaymentRequestSchema } from "@/modules/payment/dto";
+import {
+  ManualRegistrationRequestSchema,
+  type CreateManualRegistrationInput,
+} from "@/modules/registration-intake/dto";
+import { REGISTRATION_FAILURE } from "@/modules/shared/constant/registration";
 import { getClientIp } from "@/modules/shared/clientIp";
 
 export async function GET(request: Request) {
@@ -60,46 +62,34 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const parsed = CreatePpdbRegistrationRequestSchema.safeParse(body);
-
+  const parsed = ManualRegistrationRequestSchema.safeParse(body);
   if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      fieldErrors[issue.path.join(".")] ??= issue.message;
+    }
     return NextResponse.json(
-      {
-        error: parsed.error.issues[0]?.message ?? "Data tidak valid.",
-      },
+      { error: "Periksa lagi isian.", field_errors: fieldErrors },
       { status: 400 },
     );
   }
-
-  const paymentParsed = ManualPaymentRequestSchema.safeParse(body.payment);
-
-  if (!paymentParsed.success) {
-    return NextResponse.json(
-      {
-        error:
-          paymentParsed.error.issues[0]?.message ??
-          "Data pembayaran tidak valid.",
-      },
-      { status: 400 },
-    );
-  }
-
-  const input: CreatePpdbRegistrationRequest = {
-    ...parsed.data,
-    ip_address: getClientIp(request),
-  };
 
   try {
-    const result = await paymentService.createManualRegistrationWithPayment(
-      input,
-      paymentParsed.data,
-    );
-
+    const input: CreateManualRegistrationInput = {
+      request: parsed.data,
+      ipAddress: getClientIp(request),
+    };
+    const result =
+      await registrationIntakeService.createManualRegistration(input);
     if (!result.ok) {
-      return NextResponse.json({ error: result.message }, { status: 409 });
+      const failure = REGISTRATION_FAILURE[result.reason];
+      return NextResponse.json(
+        { error: failure.message },
+        { status: failure.status },
+      );
     }
 
-    return NextResponse.json({ ok: true }, { status: 201 });
+    return NextResponse.json(result, { status: 201 });
   } catch (error) {
     console.error("POST /api/registrations failed:", error);
 
