@@ -25,7 +25,13 @@ export async function getFormBiodata(
     getDetailsAndAchievements(registrationId),
   ]);
 
-  const biodata: FormBiodata = { parents, ...extras };
+  const biodata: FormBiodata = {
+    father: parents.find((parent) => parent.parent_type === "father") ?? null,
+    mother: parents.find((parent) => parent.parent_type === "mother") ?? null,
+    guardian:
+      parents.find((parent) => parent.parent_type === "guardian") ?? null,
+    ...extras,
+  };
   return biodata;
 }
 

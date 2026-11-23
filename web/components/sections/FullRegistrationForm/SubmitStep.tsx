@@ -42,7 +42,7 @@ export function SubmitStep({
   stepsWithErrors,
   onEditStep,
 }: SubmitStepProps) {
-  const isManual = form.mode === "manual";
+  const isManual = form.mode !== "link";
   const checkRows: { step: FullFormStep; label: string }[] = [
     ...(isManual
       ? [{ step: "registration" as const, label: "Pendaftaran" }]

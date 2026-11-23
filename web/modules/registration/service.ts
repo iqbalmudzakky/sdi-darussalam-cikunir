@@ -14,6 +14,7 @@ import type {
   RegistrationFilter,
   RegistrationSourceCounts,
   ShortRegistrationIdentity,
+  UpdateRegistrationContactInput,
   UpdateRegistrationFormInput,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest, RegistrantRegion } from "./dto";
@@ -90,6 +91,15 @@ export async function updateFormWithin(
 ): Promise<void> {
   await withDbLogging("registration.updateFormWithin", () =>
     repository.updateFormWithin(tx, input),
+  );
+}
+
+export async function updateContactWithin(
+  tx: TransactionSql,
+  input: UpdateRegistrationContactInput,
+): Promise<void> {
+  await withDbLogging("registration.updateContactWithin", () =>
+    repository.updateContactWithin(tx, input),
   );
 }
 

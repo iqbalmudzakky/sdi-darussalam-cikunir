@@ -62,6 +62,17 @@ export function blankable<T extends z.ZodType>(schema: T) {
     .transform((value) => value ?? null);
 }
 
+export function optionalEmail(label: string) {
+  return z
+    .string()
+    .trim()
+    .email(`${label} tidak valid.`)
+    .or(z.literal(""))
+    .nullable()
+    .optional()
+    .transform((value) => value || null);
+}
+
 export function requiredEmail(label: string) {
   return z
     .string()

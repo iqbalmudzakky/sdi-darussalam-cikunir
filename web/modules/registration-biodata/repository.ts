@@ -69,30 +69,48 @@ export async function replaceParentsWithin(
   registrationId: string,
   form: BiodataForm | ManualBiodataForm,
 ): Promise<void> {
-  await tx.unsafe(
-    "DELETE FROM ppdb_registration_parents WHERE registration_id = $1",
-    [registrationId],
-  );
-
   const parents = [
     ...(form.father ? [{ parent_type: "father", ...form.father }] : []),
     ...(form.mother ? [{ parent_type: "mother", ...form.mother }] : []),
     ...(form.guardian ? [{ parent_type: "guardian", ...form.guardian }] : []),
   ];
-  if (parents.length === 0) return;
+  const params = [registrationId, JSON.stringify(parents)];
+  const recordset = `jsonb_to_recordset($2::text::jsonb) AS parent(
+       parent_type text, name text, nik text, birth_year smallint,
+       special_needs text, occupation text, education text,
+       income_range text, phone text
+     )`;
 
+  await tx.unsafe(
+    `DELETE FROM ppdb_registration_parents
+     WHERE registration_id = $1
+       AND parent_type NOT IN (SELECT parent.parent_type FROM ${recordset})`,
+    params,
+  );
+  await tx.unsafe(
+    `UPDATE ppdb_registration_parents existing
+     SET name = parent.name, nik = parent.nik, birth_year = parent.birth_year,
+         special_needs = parent.special_needs, occupation = parent.occupation,
+         education = parent.education, income_range = parent.income_range,
+         phone = parent.phone, updated_at = now()
+     FROM ${recordset}
+     WHERE existing.registration_id = $1
+       AND existing.parent_type = parent.parent_type`,
+    params,
+  );
   await tx.unsafe(
     `INSERT INTO ppdb_registration_parents (
        registration_id, parent_type, name, nik, birth_year, special_needs,
        occupation, education, income_range, phone
      )
      SELECT $1::uuid, parent.*
-     FROM jsonb_to_recordset($2::text::jsonb) AS parent(
-       parent_type text, name text, nik text, birth_year smallint,
-       special_needs text, occupation text, education text,
-       income_range text, phone text
+     FROM ${recordset}
+     WHERE NOT EXISTS (
+       SELECT 1 FROM ppdb_registration_parents existing
+       WHERE existing.registration_id = $1
+         AND existing.parent_type = parent.parent_type
      )`,
-    [registrationId, JSON.stringify(parents)],
+    params,
   );
 }
 
@@ -101,25 +119,33 @@ export async function replaceDetailsWithin(
   registrationId: string,
   details: (BiodataForm | ManualBiodataForm)["details"],
 ): Promise<void> {
-  await tx.unsafe(
-    "DELETE FROM ppdb_registration_details WHERE registration_id = $1",
-    [registrationId],
+  const params = [
+    registrationId,
+    details.living_with,
+    details.transportation_method,
+    details.distance_km === null ? null : String(details.distance_km),
+    details.travel_time_minutes,
+    details.height,
+    details.weight,
+  ];
+  const updated = await tx.unsafe(
+    `UPDATE ppdb_registration_details
+     SET living_with = $2, transportation_method = $3,
+         distance_to_school = $4, travel_time_minutes = $5, height = $6,
+         weight = $7, updated_at = now()
+     WHERE registration_id = $1
+     RETURNING id`,
+    params,
   );
+  if (updated.length > 0) return;
+
   await tx.unsafe(
     `INSERT INTO ppdb_registration_details (
        registration_id, living_with, transportation_method, distance_to_school,
        travel_time_minutes, height, weight
      )
      VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-    [
-      registrationId,
-      details.living_with,
-      details.transportation_method,
-      details.distance_km === null ? null : String(details.distance_km),
-      details.travel_time_minutes,
-      details.height,
-      details.weight,
-    ],
+    params,
   );
 }
 

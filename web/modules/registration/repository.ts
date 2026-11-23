@@ -14,6 +14,7 @@ import type {
   RegistrationFilter,
   RegistrationSourceCounts,
   ShortRegistrationIdentity,
+  UpdateRegistrationContactInput,
   UpdateRegistrationFormInput,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest, StudentForm } from "./dto";
@@ -21,7 +22,7 @@ import type { CreatePpdbRegistrationRequest, StudentForm } from "./dto";
 const LIST_COLUMNS = `
   pr.id, pr.registration_number, pr.registration_type, pr.program,
   pr.target_grade, pr.academic_year, pr.status, pr.contact_name,
-  pr.contact_phone, pr.full_form_completed_at, pr.received_documents,
+  pr.contact_phone, pr.source, pr.full_form_completed_at, pr.received_documents,
   pr.created_at, ps.full_name
 `;
 
@@ -163,7 +164,8 @@ export async function findFormById(
   );
   const rows = await sql.unsafe<PpdbRegistrationFormRow[]>(
     `SELECT pr.id, pr.registration_number, pr.registration_type,
-            pr.parent_email, pr.contact_phone,
+            pr.program, pr.target_grade, pr.academic_year, pr.parent_email,
+            pr.contact_name, pr.contact_phone,
             json_build_object(${studentFields.join(", ")}) AS student
      FROM ppdb_registrations pr
      JOIN ppdb_registration_students ps ON ps.registration_id = pr.id
@@ -206,6 +208,25 @@ export async function updateFormWithin(
      SET ${assignments.join(", ")}, updated_at = now()
      WHERE registration_id = $1`,
     [input.registrationId, ...values],
+  );
+}
+
+export async function updateContactWithin(
+  tx: TransactionSql,
+  input: UpdateRegistrationContactInput,
+): Promise<void> {
+  await tx.unsafe(
+    `UPDATE ppdb_registrations
+     SET program = $2, target_grade = $3, contact_name = $4,
+         contact_phone = $5, updated_at = now()
+     WHERE id = $1`,
+    [
+      input.registrationId,
+      input.program,
+      input.targetGrade,
+      input.contactName,
+      input.contactPhone,
+    ],
   );
 }
 

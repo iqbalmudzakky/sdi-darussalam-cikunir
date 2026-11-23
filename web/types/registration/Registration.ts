@@ -1,6 +1,8 @@
 import type {
+  EditRegistrationForm,
   RegistrationDetailResponse,
   RegistrationDocumentResponse,
+  RegistrationEditFormResponse,
   RegistrationFormAchievementResponse,
   RegistrationFormParentResponse,
   RegistrationFormRowResponse,
@@ -191,8 +193,14 @@ export type FullFormState = {
 export type FullFormSection =
   "registration" | "student" | "father" | "mother" | "guardian" | "details";
 
+export type RegistrationEditForm = RegistrationEditFormResponse;
+
+export type EditRegistrationInput = EditRegistrationForm;
+
 export type FullRegistrationFormInput =
-  { mode: "link"; token: string; form: FullFormData } | { mode: "manual" };
+  | { mode: "link"; token: string; form: FullFormData }
+  | { mode: "manual" }
+  | { mode: "edit"; form: RegistrationEditForm };
 
 export type ManualRegistrationInput = ManualRegistrationRequest;
 

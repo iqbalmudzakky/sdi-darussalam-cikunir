@@ -320,8 +320,12 @@ export type StudentForm = z.infer<typeof StudentFormSchema>;
 export const ManualStudentFormSchema = StudentFormSchema.extend({
   nik: blankable(nik("NIK anak")),
   place_of_birth: blankable(birthPlace("Tempat lahir")),
-  religion: blankable(z.enum(RELIGION_VALUES)),
-  physical_disability: blankable(z.enum(SPECIAL_NEEDS_VALUES)),
+  religion: blankable(
+    z.enum(RELIGION_VALUES, { error: "Agama wajib dipilih." }),
+  ),
+  physical_disability: blankable(
+    z.enum(SPECIAL_NEEDS_VALUES, { error: "Wajib dipilih." }),
+  ),
   address: blankable(requiredText("Alamat", 200)),
   rt_rw: blankable(requiredText("RT/RW", 20)),
   village: blankable(requiredText("Kelurahan", 80)),

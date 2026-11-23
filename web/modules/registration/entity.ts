@@ -48,6 +48,7 @@ export type PpdbRegistrationListItem = {
   status: PpdbRegistrationStatus;
   contact_name: string | null;
   contact_phone: string | null;
+  source: RegistrationSource;
   full_form_completed_at: string | null;
   received_documents: ReceivedDocument[];
   created_at: string;
@@ -120,6 +121,14 @@ export type RegistrationSourceCounts = {
   offline_recorded: number;
 };
 
+export type UpdateRegistrationContactInput = {
+  registrationId: string;
+  program: RegistrationProgram;
+  targetGrade: number | null;
+  contactName: string;
+  contactPhone: string;
+};
+
 export type UpdateRegistrationFormInput = {
   registrationId: string;
   parentEmail: string | null;
@@ -130,7 +139,11 @@ export type PpdbRegistrationFormRow = {
   id: string;
   registration_number: string | null;
   registration_type: RegistrationType;
+  program: RegistrationProgram | null;
+  target_grade: number | null;
+  academic_year: string | null;
   parent_email: string | null;
+  contact_name: string | null;
   contact_phone: string | null;
   student: { [K in keyof StudentForm]: StudentForm[K] | null };
 };

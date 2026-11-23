@@ -18,6 +18,7 @@ import {
 
 export function RegistrationStep({ form }: { form: FullFormController }) {
   const registration = form.values.registration;
+  const isEdit = form.mode === "edit";
   const academicYearOptions = form.academicYears.map((year) => ({
     value: year,
     label: year,
@@ -30,25 +31,29 @@ export function RegistrationStep({ form }: { form: FullFormController }) {
   return (
     <div className="space-y-8">
       <FormSection title="Pendaftaran">
-        <BoundChoiceField
-          form={form}
-          section="registration"
-          field="registration_type"
-          label="Daftar sebagai"
-          options={REGISTRATION_JENIS_OPTIONS}
-          required
-        />
-        <SelectField
-          id="registration-academic_year"
-          label="Masuk tahun ajaran"
-          options={academicYearOptions}
-          value={form.academicYear}
-          onChange={(value) =>
-            form.setSectionField("registration", "academic_year", value)
-          }
-          error={form.fieldErrors["registration.academic_year"]}
-          required
-        />
+        {!isEdit && (
+          <BoundChoiceField
+            form={form}
+            section="registration"
+            field="registration_type"
+            label="Daftar sebagai"
+            options={REGISTRATION_JENIS_OPTIONS}
+            required
+          />
+        )}
+        {!isEdit && (
+          <SelectField
+            id="registration-academic_year"
+            label="Masuk tahun ajaran"
+            options={academicYearOptions}
+            value={form.academicYear}
+            onChange={(value) =>
+              form.setSectionField("registration", "academic_year", value)
+            }
+            error={form.fieldErrors["registration.academic_year"]}
+            required
+          />
+        )}
         <BoundChoiceField
           form={form}
           section="registration"

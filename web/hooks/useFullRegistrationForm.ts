@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import {
   createManualRegistration,
   submitFullForm,
+  updateRegistrationForm,
 } from "@/lib/api/registration/registrations";
 import { fetchShortFormOptions } from "@/lib/api/registration/registrationWindow";
 import type {
+  EditRegistrationInput,
   FullFormAchievementState,
   FullFormData,
   FullFormInput,
+  FullFormRegistrationState,
   FullFormReceipt,
   FullFormSection,
   FullFormState,
@@ -22,12 +25,12 @@ import type {
 } from "@/types/registration/Registration";
 
 export function useFullRegistrationForm(input: FullRegistrationFormInput) {
-  const isManual = input.mode === "manual";
+  const isPanel = input.mode !== "link";
   const [values, setValues] = useState<FullFormState>(() =>
-    toFullFormState(input.mode === "link" ? input.form : null),
+    toFullFormState(input),
   );
   const [step, setStep] = useState<FullFormStep>(
-    isManual ? "registration" : "child",
+    isPanel ? "registration" : "child",
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,7 +43,7 @@ export function useFullRegistrationForm(input: FullRegistrationFormInput) {
     values.registration.academic_year || academicYears[0] || "";
 
   useEffect(() => {
-    if (!isManual) return;
+    if (!isPanel) return;
     let cancelled = false;
 
     const load = async () => {
@@ -59,7 +62,7 @@ export function useFullRegistrationForm(input: FullRegistrationFormInput) {
     return () => {
       cancelled = true;
     };
-  }, [isManual, registrationType]);
+  }, [isPanel, registrationType]);
 
   function setSectionField(
     section: FullFormSection,
@@ -121,12 +124,7 @@ export function useFullRegistrationForm(input: FullRegistrationFormInput) {
     setIsSubmitting(true);
 
     try {
-      const result =
-        input.mode === "link"
-          ? await submitFullForm(input.token, toFullFormInput(values))
-          : await createManualRegistration(
-              toManualRegistrationInput(values, academicYear),
-            );
+      const result = await submitByMode(input, values, academicYear);
       if (!result.ok) {
         setFieldErrors(result.fieldErrors);
       } else if ("flow_steps" in result) {
@@ -149,7 +147,7 @@ export function useFullRegistrationForm(input: FullRegistrationFormInput) {
   const controller = {
     mode: input.mode,
     registrationNumber:
-      input.mode === "link" ? input.form.registration_number : null,
+      input.mode === "manual" ? null : input.form.registration_number,
     values,
     academicYear,
     academicYears,
@@ -169,8 +167,48 @@ export function useFullRegistrationForm(input: FullRegistrationFormInput) {
   return controller;
 }
 
-function toFullFormState(form: FullFormData | null): FullFormState {
+async function submitByMode(
+  input: FullRegistrationFormInput,
+  values: FullFormState,
+  academicYear: string,
+): Promise<FullFormSubmitResult | ManualRegistrationSubmitResult> {
+  if (input.mode === "link") {
+    return submitFullForm(input.token, toFullFormInput(values));
+  }
+  const manualInput = toManualRegistrationInput(values, academicYear);
+  if (input.mode === "manual") {
+    return createManualRegistration(manualInput);
+  }
+  const editInput = {
+    ...manualInput,
+    registration: {
+      program: manualInput.registration.program,
+      target_grade: manualInput.registration.target_grade,
+      contact_name: manualInput.registration.contact_name,
+      contact_phone: manualInput.registration.contact_phone,
+    },
+  };
+  return updateRegistrationForm(
+    input.form.id,
+    editInput as unknown as EditRegistrationInput,
+  );
+}
+
+function toFullFormState(input: FullRegistrationFormInput): FullFormState {
+  const form: Pick<FullFormData, "values"> | null =
+    input.mode === "manual" ? null : input.form;
   const values = form?.values;
+  const saved = input.mode === "edit" ? input.form : null;
+  const registration: FullFormRegistrationState = {
+    registration_type: saved?.registration_type ?? "siswa_baru",
+    target_grade: saved?.registration.target_grade
+      ? String(saved.registration.target_grade)
+      : "",
+    program: saved?.registration.program ?? "",
+    academic_year: saved?.registration.academic_year ?? "",
+    contact_name: saved?.registration.contact_name ?? "",
+    contact_phone: saved?.registration.contact_phone ?? "",
+  };
   const emptyParent = {
     name: "",
     birth_year: "",
@@ -183,14 +221,7 @@ function toFullFormState(form: FullFormData | null): FullFormState {
   };
 
   const state: FullFormState = {
-    registration: {
-      registration_type: "siswa_baru",
-      target_grade: "",
-      program: "",
-      academic_year: "",
-      contact_name: "",
-      contact_phone: "",
-    },
+    registration,
     student: toTextRecord(values?.student ?? {}) as FullFormState["student"],
     parent_email: values?.parent_email ?? "",
     father: { ...emptyParent, ...toTextRecord(values?.father ?? {}) },

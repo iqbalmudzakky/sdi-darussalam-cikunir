@@ -12,20 +12,12 @@ import {
 } from "@/modules/shared/constant/registration";
 import {
   birthDate,
+  optionalEmail,
   personName,
   phoneNumber,
 } from "@/modules/validation/validators";
 
-const OptionalEmailSchema = z
-  .string()
-  .trim()
-  .email("Email tidak valid.")
-  .or(z.literal(""))
-  .nullable()
-  .optional()
-  .transform((value) => value || null);
-
-const TargetGradeSchema = z
+export const TargetGradeSchema = z
   .number({ error: "Kelas tujuan wajib dipilih." })
   .int()
   .refine((value) => TARGET_GRADES.some((grade) => grade === value), {
@@ -47,7 +39,7 @@ const ShortRegistrationBaseSchema = z.object({
     .regex(ACADEMIC_YEAR_PATTERN, "Tahun ajaran wajib dipilih."),
   contact_name: personName("Nama orang tua"),
   contact_phone: phoneNumber("No. WhatsApp"),
-  parent_email: OptionalEmailSchema,
+  parent_email: optionalEmail("Email"),
 });
 
 export const ShortRegistrationRequestSchema = z.discriminatedUnion(
@@ -83,7 +75,7 @@ export const ManualRegistrationRequestSchema = ManualBiodataFormSchema.extend({
     }),
   ]),
   student: ManualStudentFormSchema,
-  parent_email: OptionalEmailSchema,
+  parent_email: optionalEmail("Email"),
 });
 
 export type ManualRegistrationRequest = z.infer<

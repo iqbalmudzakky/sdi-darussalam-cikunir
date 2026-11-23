@@ -47,7 +47,9 @@ export type AchievementRow = {
 };
 
 export type FormBiodata = {
-  parents: ParentFormRow[];
+  father: ParentFormRow | null;
+  mother: ParentFormRow | null;
+  guardian: ParentFormRow | null;
   details: DetailsFormRow | null;
   achievements: AchievementRow[];
 };

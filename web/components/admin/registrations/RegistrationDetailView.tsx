@@ -10,6 +10,7 @@ import {
   FileText,
   Loader2,
   MessageCircle,
+  Pencil,
   RotateCcw,
   SearchX,
 } from "lucide-react";
@@ -227,6 +228,17 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
         </Link>
         <h1 className="flex-1 font-semibold text-gray-900">Pendaftar</h1>
 
+        <Button
+          variant="outline"
+          size="icon"
+          nativeButton={false}
+          render={<Link href={`/registrations/${registration.id}/edit`} />}
+          aria-label="Ubah data"
+          title="Ubah data"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+
         {registration.can_cancel && (
           <Button
             type="button"
@@ -348,7 +360,7 @@ function SummaryCard({
       <p className="mt-1 text-sm text-gray-600">{summary}</p>
 
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        {registration.contact_phone && (
+        {registration.can_send_form_link && (
           <button
             type="button"
             onClick={onSendFormLink}

@@ -1,8 +1,10 @@
 "use server";
 
 import * as registrationAdminService from "@/modules/registration-admin/service";
+import { requireUser } from "@/lib/auth/session";
 import type {
   ListRegistrationsQuery,
+  RegistrationEditFormResponse,
   RegistrationListResponse,
 } from "@/modules/registration-admin/dto";
 import type { FullFormLinkResult } from "@/modules/registration-link/dto";
@@ -24,6 +26,23 @@ export async function listRegistrations(
       academic_years: [],
     };
     return emptyList;
+  }
+}
+
+export async function getRegistrationForm(
+  id: string,
+): Promise<RegistrationEditFormResponse | null> {
+  const user = await requireUser();
+  if (!user) return null;
+
+  try {
+    return await registrationAdminService.getRegistrationForm(id);
+  } catch (error) {
+    console.error(
+      "lib/actions/registrations.getRegistrationForm failed:",
+      error,
+    );
+    return null;
   }
 }
 

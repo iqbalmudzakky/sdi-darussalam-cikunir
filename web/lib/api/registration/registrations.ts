@@ -1,4 +1,5 @@
 import type {
+  EditRegistrationInput,
   FullFormInput,
   FullFormSubmitResult,
   ListRegistrationsParams,
@@ -103,6 +104,34 @@ export async function createManualRegistration(
   }
 
   const result: ManualRegistrationSubmitResult = { ok: true, ...data };
+  return result;
+}
+
+export async function updateRegistrationForm(
+  id: string,
+  form: EditRegistrationInput,
+): Promise<ManualRegistrationSubmitResult> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "update_form", form }),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const failure: ManualRegistrationSubmitResult = {
+      ok: false,
+      error: data.error ?? "Gagal menyimpan perubahan.",
+      fieldErrors: data.field_errors ?? {},
+    };
+    return failure;
+  }
+
+  const result: ManualRegistrationSubmitResult = {
+    ok: true,
+    id: data.id,
+    registration_number: data.registration_number,
+  };
   return result;
 }
 

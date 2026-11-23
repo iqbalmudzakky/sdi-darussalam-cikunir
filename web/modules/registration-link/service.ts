@@ -102,21 +102,13 @@ export async function getFullFormByToken(
     const biodata = await registrationBiodataService.getFormBiodata(
       registration.id,
     );
-    const parents = biodata.parents;
     const form: FullFormResponse = {
       registration_number: registration.registration_number,
       registration_type: registration.registration_type,
       values: {
         student: registration.student,
         parent_email: registration.parent_email,
-        father:
-          parents.find((parent) => parent.parent_type === "father") ?? null,
-        mother:
-          parents.find((parent) => parent.parent_type === "mother") ?? null,
-        guardian:
-          parents.find((parent) => parent.parent_type === "guardian") ?? null,
-        details: biodata.details,
-        achievements: biodata.achievements,
+        ...biodata,
       },
     };
     const valid: FullFormLinkResult = { status: "valid", form };

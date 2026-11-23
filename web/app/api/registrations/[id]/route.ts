@@ -80,8 +80,16 @@ export async function PATCH(
 
   const parsed = UpdateRegistrationRequestSchema.safeParse(body);
   if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const path = issue.path[0] === "form" ? issue.path.slice(1) : issue.path;
+      fieldErrors[path.join(".")] ??= issue.message;
+    }
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Data tidak valid." },
+      {
+        error: parsed.error.issues[0]?.message ?? "Data tidak valid.",
+        field_errors: fieldErrors,
+      },
       { status: 400 },
     );
   }

@@ -33,8 +33,8 @@ const layoutVariants = cva([
 
 const stepTabVariants = cva(
   [
-    "flex flex-1 cursor-pointer items-center justify-center gap-3 rounded-xl px-2 py-2.5",
-    "text-xs font-medium transition-colors md:text-sm",
+    "flex flex-auto cursor-pointer items-center justify-center gap-3 rounded-xl px-3 py-2.5",
+    "text-[13px] font-medium whitespace-nowrap transition-colors md:text-sm",
     "lg:flex-none lg:justify-start lg:px-3 lg:text-[15px]",
   ],
   {
@@ -94,7 +94,12 @@ const whatsappButtonVariants = cva([
 ]);
 
 export function FullRegistrationForm(input: FullRegistrationFormInput) {
-  const isManual = input.mode === "manual";
+  const isManual = input.mode !== "link";
+  const titles = {
+    link: "Form Lengkap",
+    manual: "Input manual",
+    edit: "Ubah data",
+  };
   const stepLabels: { key: FullFormStep; label: string }[] = [
     ...(isManual
       ? [{ key: "registration" as const, label: "Pendaftaran" }]
@@ -133,7 +138,11 @@ export function FullRegistrationForm(input: FullRegistrationFormInput) {
     if (!result) return;
     if (result.ok) {
       if ("id" in result) {
-        toast.success(`Tersimpan, No. ${result.registration_number}`);
+        toast.success(
+          input.mode === "edit"
+            ? "Perubahan tersimpan"
+            : `Tersimpan, No. ${result.registration_number}`,
+        );
         router.push(`/registrations/${result.id}`);
       }
       return;
@@ -174,17 +183,17 @@ export function FullRegistrationForm(input: FullRegistrationFormInput) {
               <Image src="/logo.png" alt="" width={28} height={28} />
             )}
             <h1 className="font-display text-xl font-semibold text-ink-900 lg:text-2xl">
-              {isManual ? "Input manual" : "Form Lengkap"}
+              {titles[input.mode]}
             </h1>
           </span>
-          {!isManual && (
+          {input.mode !== "manual" && (
             <span className={numberChipVariants()}>
               No. {controller.registrationNumber ?? "-"}
             </span>
           )}
         </header>
 
-        <nav className="mt-4 mb-6 flex gap-2 lg:mt-6 lg:mb-0 lg:flex-col lg:gap-1.5">
+        <nav className="mt-4 mb-6 flex gap-1.5 md:gap-2 lg:mt-6 lg:mb-0 lg:flex-col lg:gap-1.5">
           {steps.map((step) => {
             const isActive = controller.step === step.key;
             return (
@@ -198,10 +207,7 @@ export function FullRegistrationForm(input: FullRegistrationFormInput) {
                 <span className={stepNumberVariants({ active: isActive })}>
                   {step.number}
                 </span>
-                <span>
-                  <span className="lg:hidden">{step.number} </span>
-                  {step.label}
-                </span>
+                <span>{step.label}</span>
               </button>
             );
           })}

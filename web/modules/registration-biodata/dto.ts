@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { PpdbRegistrationFormRow } from "@/modules/registration/entity";
+import type { FormBiodata } from "./entity";
 import {
   MAX_HEIGHT_CM,
   MAX_WEIGHT_KG,
@@ -144,7 +146,9 @@ export type BiodataForm = z.infer<typeof BiodataFormSchema>;
 
 const ManualParentFormSchema = ParentFormSchema.extend({
   birth_year: blankable(parentBirthYear),
-  special_needs: blankable(z.enum(optionKeys(SPECIAL_NEEDS_LABEL))),
+  special_needs: blankable(
+    z.enum(optionKeys(SPECIAL_NEEDS_LABEL), { error: "Wajib dipilih." }),
+  ),
   nik: blankable(
     z
       .string()
@@ -174,3 +178,8 @@ export const ManualBiodataFormSchema = BiodataFormSchema.extend({
 });
 
 export type ManualBiodataForm = z.infer<typeof ManualBiodataFormSchema>;
+
+export type FullFormValues = FormBiodata & {
+  student: PpdbRegistrationFormRow["student"];
+  parent_email: string | null;
+};

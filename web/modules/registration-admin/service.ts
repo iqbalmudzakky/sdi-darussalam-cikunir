@@ -15,8 +15,11 @@ import type {
   PpdbRegistrationFullRow,
   PpdbRegistrationListItem,
   RegistrationFilter,
+  UpdateRegistrationContactInput,
+  UpdateRegistrationFormInput,
 } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
+import { withTransaction } from "@/modules/db/postgres";
 import {
   RECEIVED_DOCUMENT_LABEL,
   RECEIVED_DOCUMENTS_BY_TYPE,
@@ -24,9 +27,11 @@ import {
 import { calculateEntryAge } from "@/modules/shared/entryAge";
 import { buildRegistrationFullForm } from "@/modules/shared/registrationFullForm";
 import type {
+  EditRegistrationForm,
   ExportRegistrationsQuery,
   ListRegistrationsQuery,
   RegistrationDetailResponse,
+  RegistrationEditFormResponse,
   RegistrationExportItem,
   RegistrationFullFormResponse,
   RegistrationParentColumns,
@@ -96,6 +101,35 @@ export async function getRegistrationDetail(
       : null;
   const detail = toDetail(row, payments, fullForm);
   return detail;
+}
+
+export async function getRegistrationForm(
+  id: string,
+): Promise<RegistrationEditFormResponse | null> {
+  const [form, biodata] = await Promise.all([
+    registrationService.findFormById(id),
+    registrationBiodataService.getFormBiodata(id),
+  ]);
+  if (!form) return null;
+
+  const response: RegistrationEditFormResponse = {
+    id: form.id,
+    registration_number: form.registration_number,
+    registration_type: form.registration_type,
+    registration: {
+      program: form.program,
+      target_grade: form.target_grade,
+      academic_year: form.academic_year,
+      contact_name: form.contact_name,
+      contact_phone: form.contact_phone,
+    },
+    values: {
+      student: form.student,
+      parent_email: form.parent_email,
+      ...biodata,
+    },
+  };
+  return response;
 }
 
 export async function updateRegistration(
@@ -170,6 +204,10 @@ async function applyRegistrationUpdate(
     return reactivated ? null : "invalid_state";
   }
 
+  if (request.action === "update_form") {
+    return updateRegistrationForm(id, request.form);
+  }
+
   const registration = await registrationService.findFullById(id);
   if (!registration) return "not_found";
 
@@ -183,6 +221,45 @@ async function applyRegistrationUpdate(
     ? received.filter((code) => code !== document)
     : [...received, document];
   await registrationService.setReceivedDocuments(id, nextDocuments);
+  return null;
+}
+
+async function updateRegistrationForm(
+  id: string,
+  form: EditRegistrationForm,
+): Promise<UpdateRegistrationFailureReason | null> {
+  const registration = await registrationService.findFormById(id);
+  if (!registration) return "not_found";
+
+  const nik = form.student.nik;
+  const isDuplicateNik = nik
+    ? await registrationService.existsNikOnOther(nik, id)
+    : false;
+  if (isDuplicateNik) return "duplicate_nik";
+
+  const isTransfer = registration.registration_type === "pindahan";
+  const contact: UpdateRegistrationContactInput = {
+    registrationId: id,
+    program: form.registration.program,
+    targetGrade: isTransfer
+      ? (form.registration.target_grade ?? registration.target_grade)
+      : null,
+    contactName: form.registration.contact_name,
+    contactPhone: form.registration.contact_phone,
+  };
+  const formInput: UpdateRegistrationFormInput = {
+    registrationId: id,
+    parentEmail: form.parent_email,
+    student: {
+      ...form.student,
+      phone: form.student.phone ?? form.registration.contact_phone,
+    },
+  };
+  await withTransaction(async (tx) => {
+    await registrationService.updateContactWithin(tx, contact);
+    await registrationService.updateFormWithin(tx, formInput);
+    await registrationBiodataService.replaceWithin(tx, id, form);
+  });
   return null;
 }
 
@@ -251,6 +328,7 @@ function toDetail(
     ),
     can_cancel: row.status !== "cancelled",
     can_reactivate: row.status === "cancelled",
+    can_send_form_link: row.source === "online" && Boolean(row.contact_phone),
     full_form: fullForm,
   };
   return detail;

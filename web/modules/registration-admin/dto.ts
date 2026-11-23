@@ -1,7 +1,20 @@
 import { z } from "zod";
 import type { RegistrationPaymentSummary } from "@/modules/payment/entity";
-import { ACADEMIC_YEAR_PATTERN } from "@/modules/registration/dto";
+import {
+  ACADEMIC_YEAR_PATTERN,
+  ManualStudentFormSchema,
+} from "@/modules/registration/dto";
+import {
+  ManualBiodataFormSchema,
+  type FullFormValues,
+} from "@/modules/registration-biodata/dto";
 import type { ParentType } from "@/modules/registration-biodata/entity";
+import { TargetGradeSchema } from "@/modules/registration-intake/dto";
+import {
+  optionalEmail,
+  personName,
+  phoneNumber,
+} from "@/modules/validation/validators";
 import type {
   ParentRelationshipStatus,
   PpdbRegistrationExportRow,
@@ -24,12 +37,29 @@ const RECEIVED_DOCUMENT_VALUES = Object.keys(RECEIVED_DOCUMENT_LABEL) as [
 
 const SORT_DIRECTION_VALUES = ["asc", "desc"] as const;
 
+const EditRegistrationFormSchema = ManualBiodataFormSchema.extend({
+  registration: z.object({
+    program: z.enum(REGISTRATION_PROGRAMS, { error: "Program wajib dipilih." }),
+    target_grade: TargetGradeSchema.nullable().default(null),
+    contact_name: personName("Nama orang tua"),
+    contact_phone: phoneNumber("No. WhatsApp"),
+  }),
+  student: ManualStudentFormSchema,
+  parent_email: optionalEmail("Email"),
+});
+
+export type EditRegistrationForm = z.infer<typeof EditRegistrationFormSchema>;
+
 export const UpdateRegistrationRequestSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("cancel") }),
   z.object({ action: z.literal("reactivate") }),
   z.object({
     action: z.literal("toggle_document"),
     document: z.enum(RECEIVED_DOCUMENT_VALUES),
+  }),
+  z.object({
+    action: z.literal("update_form"),
+    form: EditRegistrationFormSchema,
   }),
 ]);
 
@@ -43,7 +73,7 @@ export type UpdateRegistrationInput = {
 };
 
 export type UpdateRegistrationFailureReason =
-  "not_found" | "invalid_state" | "invalid_document";
+  "not_found" | "invalid_state" | "invalid_document" | "duplicate_nik";
 
 export type UpdateRegistrationResult =
   | { ok: true; registration: RegistrationDetailResponse }
@@ -146,7 +176,22 @@ export type RegistrationDetailResponse = RegistrationListItemResponse & {
   documents: RegistrationDocumentResponse[];
   can_cancel: boolean;
   can_reactivate: boolean;
+  can_send_form_link: boolean;
   full_form: RegistrationFullFormResponse | null;
+};
+
+export type RegistrationEditFormResponse = {
+  id: string;
+  registration_number: string | null;
+  registration_type: RegistrationType;
+  registration: {
+    program: RegistrationProgram | null;
+    target_grade: number | null;
+    academic_year: string | null;
+    contact_name: string | null;
+    contact_phone: string | null;
+  };
+  values: FullFormValues;
 };
 
 export type RegistrationListResponse = {
