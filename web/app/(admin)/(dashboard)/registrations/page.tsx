@@ -107,8 +107,12 @@ export default function AdminRegistrationsPage() {
           </div>
 
           <div className={tableVariants()}>
-            {list.items.map((item) => (
-              <RegistrationRow key={item.id} item={item} />
+            {list.items.map((item, index) => (
+              <RegistrationRow
+                key={item.id}
+                item={item}
+                rowNumber={index + 1}
+              />
             ))}
           </div>
 

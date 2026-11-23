@@ -54,8 +54,9 @@ const sidebarNavLinkVariants = cva(
 );
 
 const sidebarPendingBadgeVariants = cva([
-  "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full",
-  "bg-red-600 px-1.5 text-[11px] font-semibold text-white tabular-nums",
+  "ml-auto flex h-5 items-center justify-center rounded-full border",
+  "border-amber-200 bg-amber-50 px-2 text-[11px] font-semibold",
+  "whitespace-nowrap text-amber-700 tabular-nums",
 ]);
 
 type NavItem = {
@@ -271,12 +272,8 @@ export function AdminSidebar({ role, permissions }: AdminSidebarProps) {
         </div>
 
         {pendingCount > 0 && (
-          <Link
-            href="/registrations"
-            className="ml-auto flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700"
-          >
-            <Inbox className="h-3.5 w-3.5" />
-            {pendingCount}
+          <Link href="/registrations" className={sidebarPendingBadgeVariants()}>
+            {pendingCount} baru
           </Link>
         )}
       </div>
@@ -368,7 +365,7 @@ function SidebarNavigation({
 
                     {href === "/registrations" && pendingCount > 0 && (
                       <span className={sidebarPendingBadgeVariants()}>
-                        {pendingCount}
+                        {pendingCount} baru
                       </span>
                     )}
                   </Link>

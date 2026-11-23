@@ -26,7 +26,7 @@ const cardVariants = cva([
 
 const rowVariants = cva([
   "relative grid items-center gap-3 border-b border-gray-100 px-4 py-2.5",
-  "grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_7.5rem_10rem_2.375rem]",
+  "grid-cols-[2rem_minmax(0,1fr)_minmax(0,1.3fr)_7.5rem_10rem_2.375rem]",
   "transition-colors last:border-b-0 hover:bg-gray-50",
 ]);
 
@@ -37,6 +37,10 @@ const whatsappLinkVariants = cva([
 
 type RegistrationItemProps = {
   item: Registration;
+};
+
+type RegistrationRowProps = RegistrationItemProps & {
+  rowNumber: number;
 };
 
 export function getDocumentTone(
@@ -67,9 +71,10 @@ export function RegistrationCard({ item }: RegistrationItemProps) {
   );
 }
 
-export function RegistrationRow({ item }: RegistrationItemProps) {
+export function RegistrationRow({ item, rowNumber }: RegistrationRowProps) {
   return (
     <div className={rowVariants()}>
+      <span className="text-sm text-gray-400 tabular-nums">{rowNumber}</span>
       <RegistrationName item={item} />
 
       <p className="truncate text-sm text-gray-600">
