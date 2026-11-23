@@ -34,10 +34,7 @@ export async function getScheduleView(
     schedule: row ? toSchedule(row, interviewers) : null,
     options: {
       interviewers,
-      time_options: listTestTimes().map((time) => ({
-        value: time,
-        label: time.replace(":", "."),
-      })),
+      time_options: listTestTimes(),
       can_assign_others: authService.hasPermission(
         actor.role,
         "assign_interviewers",

@@ -6,6 +6,7 @@ import {
   DateField,
   SearchSelectField,
 } from "@/components/sections/RegistrationForm/fields";
+import { TimeField } from "@/components/sections/RegistrationForm/TimeField";
 import { Button } from "@/components/ui/form/button";
 import {
   Dialog,
@@ -92,7 +93,7 @@ function ScheduleForm({
           minDate={today}
           required
         />
-        <SearchSelectField
+        <TimeField
           id="schedule-time"
           label="Jam"
           value={testTime}

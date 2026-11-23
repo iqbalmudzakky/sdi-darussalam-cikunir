@@ -46,7 +46,7 @@ export type ScheduleResponse = {
 
 export type ScheduleOptionsResponse = {
   interviewers: InterviewerResponse[];
-  time_options: { value: string; label: string }[];
+  time_options: string[];
   can_assign_others: boolean;
   self: InterviewerResponse | null;
 };
