@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
-import { ToastProvider, Toaster } from "@/components/ui/toast";
+import { ToastProvider, Toaster } from "@/components/ui/overlay/toast";
 import { VisitTracker } from "@/components/analytics/VisitTracker";
 import { getSiteUrl } from "@/lib/site";
 import "./globals.css";

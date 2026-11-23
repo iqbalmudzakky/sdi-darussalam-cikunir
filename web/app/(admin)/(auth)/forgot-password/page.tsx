@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Clock, Mail, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/form/button";
+import { Input } from "@/components/ui/form/input";
+import { Label } from "@/components/ui/form/label";
 import {
   AuthCard,
   AuthError,

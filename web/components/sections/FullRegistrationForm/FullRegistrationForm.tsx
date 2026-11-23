@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cva } from "class-variance-authority";
 import {
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { RegistrationFlowSteps } from "@/components/sections/RegistrationForm/RegistrationFlowSteps";
 import { useFullRegistrationForm } from "@/hooks/useRegistrations";
+import { useToast } from "@/hooks/useToast";
 import type {
   FullFormStep,
   FullRegistrationFormInput,
@@ -21,22 +23,52 @@ import { ChildStep } from "./ChildStep";
 import { ParentsStep } from "./ParentsStep";
 import { SubmitStep } from "./SubmitStep";
 
+const layoutVariants = cva([
+  "mx-auto max-w-xl md:max-w-3xl",
+  "lg:grid lg:max-w-6xl lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:items-start lg:gap-10",
+]);
+
 const stepTabVariants = cva(
-  "flex-1 cursor-pointer rounded-xl px-2 py-2.5 text-xs font-medium transition-colors",
+  [
+    "flex flex-1 cursor-pointer items-center justify-center gap-3 rounded-xl px-2 py-2.5",
+    "text-xs font-medium transition-colors md:text-sm",
+    "lg:flex-none lg:justify-start lg:px-3 lg:text-[15px]",
+  ],
   {
     variants: {
       active: {
-        true: "bg-brand-600 text-white",
-        false: "bg-brand-50 text-brand-700 hover:bg-brand-100",
+        true: "bg-brand-600 text-white lg:bg-brand-50 lg:font-semibold lg:text-ink-900",
+        false:
+          "bg-brand-50 text-brand-700 hover:bg-brand-100 lg:bg-transparent lg:text-ink-700",
       },
     },
   },
 );
 
+const stepNumberVariants = cva(
+  "hidden h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold lg:flex",
+  {
+    variants: {
+      active: {
+        true: "border-brand-600 bg-brand-600 text-white",
+        false: "border-brand-200 bg-white text-ink-500",
+      },
+    },
+  },
+);
+
+const numberChipVariants = cva(
+  "rounded-full border border-brand-200 bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700 lg:text-sm",
+);
+
+const formCardVariants = cva([
+  "md:rounded-2xl md:border md:border-brand-100 md:bg-white md:p-6 lg:p-8",
+]);
+
 const primaryButtonVariants = cva([
   "flex h-12 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl",
-  "bg-brand-600 font-medium text-white transition-colors hover:bg-brand-700",
-  "disabled:cursor-not-allowed disabled:opacity-60",
+  "bg-brand-600 px-6 font-medium text-white transition-colors hover:bg-brand-700",
+  "disabled:cursor-not-allowed disabled:opacity-60 md:flex-none md:min-w-48",
 ]);
 
 const backButtonVariants = cva([
@@ -62,19 +94,42 @@ export function FullRegistrationForm({
   token,
   form,
 }: FullRegistrationFormInput) {
-  const steps: { key: FullFormStep; label: string }[] = [
-    { key: "child", label: "1 Anak" },
-    { key: "parents", label: "2 Orang tua" },
-    { key: "submit", label: "3 Kirim" },
+  const steps: { key: FullFormStep; number: number; label: string }[] = [
+    { key: "child", number: 1, label: "Anak" },
+    { key: "parents", number: 2, label: "Orang tua" },
+    { key: "submit", number: 3, label: "Kirim" },
   ];
+  const toast = useToast();
   const controller = useFullRegistrationForm({ token, form });
+  const [focusRequest, setFocusRequest] = useState(0);
   const stepIndex = steps.findIndex((step) => step.key === controller.step);
   const stepsWithErrors = findStepsWithErrors(controller.fieldErrors);
 
+  useEffect(() => {
+    if (focusRequest === 0) return;
+    const firstInvalid = document.querySelector<HTMLElement>(
+      '[aria-invalid="true"]',
+    );
+    firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    firstInvalid?.focus({ preventScroll: true });
+  }, [focusRequest]);
+
+  function goToStep(step: FullFormStep) {
+    controller.setStep(step);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   async function handleSubmit() {
-    const errors = await controller.submit();
-    const firstErrorStep = errors ? findStepsWithErrors(errors)[0] : undefined;
-    if (firstErrorStep) controller.setStep(firstErrorStep);
+    const result = await controller.submit();
+    if (!result || result.ok) return;
+
+    const firstErrorStep = findStepsWithErrors(result.fieldErrors)[0];
+    if (!firstErrorStep) {
+      toast.error(result.error);
+      return;
+    }
+    controller.setStep(firstErrorStep);
+    setFocusRequest((count) => count + 1);
   }
 
   if (controller.receipt) {
@@ -95,81 +150,92 @@ export function FullRegistrationForm({
   }
 
   return (
-    <div className="mx-auto max-w-xl">
-      <header className="flex items-center gap-3">
-        <Image src="/logo.png" alt="" width={28} height={28} />
-        <h1 className="flex-1 font-display text-xl font-semibold text-ink-900">
-          Form Lengkap
-        </h1>
-        <span className="rounded-full border border-brand-200 bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700">
-          {controller.registrationNumber ?? "-"}
-        </span>
-      </header>
+    <div className={layoutVariants()}>
+      <aside className="lg:sticky lg:top-10">
+        <header className="flex flex-wrap items-center gap-3 lg:flex-col lg:items-start">
+          <span className="flex flex-1 items-center gap-3">
+            <Image src="/logo.png" alt="" width={28} height={28} />
+            <h1 className="font-display text-xl font-semibold text-ink-900 lg:text-2xl">
+              Form Lengkap
+            </h1>
+          </span>
+          <span className={numberChipVariants()}>
+            No. {controller.registrationNumber ?? "-"}
+          </span>
+        </header>
 
-      <nav className="mt-4 mb-6 flex gap-2">
-        {steps.map((step) => (
-          <button
-            key={step.key}
-            type="button"
-            onClick={() => controller.setStep(step.key)}
-            aria-current={controller.step === step.key}
-            className={stepTabVariants({
-              active: controller.step === step.key,
-            })}
-          >
-            {step.label}
-          </button>
-        ))}
-      </nav>
+        <nav className="mt-4 mb-6 flex gap-2 lg:mt-6 lg:mb-0 lg:flex-col lg:gap-1.5">
+          {steps.map((step) => {
+            const isActive = controller.step === step.key;
+            return (
+              <button
+                key={step.key}
+                type="button"
+                onClick={() => goToStep(step.key)}
+                aria-current={isActive}
+                className={stepTabVariants({ active: isActive })}
+              >
+                <span className={stepNumberVariants({ active: isActive })}>
+                  {step.number}
+                </span>
+                <span>
+                  <span className="lg:hidden">{step.number} </span>
+                  {step.label}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
 
-      {controller.step === "child" && <ChildStep form={controller} />}
-      {controller.step === "parents" && <ParentsStep form={controller} />}
-      {controller.step === "submit" && (
-        <SubmitStep form={controller} stepsWithErrors={stepsWithErrors} />
-      )}
-
-      {controller.submitError && (
-        <p role="alert" className="mt-6 text-center text-sm text-red-600">
-          {controller.submitError}
-        </p>
-      )}
-
-      <div className="mt-6 flex gap-3">
-        {stepIndex > 0 && (
-          <button
-            type="button"
-            onClick={() => controller.setStep(steps[stepIndex - 1].key)}
-            aria-label="Kembali"
-            className={backButtonVariants()}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+      <div className={formCardVariants()}>
+        {controller.step === "child" && <ChildStep form={controller} />}
+        {controller.step === "parents" && <ParentsStep form={controller} />}
+        {controller.step === "submit" && (
+          <SubmitStep
+            form={controller}
+            stepsWithErrors={stepsWithErrors}
+            onEditStep={goToStep}
+          />
         )}
 
-        {controller.step === "submit" ? (
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={controller.isSubmitting}
-            className={primaryButtonVariants()}
-          >
-            {controller.isSubmitting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-            Kirim
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => controller.setStep(steps[stepIndex + 1].key)}
-            className={primaryButtonVariants()}
-          >
-            Lanjut
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        )}
+        <div className="mt-8 flex gap-3 md:justify-end">
+          {stepIndex > 0 && (
+            <button
+              type="button"
+              onClick={() => goToStep(steps[stepIndex - 1].key)}
+              aria-label="Kembali"
+              className={backButtonVariants()}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
+
+          {controller.step === "submit" ? (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={controller.isSubmitting}
+              className={primaryButtonVariants()}
+            >
+              {controller.isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              Kirim
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => goToStep(steps[stepIndex + 1].key)}
+              className={primaryButtonVariants()}
+            >
+              Lanjut
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -209,7 +275,6 @@ function findStepsWithErrors(errors: Record<string, string>): FullFormStep[] {
     .map(([key]) => key);
   const contactKeys = ["parent_email", "student.phone", "student.home_phone"];
 
-  const steps: FullFormStep[] = [];
   const hasChildError = keys.some(
     (key) =>
       (key.startsWith("student.") || key.startsWith("details.")) &&
@@ -223,6 +288,8 @@ function findStepsWithErrors(errors: Record<string, string>): FullFormStep[] {
   const hasSubmitError = keys.some(
     (key) => contactKeys.includes(key) || key.startsWith("achievements."),
   );
+
+  const steps: FullFormStep[] = [];
   if (hasChildError) steps.push("child");
   if (hasParentError) steps.push("parents");
   if (hasSubmitError) steps.push("submit");

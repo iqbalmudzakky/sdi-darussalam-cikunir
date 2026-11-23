@@ -12,7 +12,7 @@ import {
 } from "@/components/admin/registrations/RegistrationListItems";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 import { useRegistrationList } from "@/hooks/useRegistrations";
 import { cn } from "@/lib/utils";
 

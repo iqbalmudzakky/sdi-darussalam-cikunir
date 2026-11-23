@@ -14,8 +14,12 @@ import {
   SearchX,
 } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/form/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/overlay/dialog";
 import { useToast } from "@/hooks/useToast";
 import {
   getRegistration,

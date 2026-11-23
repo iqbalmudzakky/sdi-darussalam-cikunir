@@ -13,6 +13,7 @@ import type {
   ShortRegistrationReceipt,
 } from "@/types/registration/Registration";
 import { ChoiceField, DateField, SelectField, TextField } from "./fields";
+import { PhoneField } from "./PhoneField";
 
 const sectionHeadingVariants = cva([
   "border-b border-brand-200 pb-2",
@@ -173,13 +174,9 @@ export function ShortRegistrationForm({
         error={fieldErrors.contact_name}
       />
 
-      <TextField
+      <PhoneField
         id="short-contact-phone"
         label="No. WhatsApp"
-        placeholder="08xxxxxxxxxx"
-        type="tel"
-        inputMode="tel"
-        autoComplete="tel"
         value={values.contact_phone}
         onChange={(value) => setField("contact_phone", value)}
         error={fieldErrors.contact_phone}

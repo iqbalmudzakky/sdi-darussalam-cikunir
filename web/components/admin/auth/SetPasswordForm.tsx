@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Clock, KeyRound, Send, UserPlus, Users } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/form/button";
 import { acceptInvite, resetPassword } from "@/lib/api/account/auth";
 import {
   AuthCard,

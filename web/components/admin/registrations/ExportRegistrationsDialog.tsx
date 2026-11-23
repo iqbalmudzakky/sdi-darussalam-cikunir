@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { cva } from "class-variance-authority";
 import { Check, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/overlay/dialog";
 import { buildRegistrationsExportUrl } from "@/lib/api/registration/registrations";
 import { REGISTRATION_STATUS_OPTIONS } from "@/lib/registrationOptions";
 import type { RegistrationStatus } from "@/types/registration/Registration";

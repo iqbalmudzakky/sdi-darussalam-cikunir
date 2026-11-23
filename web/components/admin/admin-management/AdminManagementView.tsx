@@ -5,7 +5,7 @@ import { Loader2, ShieldCheck, UserPlus } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
 import { ReadOnlyChip } from "@/components/admin/shared/ReadOnlyChip";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 import { AdminEditCard } from "./AdminEditCard";
 import { InviteAdminDialog } from "./InviteAdminDialog";
 import {

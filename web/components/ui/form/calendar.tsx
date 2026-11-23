@@ -12,7 +12,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
+} from "@/components/ui/form/select";
 
 function CalendarChevron({
   orientation,

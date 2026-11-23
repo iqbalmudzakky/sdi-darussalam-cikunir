@@ -1,4 +1,4 @@
-import { useToastManager } from "@/components/ui/toast";
+import { useToastManager } from "@/components/ui/overlay/toast";
 
 export function useToast() {
   const manager = useToastManager();

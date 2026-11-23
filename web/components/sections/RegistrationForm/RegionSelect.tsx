@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SelectField } from "./fields";
+import { SearchSelectField } from "./fields";
 import { listRegions } from "@/lib/api/registration/regions";
 import type { Region, RegionLevel } from "@/types/registration/Region";
 
@@ -27,7 +27,6 @@ export function RegionSelect({
   parentCode,
   value,
   onChange,
-  onBlur,
   error,
 }: RegionSelectProps) {
   const [regions, setRegions] = useState<Region[]>([]);
@@ -78,14 +77,14 @@ export function RegionSelect({
 
   return (
     <div className="min-w-0">
-      <SelectField
+      <SearchSelectField
         id={id}
         label={label}
         value={value}
         onChange={handleChange}
-        onBlur={onBlur}
         error={error}
         options={options}
+        disabled={isDisabled}
       />
 
       {isLoading && (

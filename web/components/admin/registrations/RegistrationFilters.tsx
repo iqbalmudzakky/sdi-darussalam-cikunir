@@ -1,13 +1,13 @@
 import { cva } from "class-variance-authority";
 import { Loader2, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/form/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/form/select";
 import {
   REGISTRATION_JENIS_OPTIONS,
   REGISTRATION_PROGRAM_OPTIONS,

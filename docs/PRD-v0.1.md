@@ -554,9 +554,11 @@ modules/<domain>/
 ### 6.4 Frontend
 
 - Tailwind + `cva` untuk varian kelas; `cn()` untuk penggabungan
-- Komponen dialog dari `components/ui/dialog` (Base UI)
+- Komponen dialog dari `components/ui/overlay/dialog` (Base UI)
 - `lib/api/` dan `types/` dikelompokkan per subfolder: `registration/`, `payment/`, `account/`,
   `content/`. Berkas baru masuk ke kelompok yang cocok, bukan ke root
+- `components/ui/` dikelompokkan: `form/` (button, input, select, combobox, search-select, dll.) dan
+  `overlay/` (dialog, popover, toast)
 - `components/admin/` tidak berisi berkas di root-nya: komponen fitur di folder fiturnya
   (`payment/`, `statistics/`, `registrations/`, …), kerangka dashboard di `layout/`, dan
   komponen yang dipakai banyak halaman di `shared/`

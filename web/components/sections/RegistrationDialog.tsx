@@ -14,7 +14,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/components/ui/overlay/dialog";
 import { RegistrationFlowSteps } from "@/components/sections/RegistrationForm/RegistrationFlowSteps";
 import { ShortRegistrationForm } from "@/components/sections/RegistrationForm/ShortRegistrationForm";
 import { useToast } from "@/hooks/useToast";

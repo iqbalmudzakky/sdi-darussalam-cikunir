@@ -21,10 +21,10 @@ import type {
   FullFormController,
   FullFormStep,
 } from "@/types/registration/Registration";
-import { BoundTextField } from "./BoundFields";
+import { BoundPhoneField, BoundTextField } from "./BoundFields";
 
 const addButtonVariants = cva(
-  "flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white py-3 text-sm font-medium text-brand-700 hover:bg-brand-50",
+  "md:col-span-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white py-3 text-sm font-medium text-brand-700 hover:bg-brand-50",
 );
 
 const checkRowVariants = cva(
@@ -34,9 +34,14 @@ const checkRowVariants = cva(
 type SubmitStepProps = {
   form: FullFormController;
   stepsWithErrors: FullFormStep[];
+  onEditStep: (step: FullFormStep) => void;
 };
 
-export function SubmitStep({ form, stepsWithErrors }: SubmitStepProps) {
+export function SubmitStep({
+  form,
+  stepsWithErrors,
+  onEditStep,
+}: SubmitStepProps) {
   const checkRows = [
     { step: "child", label: "Data anak" },
     { step: "parents", label: "Data orang tua" },
@@ -55,13 +60,11 @@ export function SubmitStep({ form, stepsWithErrors }: SubmitStepProps) {
           onChange={form.setParentEmail}
           error={form.fieldErrors.parent_email}
         />
-        <BoundTextField
+        <BoundPhoneField
           form={form}
           section="student"
           field="phone"
           label="No. HP"
-          placeholder="08xxxxxxxxxx"
-          inputMode="tel"
         />
         <BoundTextField
           form={form}
@@ -98,7 +101,7 @@ export function SubmitStep({ form, stepsWithErrors }: SubmitStepProps) {
             <button
               key={row.step}
               type="button"
-              onClick={() => form.setStep(row.step)}
+              onClick={() => onEditStep(row.step)}
               className={checkRowVariants()}
             >
               {hasError ? (
@@ -128,8 +131,8 @@ function AchievementCard({ form, index, achievement }: AchievementCardProps) {
   const errorKey = `achievements.${index}`;
 
   return (
-    <div className="space-y-4 rounded-xl border border-brand-100 bg-white p-4">
-      <div className="flex items-center justify-between">
+    <div className="grid gap-4 rounded-xl border border-brand-100 bg-white p-4 md:col-span-2 md:grid-cols-2">
+      <div className="flex items-center justify-between md:col-span-2">
         <p className="text-sm font-semibold text-ink-900">
           Prestasi {index + 1}
         </p>
@@ -165,7 +168,7 @@ function AchievementCard({ form, index, achievement }: AchievementCardProps) {
         onChange={(value) => form.updateAchievement(index, "name", value)}
         error={form.fieldErrors[`${errorKey}.name`]}
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:contents">
         <TextField
           id={`achievement-${index}-year`}
           label="Tahun"

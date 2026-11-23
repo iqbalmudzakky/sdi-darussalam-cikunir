@@ -11,13 +11,14 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
+} from "@/components/ui/form/select";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+} from "@/components/ui/overlay/popover";
+import { Calendar } from "@/components/ui/form/calendar";
+import { SearchSelect } from "@/components/ui/form/search-select";
 
 const fieldLabelVariants = cva(["mb-2 block text-sm font-medium text-ink-700"]);
 
@@ -218,6 +219,7 @@ export function ChoiceField({
       <div
         id={id}
         role="radiogroup"
+        aria-invalid={Boolean(error)}
         aria-label={label}
         className="grid grid-cols-2 gap-2"
       >
@@ -236,6 +238,40 @@ export function ChoiceField({
           </button>
         ))}
       </div>
+    </FieldWrapper>
+  );
+}
+
+type SearchSelectFieldProps = {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  options: { value: string; label: string }[];
+  disabled?: boolean;
+};
+
+export function SearchSelectField({
+  id,
+  label,
+  value,
+  onChange,
+  error,
+  options,
+  disabled,
+}: SearchSelectFieldProps) {
+  return (
+    <FieldWrapper id={id} label={label} error={error}>
+      <SearchSelect
+        id={id}
+        value={value}
+        options={options}
+        onValueChange={onChange}
+        disabled={disabled}
+        invalid={Boolean(error)}
+        className={fieldInputVariants({ invalid: Boolean(error) })}
+      />
     </FieldWrapper>
   );
 }
@@ -373,7 +409,7 @@ export function FormSection({ title, children }: FormSectionProps) {
   return (
     <section>
       <h3 className={formSectionHeadingVariants()}>{title}</h3>
-      <div className="space-y-4">{children}</div>
+      <div className="grid gap-4 md:grid-cols-2">{children}</div>
     </section>
   );
 }

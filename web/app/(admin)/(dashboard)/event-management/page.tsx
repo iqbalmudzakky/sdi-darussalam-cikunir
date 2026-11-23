@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, Plus, PartyPopper } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 import { EventEditCard } from "@/components/admin/event/EventEditCard";
 import { EventFormDialog } from "@/components/admin/event/EventFormDialog";
 import {

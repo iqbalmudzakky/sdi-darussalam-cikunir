@@ -8,7 +8,7 @@ import {
   ComboboxTrigger,
   ComboboxContent,
   ComboboxItem,
-} from "@/components/ui/combobox";
+} from "@/components/ui/form/combobox";
 import { EMOJI_OPTIONS } from "@/lib/emojiOptions";
 
 type EmojiOption = {

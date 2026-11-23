@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, Upload } from "lucide-react";
 import { uploadPhoto } from "@/lib/api/content/storage";
 import { prepareImageForUpload } from "@/lib/image";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/form/button";
+import { Input } from "@/components/ui/form/input";
+import { Textarea } from "@/components/ui/form/textarea";
+import { Label } from "@/components/ui/form/label";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/overlay/dialog";
 import { EmojiPicker } from "@/components/admin/shared/EmojiPicker";
 import { useToast } from "@/hooks/useToast";
 import type { ActivityItem } from "@/types/content/Activity";

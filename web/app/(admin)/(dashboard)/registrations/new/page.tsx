@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { RegistrationForm } from "@/components/sections/RegistrationForm/RegistrationForm";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 
 export default function AdminNewRegistrationPage() {
   const router = useRouter();

@@ -9,6 +9,10 @@ export function normalizeWhatsappNumber(value: string): string {
     return `0${digitsOnly.slice(2)}`;
   }
 
+  if (value.trim().startsWith("+")) {
+    return `+${digitsOnly}`;
+  }
+
   if (digitsOnly.startsWith("8")) {
     return `0${digitsOnly}`;
   }
@@ -32,8 +36,8 @@ export function phoneNumber(label: string) {
     .min(1, `${label} wajib diisi.`)
     .transform(normalizeWhatsappNumber)
     .refine(
-      (value) => /^0\d{9,13}$/.test(value),
-      `${label} tidak valid. Contoh: 081234567890.`,
+      (value) => /^0\d{9,13}$/.test(value) || /^\+[1-9]\d{7,14}$/.test(value),
+      `${label} tidak valid.`,
     );
 }
 

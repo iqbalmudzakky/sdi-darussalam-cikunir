@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Plus, Trophy } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 import { AchievementEditCard } from "@/components/admin/achievement/AchievementEditCard";
 import { AchievementFormDialog } from "@/components/admin/achievement/AchievementFormDialog";
 import {

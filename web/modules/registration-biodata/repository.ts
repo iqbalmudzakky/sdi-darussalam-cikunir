@@ -85,7 +85,7 @@ export async function replaceParentsWithin(
        occupation, education, income_range, phone
      )
      SELECT $1::uuid, parent.*
-     FROM jsonb_to_recordset($2::jsonb) AS parent(
+     FROM jsonb_to_recordset($2::text::jsonb) AS parent(
        parent_type text, name text, nik text, birth_year smallint,
        special_needs text, occupation text, education text,
        income_range text, phone text
@@ -135,7 +135,7 @@ export async function replaceAchievementsWithin(
        registration_id, category, level, name, year, organizer
      )
      SELECT $1::uuid, achievement.*
-     FROM jsonb_to_recordset($2::jsonb) AS achievement(
+     FROM jsonb_to_recordset($2::text::jsonb) AS achievement(
        category text, level text, name text, year smallint, organizer text
      )`,
     [registrationId, JSON.stringify(achievements)],
@@ -154,7 +154,7 @@ export async function insertLegacyParentsWithin(
        position, income, citizenship, phone
      )
      SELECT $1::uuid, parent.*
-     FROM jsonb_to_recordset($2::jsonb) AS parent(
+     FROM jsonb_to_recordset($2::text::jsonb) AS parent(
        parent_type text, relationship_status text, name text, nik text,
        place_of_birth text, date_of_birth date, religion text, education text,
        occupation text, position text, income integer, citizenship text,

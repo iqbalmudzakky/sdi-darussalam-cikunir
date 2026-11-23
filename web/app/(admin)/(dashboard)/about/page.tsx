@@ -14,10 +14,10 @@ import {
 import { uploadPhoto } from "@/lib/api/content/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/form/button";
+import { Input } from "@/components/ui/form/input";
+import { Textarea } from "@/components/ui/form/textarea";
+import { Label } from "@/components/ui/form/label";
 import {
   getSchoolProfile,
   updateSchoolProfile,

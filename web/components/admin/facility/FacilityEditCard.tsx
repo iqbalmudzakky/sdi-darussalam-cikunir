@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/overlay/dialog";
 import { FacilityFormDialog } from "./FacilityFormDialog";
 import { useToast } from "@/hooks/useToast";
 import type { FacilityItem } from "@/types/content/Facility";

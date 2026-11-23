@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { Check, Loader2, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/form/button";
+import { Input } from "@/components/ui/form/input";
+import { Label } from "@/components/ui/form/label";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select";
+} from "@/components/ui/form/select";
 import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
 import { useToast } from "@/hooks/useToast";
 import {

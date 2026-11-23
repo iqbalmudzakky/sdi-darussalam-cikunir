@@ -19,6 +19,7 @@ import {
 import type { Registration } from "@/types/registration/Registration";
 
 export { REGISTRATION_STATUS_LABEL };
+export { PHONE_COUNTRIES } from "@/modules/shared/constant/phoneCountry";
 
 export const REGISTRATION_TYPE_OPTIONS = [
   { value: "siswa_baru", label: "Siswa Baru" },

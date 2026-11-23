@@ -10,15 +10,19 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/form/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/overlay/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/form/select";
 import { useToast } from "@/hooks/useToast";
 import { ADMIN_ROLE_DOT_CLASS, ADMIN_ROLE_LABEL } from "@/lib/adminRoles";
 import { formatDate } from "@/lib/date";

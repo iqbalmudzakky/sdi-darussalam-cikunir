@@ -16,6 +16,7 @@ import type {
   FullFormSection,
   FullFormState,
   FullFormStep,
+  FullFormSubmitResult,
   FullRegistrationFormInput,
   ListRegistrationsParams,
   Registration,
@@ -247,7 +248,6 @@ export function useFullRegistrationForm({
   const [step, setStep] = useState<FullFormStep>("child");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
   const [receipt, setReceipt] = useState<FullFormReceipt | null>(null);
 
   function setSectionField(
@@ -303,25 +303,27 @@ export function useFullRegistrationForm({
     }));
   }
 
-  async function submit(): Promise<Record<string, string> | null> {
+  async function submit(): Promise<FullFormSubmitResult | null> {
     if (isSubmitting) return null;
     setIsSubmitting(true);
-    setSubmitError("");
 
     try {
       const input = toFullFormInput(values);
       const result = await submitFullForm(token, input);
       if (result.ok) {
         setReceipt(result);
-        return null;
+      } else {
+        setFieldErrors(result.fieldErrors);
       }
-      setFieldErrors(result.fieldErrors);
-      setSubmitError(result.error);
-      return result.fieldErrors;
+      return result;
     } catch (error) {
       console.error("Failed to submit full form:", error);
-      setSubmitError("Gagal mengirim. Coba lagi.");
-      return null;
+      const failure: FullFormSubmitResult = {
+        ok: false,
+        error: "Gagal mengirim. Coba lagi.",
+        fieldErrors: {},
+      };
+      return failure;
     } finally {
       setIsSubmitting(false);
     }
@@ -334,7 +336,6 @@ export function useFullRegistrationForm({
     step,
     fieldErrors,
     isSubmitting,
-    submitError,
     receipt,
     setStep,
     setSectionField,

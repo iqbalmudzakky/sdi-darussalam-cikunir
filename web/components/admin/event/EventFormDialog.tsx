@@ -5,17 +5,17 @@ import { Check, ImageIcon, Loader2, Upload, CalendarDays } from "lucide-react";
 import { uploadPhoto } from "@/lib/api/content/storage";
 import { prepareImageForUpload } from "@/lib/image";
 import { parseDateOnly, toDateOnly, formatDate } from "@/lib/date";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/form/button";
+import { Input } from "@/components/ui/form/input";
+import { Textarea } from "@/components/ui/form/textarea";
+import { Label } from "@/components/ui/form/label";
+import { Switch } from "@/components/ui/form/switch";
+import { Calendar } from "@/components/ui/form/calendar";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@/components/ui/popover";
+} from "@/components/ui/overlay/popover";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/overlay/dialog";
 import { useToast } from "@/hooks/useToast";
 import type { EventItem } from "@/types/content/Event";
 

@@ -156,7 +156,7 @@ function ChildAddress({ form }: StepProps) {
         label="Alamat lengkap"
         placeholder="Jalan dan nomor rumah"
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:contents">
         <BoundTextField
           form={form}
           section="student"
@@ -214,7 +214,7 @@ function ChildAddress({ form }: StepProps) {
         inputMode="numeric"
         maxLength={5}
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:contents">
         <BoundTextField
           form={form}
           section="student"
@@ -279,7 +279,7 @@ function ChildSchool({ form }: StepProps) {
 function ChildPeriodic({ form }: StepProps) {
   return (
     <FormSection title="Data periodik">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:contents">
         <BoundTextField
           form={form}
           section="details"

@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/form/button";
+import { Input } from "@/components/ui/form/input";
+import { Label } from "@/components/ui/form/label";
 import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
 import { DateField } from "@/components/sections/RegistrationForm/fields";
 import { useToast } from "@/hooks/useToast";

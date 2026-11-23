@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from "@/components/ui/overlay/dialog";
 import { cn } from "@/lib/utils";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import { formatDateTime } from "@/lib/date";

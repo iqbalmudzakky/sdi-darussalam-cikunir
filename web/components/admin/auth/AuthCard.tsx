@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { cva } from "class-variance-authority";
 import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/form/input";
+import { Label } from "@/components/ui/form/label";
 import type { LucideIcon } from "lucide-react";
 
 type AuthCardProps = {

@@ -1,9 +1,11 @@
 import type { HTMLAttributes } from "react";
 import {
   ChoiceField,
+  SearchSelectField,
   SelectField,
   TextField,
 } from "@/components/sections/RegistrationForm/fields";
+import { PhoneField } from "@/components/sections/RegistrationForm/PhoneField";
 import type {
   FullFormController,
   FullFormSection,
@@ -24,6 +26,7 @@ type BoundTextFieldProps = BoundFieldProps & {
 
 type BoundOptionFieldProps = BoundFieldProps & {
   options: { value: string; label: string }[];
+  searchable?: boolean;
 };
 
 export function BoundTextField({
@@ -55,12 +58,32 @@ export function BoundSelectField({
   field,
   label,
   options,
+  searchable,
 }: BoundOptionFieldProps) {
+  const Field = searchable ? SearchSelectField : SelectField;
+
   return (
-    <SelectField
+    <Field
       id={`${section}-${field}`}
       label={label}
       options={options}
+      value={readValue(form, section, field)}
+      onChange={(value) => form.setSectionField(section, field, value)}
+      error={form.fieldErrors[`${section}.${field}`]}
+    />
+  );
+}
+
+export function BoundPhoneField({
+  form,
+  section,
+  field,
+  label,
+}: BoundFieldProps) {
+  return (
+    <PhoneField
+      id={`${section}-${field}`}
+      label={label}
       value={readValue(form, section, field)}
       onChange={(value) => form.setSectionField(section, field, value)}
       error={form.fieldErrors[`${section}.${field}`]}

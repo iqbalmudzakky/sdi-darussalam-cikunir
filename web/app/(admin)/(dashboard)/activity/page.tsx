@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Loader2, Plus, CalendarDays } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/form/button";
 import { ActivityEditCard } from "@/components/admin/activity/ActivityEditCard";
 import { ActivityFormDialog } from "@/components/admin/activity/ActivityFormDialog";
 import {

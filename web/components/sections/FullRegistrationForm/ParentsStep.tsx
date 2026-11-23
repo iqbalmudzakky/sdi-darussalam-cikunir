@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import type { FullFormController } from "@/types/registration/Registration";
 import {
   BoundChoiceField,
+  BoundPhoneField,
   BoundSelectField,
   BoundTextField,
 } from "./BoundFields";
@@ -33,12 +34,19 @@ type ParentsStepProps = {
 };
 
 export function ParentsStep({ form }: ParentsStepProps) {
-  const [openPanel, setOpenPanel] = useState<ParentPanelKey | null>("father");
   const panels = [
     { key: "father", title: "Ayah", optional: false },
     { key: "mother", title: "Ibu", optional: false },
     { key: "guardian", title: "Wali", optional: true },
   ] as const;
+  const [openPanel, setOpenPanel] = useState<ParentPanelKey | null>(() => {
+    const panelWithError = panels.find((panel) =>
+      Object.entries(form.fieldErrors).some(
+        ([key, message]) => message && key.startsWith(`${panel.key}.`),
+      ),
+    );
+    return panelWithError?.key ?? "father";
+  });
 
   return (
     <div className="space-y-3">
@@ -73,7 +81,7 @@ export function ParentsStep({ form }: ParentsStepProps) {
             </button>
 
             {isOpen && (
-              <div className="space-y-4 px-4 pb-4">
+              <div className="grid gap-4 px-4 pb-4 md:grid-cols-2">
                 {panel.key === "guardian" ? (
                   <GuardianFields form={form} />
                 ) : (
@@ -126,6 +134,7 @@ function ParentFields({ form, section }: ParentFieldsProps) {
         form={form}
         section={section}
         field="occupation"
+        searchable
         label="Pekerjaan"
         options={OCCUPATION_OPTIONS}
       />
@@ -143,13 +152,11 @@ function ParentFields({ form, section }: ParentFieldsProps) {
         label="Penghasilan per bulan"
         options={INCOME_RANGE_OPTIONS}
       />
-      <BoundTextField
+      <BoundPhoneField
         form={form}
         section={section}
         field="phone"
         label="No. WhatsApp (opsional)"
-        placeholder="08xxxxxxxxxx"
-        inputMode="tel"
       />
     </>
   );
@@ -177,6 +184,7 @@ function GuardianFields({ form }: { form: FullFormController }) {
         form={form}
         section="guardian"
         field="occupation"
+        searchable
         label="Pekerjaan"
         options={OCCUPATION_OPTIONS}
       />
