@@ -21,7 +21,10 @@ export type SaveScheduleInput = {
 };
 
 export type SaveScheduleFailureReason =
-  "invalid_interviewer" | "forbidden_interviewer";
+  | "invalid_interviewer"
+  | "forbidden_interviewer"
+  | "past_schedule"
+  | "invalid_time";
 
 export type InterviewerResponse = {
   id: string;
@@ -43,6 +46,7 @@ export type ScheduleResponse = {
 
 export type ScheduleOptionsResponse = {
   interviewers: InterviewerResponse[];
+  time_options: { value: string; label: string }[];
   can_assign_others: boolean;
   self: InterviewerResponse | null;
 };

@@ -106,7 +106,9 @@ export type UpdateRegistrationFailureReason =
   | "invalid_year"
   | "manual_duplicate"
   | "invalid_interviewer"
-  | "forbidden_interviewer";
+  | "forbidden_interviewer"
+  | "past_schedule"
+  | "invalid_time";
 
 export type UpdateRegistrationResult =
   | { ok: true; registration: RegistrationDetailResponse }

@@ -294,6 +294,7 @@ type DateFieldProps = {
   defaultMonth?: Date;
   startMonth?: Date;
   endMonth?: Date;
+  minDate?: Date;
 };
 
 export function DateField({
@@ -307,8 +308,13 @@ export function DateField({
   defaultMonth,
   startMonth,
   endMonth,
+  minDate,
 }: DateFieldProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const disabledDays = [
+    ...(minDate ? [{ before: minDate }] : []),
+    ...(endMonth ? [{ after: endMonth }] : []),
+  ];
 
   const selected = parseDateOnly(value);
 
@@ -350,7 +356,7 @@ export function DateField({
             defaultMonth={selected ?? defaultMonth}
             startMonth={startMonth}
             endMonth={endMonth}
-            disabled={endMonth ? { after: endMonth } : undefined}
+            disabled={disabledDays}
             onSelect={(date) => {
               onChange(date ? toDateOnly(date) : "");
 

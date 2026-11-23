@@ -67,6 +67,12 @@ export const MINIMUM_ENTRY_AGE_YEARS = 6;
 export const SHORT_FORM_MAX_PER_IP_PER_HOUR = 10;
 export const FORM_LINK_TTL_DAYS = 14;
 
+export const TEST_TIME_SLOT = {
+  firstMinute: 7 * 60,
+  lastMinute: 16 * 60,
+  stepMinutes: 15,
+} as const;
+
 export const REGISTRATION_FLOW_STEPS = [
   { label: "Form singkat", showsFee: false },
   { label: "Chat panitia", showsFee: false },
@@ -106,6 +112,11 @@ export const REGISTRATION_FAILURE = {
     status: 409,
     message: "NIK anak sudah terdaftar, silakan hubungi panitia",
   },
+  past_schedule: {
+    status: 400,
+    message: "Waktu tes sudah lewat. Pilih tanggal dan jam berikutnya.",
+  },
+  invalid_time: { status: 400, message: "Pilih jam tes dari daftar." },
   invalid_interviewer: { status: 400, message: "Pewawancara tidak ditemukan." },
   forbidden_interviewer: {
     status: 403,

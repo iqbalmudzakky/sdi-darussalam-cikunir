@@ -5,7 +5,6 @@ import { Loader2, UserRound } from "lucide-react";
 import {
   DateField,
   SearchSelectField,
-  TextField,
 } from "@/components/sections/RegistrationForm/fields";
 import { Button } from "@/components/ui/form/button";
 import {
@@ -90,13 +89,14 @@ function ScheduleForm({
           onChange={setTestDate}
           startMonth={today}
           defaultMonth={today}
+          minDate={today}
           required
         />
-        <TextField
+        <SearchSelectField
           id="schedule-time"
           label="Jam"
-          type="time"
           value={testTime}
+          options={options.time_options}
           onChange={setTestTime}
           required
         />

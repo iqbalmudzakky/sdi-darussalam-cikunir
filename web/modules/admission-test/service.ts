@@ -4,6 +4,7 @@ import * as authService from "@/modules/auth/service";
 import { withDbLogging } from "@/modules/db/errors";
 import { withTransaction } from "@/modules/db/postgres";
 import * as registrationService from "@/modules/registration/service";
+import { TEST_TIME_SLOT } from "@/modules/shared/constant/registration";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
 import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
 import * as repository from "./repository";
@@ -33,6 +34,10 @@ export async function getScheduleView(
     schedule: row ? toSchedule(row, interviewers) : null,
     options: {
       interviewers,
+      time_options: listTestTimes().map((time) => ({
+        value: time,
+        label: time.replace(":", "."),
+      })),
       can_assign_others: authService.hasPermission(
         actor.role,
         "assign_interviewers",
@@ -53,6 +58,17 @@ export async function saveSchedule(
     ),
     authService.listAccounts(),
   ]);
+
+  const isSameSlot =
+    existing?.test_date === request.test_date &&
+    existing?.test_time === request.test_time;
+  const startsAt = new Date(
+    `${request.test_date}T${request.test_time}:00+07:00`,
+  );
+  if (!isSameSlot && startsAt.getTime() <= Date.now()) return "past_schedule";
+  if (!isSameSlot && !listTestTimes().includes(request.test_time)) {
+    return "invalid_time";
+  }
 
   const interviewerIds = toInterviewers(accounts).map((item) => item.id);
   const chosen = [request.child_interviewer_id, request.parent_interviewer_id];
@@ -166,6 +182,18 @@ export async function listReminders(): Promise<TestReminderGroupResponse[]> {
     return group;
   });
   return groups.filter((group) => group.reminders.length > 0);
+}
+
+function listTestTimes(): string[] {
+  const { firstMinute, lastMinute, stepMinutes } = TEST_TIME_SLOT;
+  const slotCount = (lastMinute - firstMinute) / stepMinutes + 1;
+  const times = Array.from({ length: slotCount }, (_, index) => {
+    const minutes = firstMinute + index * stepMinutes;
+    const hour = String(Math.floor(minutes / 60)).padStart(2, "0");
+    const minute = String(minutes % 60).padStart(2, "0");
+    return `${hour}:${minute}`;
+  });
+  return times;
 }
 
 function toInterviewers(accounts: AdminSummary[]): InterviewerResponse[] {
