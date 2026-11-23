@@ -49,7 +49,7 @@ const dataRowVariants = cva([
 ]);
 
 const chatButtonVariants = cva([
-  "flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-green-600",
+  "flex h-11 items-center justify-center gap-2 rounded-lg bg-green-600 sm:flex-1",
   "text-sm font-semibold text-white transition-colors hover:bg-green-700",
 ]);
 
@@ -369,7 +369,7 @@ function SummaryCard({
             type="button"
             variant="outline"
             onClick={onOpenFullForm}
-            className="h-11 flex-1"
+            className="h-11 sm:flex-1"
           >
             <FileText className="h-4 w-4" />
             Lihat form lengkap
