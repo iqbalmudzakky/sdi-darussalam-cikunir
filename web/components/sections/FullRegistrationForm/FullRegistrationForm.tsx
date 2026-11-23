@@ -24,7 +24,7 @@ import { ParentsStep } from "./ParentsStep";
 import { SubmitStep } from "./SubmitStep";
 
 const layoutVariants = cva([
-  "mx-auto max-w-xl md:max-w-3xl",
+  "mx-auto w-full max-w-xl md:max-w-3xl",
   "lg:grid lg:max-w-6xl lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:items-start lg:gap-10",
 ]);
 
@@ -77,7 +77,7 @@ const backButtonVariants = cva([
 ]);
 
 const resultCardVariants = cva([
-  "mx-auto flex w-full max-w-md flex-col items-center rounded-2xl border",
+  "m-auto flex w-full max-w-md flex-col items-center rounded-2xl border",
   "border-brand-100 bg-white p-6 text-center",
 ]);
 

@@ -105,7 +105,7 @@ export function SearchSelect({
                 className="h-full w-full min-w-0 bg-transparent text-sm text-gray-900 outline-none"
               />
             </div>
-            <ComboboxPrimitive.Empty className="px-3 py-5 text-center text-sm text-gray-400">
+            <ComboboxPrimitive.Empty className="px-3 py-5 text-center text-sm text-gray-400 empty:p-0">
               Tidak ditemukan
             </ComboboxPrimitive.Empty>
             <ComboboxPrimitive.List className={listVariants()}>

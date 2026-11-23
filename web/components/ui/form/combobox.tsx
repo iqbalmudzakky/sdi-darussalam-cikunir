@@ -81,7 +81,7 @@ const comboboxListVariants = cva([
 ]);
 
 const comboboxEmptyVariants = cva([
-  "px-3 py-6 text-center text-sm text-gray-400",
+  "px-3 py-6 text-center text-sm text-gray-400 empty:p-0",
 ]);
 
 function ComboboxContent({
