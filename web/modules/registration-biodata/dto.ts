@@ -153,7 +153,7 @@ const ManualParentFormSchema = ParentFormSchema.extend({
     z
       .string()
       .trim()
-      .regex(/^d{16}$/, "NIK harus 16 digit angka."),
+      .regex(/^\d{16}$/, "NIK harus 16 digit angka."),
   ),
   occupation: blankable(occupation),
   education: blankable(education),

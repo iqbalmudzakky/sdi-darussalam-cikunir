@@ -268,7 +268,7 @@ function optionalDigits(label: string, length: number) {
     .string()
     .trim()
     .regex(
-      new RegExp(`^\d{${length}}$`),
+      new RegExp(`^[0-9]{${length}}$`),
       `${label} harus ${length} digit angka.`,
     )
     .or(z.literal(""))
