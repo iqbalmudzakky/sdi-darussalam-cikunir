@@ -18,10 +18,21 @@ export async function listParentsByRegistrationIds(
 export async function getFormBiodata(
   registrationId: string,
 ): Promise<FormBiodata> {
-  const [parents, details, achievements] = await Promise.all([
+  const [parents, extras] = await Promise.all([
     withDbLogging("registrationBiodata.listFormParents", () =>
       repository.listFormParents(registrationId),
     ),
+    getDetailsAndAchievements(registrationId),
+  ]);
+
+  const biodata: FormBiodata = { parents, ...extras };
+  return biodata;
+}
+
+export async function getDetailsAndAchievements(
+  registrationId: string,
+): Promise<Pick<FormBiodata, "details" | "achievements">> {
+  const [details, achievements] = await Promise.all([
     withDbLogging("registrationBiodata.findFormDetails", () =>
       repository.findFormDetails(registrationId),
     ),
@@ -30,8 +41,8 @@ export async function getFormBiodata(
     ),
   ]);
 
-  const biodata: FormBiodata = { parents, details, achievements };
-  return biodata;
+  const extras = { details, achievements };
+  return extras;
 }
 
 export async function replaceWithin(

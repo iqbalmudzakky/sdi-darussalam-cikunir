@@ -1,10 +1,9 @@
 import { z } from "zod";
 import type { RegistrationPaymentSummary } from "@/modules/payment/entity";
 import { ACADEMIC_YEAR_PATTERN } from "@/modules/registration/dto";
+import type { ParentType } from "@/modules/registration-biodata/entity";
 import type {
-  Gender,
   ParentRelationshipStatus,
-  PhysicalDisability,
   PpdbRegistrationExportRow,
   PpdbRegistrationStatus,
   RegistrationProgram,
@@ -101,27 +100,54 @@ export type RegistrationDocumentResponse = {
   received: boolean;
 };
 
-export type RegistrationDetailResponse = RegistrationListItemResponse &
-  RegistrationPaymentSummary &
-  RegistrationParentColumns & {
-    ip_address: string | null;
-    parent_email: string | null;
-    student_nik: string | null;
-    gender: Gender;
-    place_of_birth: string | null;
-    date_of_birth: string;
-    birth_order: number | null;
-    sibling_count: number | null;
-    current_address: string | null;
-    physical_disability: PhysicalDisability | null;
-    previous_school: string;
-    nisn: string | null;
+export type RegistrationFormRowResponse = {
+  label: string;
+  value: string | null;
+};
 
-    entry_age_label: string | null;
-    documents: RegistrationDocumentResponse[];
-    can_cancel: boolean;
-    can_reactivate: boolean;
-  };
+export type RegistrationFormSectionResponse = {
+  key:
+    | "identity"
+    | "address"
+    | "previous_school"
+    | "periodic"
+    | "social_aid"
+    | "contact"
+    | "payment";
+  title: string;
+  rows: RegistrationFormRowResponse[];
+};
+
+export type RegistrationFormParentResponse = {
+  key: ParentType;
+  title: string;
+  rows: RegistrationFormRowResponse[] | null;
+};
+
+export type RegistrationFormAchievementResponse = {
+  name: string;
+  category: string;
+  level: string;
+  year: number;
+  organizer: string | null;
+};
+
+export type RegistrationFullFormResponse = {
+  child: RegistrationFormSectionResponse[];
+  parents: RegistrationFormParentResponse[];
+  contact: RegistrationFormSectionResponse[];
+  achievements: RegistrationFormAchievementResponse[];
+};
+
+export type RegistrationDetailResponse = RegistrationListItemResponse & {
+  date_of_birth: string;
+  previous_school: string;
+  entry_age_label: string | null;
+  documents: RegistrationDocumentResponse[];
+  can_cancel: boolean;
+  can_reactivate: boolean;
+  full_form: RegistrationFullFormResponse | null;
+};
 
 export type RegistrationListResponse = {
   items: RegistrationListItemResponse[];

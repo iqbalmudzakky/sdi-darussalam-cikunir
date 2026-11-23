@@ -22,11 +22,13 @@ import {
   RECEIVED_DOCUMENTS_BY_TYPE,
 } from "@/modules/shared/constant/registration";
 import { calculateEntryAge } from "@/modules/shared/entryAge";
+import { buildRegistrationFullForm } from "@/modules/shared/registrationFullForm";
 import type {
   ExportRegistrationsQuery,
   ListRegistrationsQuery,
   RegistrationDetailResponse,
   RegistrationExportItem,
+  RegistrationFullFormResponse,
   RegistrationParentColumns,
   RegistrationListItemResponse,
   RegistrationListResponse,
@@ -77,12 +79,22 @@ export async function getRegistrationDetail(
   if (!row) return null;
 
   const registrationIds = [id];
-  const [payments, parents] = await Promise.all([
+  const hasFullForm = row.full_form_completed_at !== null;
+  const [payments, parents, form, extras] = await Promise.all([
     paymentService.getSummariesByRegistrationIds(registrationIds),
     registrationBiodataService.listParentsByRegistrationIds(registrationIds),
+    hasFullForm ? registrationService.findFormById(id) : null,
+    hasFullForm
+      ? registrationBiodataService.getDetailsAndAchievements(id)
+      : null,
   ]);
-  const parentColumns = toParentColumns(id, parents);
-  const detail = toDetail(row, payments, parentColumns);
+
+  const payment = toPaymentSummary(id, payments);
+  const fullForm =
+    form && extras
+      ? buildRegistrationFullForm(row, form, parents, extras, payment)
+      : null;
+  const detail = toDetail(row, payments, fullForm);
   return detail;
 }
 
@@ -217,7 +229,7 @@ function toListItem(
 function toDetail(
   row: PpdbRegistrationFullRow,
   payments: RegistrationPaymentSummaries,
-  parentColumns: RegistrationParentColumns,
+  fullForm: RegistrationFullFormResponse | null,
 ): RegistrationDetailResponse {
   const entryAge = row.academic_year
     ? calculateEntryAge(row.date_of_birth, row.academic_year)
@@ -225,21 +237,8 @@ function toDetail(
 
   const detail: RegistrationDetailResponse = {
     ...toListItem(row, payments),
-    ...toPaymentSummary(row.id, payments),
-    ...parentColumns,
-    ip_address: row.ip_address,
-    parent_email: row.parent_email,
-    student_nik: row.student_nik,
-    gender: row.gender,
-    place_of_birth: row.place_of_birth,
     date_of_birth: row.date_of_birth,
-    birth_order: row.birth_order,
-    sibling_count: row.sibling_count,
-    current_address: row.current_address,
-    physical_disability: row.physical_disability,
     previous_school: row.previous_school,
-    nisn: row.nisn,
-
     entry_age_label: entryAge
       ? `${entryAge.years} th ${entryAge.months} bln`
       : null,
@@ -252,6 +251,7 @@ function toDetail(
     ),
     can_cancel: row.status !== "cancelled",
     can_reactivate: row.status === "cancelled",
+    full_form: fullForm,
   };
   return detail;
 }

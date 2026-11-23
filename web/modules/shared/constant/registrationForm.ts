@@ -1,3 +1,15 @@
+export const GENDER_LABEL = {
+  laki_laki: "Laki-laki",
+  perempuan: "Perempuan",
+} as const;
+
+export const PARENT_RELATIONSHIP_LABEL = {
+  kandung: "Kandung",
+  tiri: "Tiri",
+  angkat: "Angkat",
+  wali: "Wali",
+} as const;
+
 export const PARENT_OCCUPATION_LABEL = {
   not_working: "Tidak bekerja",
   fisherman: "Nelayan",

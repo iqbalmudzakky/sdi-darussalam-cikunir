@@ -10,9 +10,11 @@ import {
   ACHIEVEMENT_CATEGORY_LABEL,
   ACHIEVEMENT_LEVEL_LABEL,
   EDUCATION_LEVEL_LABEL,
+  GENDER_LABEL,
   INCOME_RANGE_LABEL,
   LIVING_ARRANGEMENT_LABEL,
   PARENT_OCCUPATION_LABEL,
+  PARENT_RELATIONSHIP_LABEL,
   SPECIAL_NEEDS_LABEL,
   TRANSPORTATION_LABEL,
 } from "@/modules/shared/constant/registrationForm";
@@ -39,10 +41,7 @@ export const REGISTRATION_JENIS_OPTIONS = REGISTRATION_TYPES.map((value) => ({
   label: REGISTRATION_TYPE_LABEL[value],
 }));
 
-export const GENDER_OPTIONS = [
-  { value: "laki_laki", label: "Laki-laki" },
-  { value: "perempuan", label: "Perempuan" },
-];
+export const GENDER_OPTIONS = toOptions(GENDER_LABEL);
 
 export const RELIGION_OPTIONS = [
   { value: "islam", label: "Islam" },
@@ -69,12 +68,7 @@ export const PHYSICAL_DISABILITY_OPTIONS = [
   { value: "ada", label: "Ada" },
 ];
 
-export const PARENT_RELATIONSHIP_OPTIONS = [
-  { value: "kandung", label: "Kandung" },
-  { value: "tiri", label: "Tiri" },
-  { value: "angkat", label: "Angkat" },
-  { value: "wali", label: "Wali" },
-];
+export const PARENT_RELATIONSHIP_OPTIONS = toOptions(PARENT_RELATIONSHIP_LABEL);
 
 export function getOptionLabel(
   options: { value: string; label: string }[],

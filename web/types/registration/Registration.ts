@@ -1,6 +1,10 @@
 import type {
   RegistrationDetailResponse,
   RegistrationDocumentResponse,
+  RegistrationFormAchievementResponse,
+  RegistrationFormParentResponse,
+  RegistrationFormRowResponse,
+  RegistrationFormSectionResponse,
   RegistrationListItemResponse,
   RegistrationListResponse,
   UpdateRegistrationRequest,
@@ -21,6 +25,18 @@ export type Registration = RegistrationListItemResponse;
 export type RegistrationDetail = RegistrationDetailResponse;
 
 export type RegistrationDocument = RegistrationDocumentResponse;
+
+export type RegistrationFullForm = NonNullable<RegistrationDetail["full_form"]>;
+
+export type RegistrationFormSection = RegistrationFormSectionResponse;
+
+export type RegistrationFormRow = RegistrationFormRowResponse;
+
+export type RegistrationFormParent = RegistrationFormParentResponse;
+
+export type RegistrationFormAchievement = RegistrationFormAchievementResponse;
+
+export type RegistrationFullFormTab = "child" | "parents" | "contact";
 
 export type RegistrationListPage = RegistrationListResponse;
 
