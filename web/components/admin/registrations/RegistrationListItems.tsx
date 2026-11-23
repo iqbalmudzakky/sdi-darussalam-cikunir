@@ -12,8 +12,8 @@ const markerVariants = cva(
     variants: {
       tone: {
         off: "bg-gray-100 text-gray-400",
-        on: "bg-brand-50 text-brand-700",
-        partial: "bg-amber-50 text-amber-700",
+        on: "bg-brand-600 text-white",
+        partial: "bg-amber-100 text-amber-800",
       },
     },
   },
