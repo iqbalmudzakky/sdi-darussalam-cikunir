@@ -65,14 +65,21 @@ export const RECEIVED_DOCUMENTS_BY_TYPE: Record<
 export const TARGET_ACADEMIC_YEAR_SPAN = 5;
 export const MINIMUM_ENTRY_AGE_YEARS = 6;
 export const SHORT_FORM_MAX_PER_IP_PER_HOUR = 10;
+export const FORM_LINK_TTL_DAYS = 14;
 
 export const REGISTRATION_FLOW_STEPS = [
-  { label: "Form singkat", state: "done", showsFee: false },
-  { label: "Chat panitia", state: "current", showsFee: false },
-  { label: "Form lengkap", state: "upcoming", showsFee: false },
-  { label: "Tes & wawancara", state: "upcoming", showsFee: true },
-  { label: "Surat Keterangan Diterima", state: "upcoming", showsFee: false },
+  { label: "Form singkat", showsFee: false },
+  { label: "Chat panitia", showsFee: false },
+  { label: "Form lengkap", showsFee: false },
+  { label: "Tes & wawancara", showsFee: true },
+  { label: "Surat Keterangan Diterima", showsFee: false },
 ] as const;
+
+export const SHORT_FORM_FLOW_STEP = { index: 1, badge: "Sekarang" } as const;
+export const FULL_FORM_FLOW_STEP = {
+  index: 3,
+  badge: "Tunggu jadwal",
+} as const;
 
 export const REGISTRATION_FAILURE = {
   closed: { status: 403, message: "Pendaftaran belum dibuka." },
@@ -89,6 +96,11 @@ export const REGISTRATION_FAILURE = {
   invalid_state: {
     status: 409,
     message: "Status pendaftar sudah berubah. Muat ulang halaman.",
+  },
+  expired_link: { status: 410, message: "Link sudah tidak berlaku." },
+  duplicate_nik: {
+    status: 409,
+    message: "NIK anak sudah terdaftar, silakan hubungi panitia",
   },
   invalid_document: {
     status: 400,

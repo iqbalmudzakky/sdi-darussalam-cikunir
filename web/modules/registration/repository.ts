@@ -6,6 +6,7 @@ import type {
   ListRegistrationsInput,
   NewShortRegistration,
   PpdbRegistrationExportRow,
+  PpdbRegistrationFormRow,
   PpdbRegistrationFullRow,
   PpdbRegistrationListItem,
   PpdbRegistrationStatus,
@@ -13,8 +14,9 @@ import type {
   RegistrationFilter,
   RegistrationSourceCounts,
   ShortRegistrationIdentity,
+  UpdateRegistrationFormInput,
 } from "./entity";
-import type { CreatePpdbRegistrationRequest } from "./dto";
+import type { CreatePpdbRegistrationRequest, StudentForm } from "./dto";
 
 const LIST_COLUMNS = `
   pr.id, pr.registration_number, pr.registration_type, pr.program,
@@ -36,19 +38,22 @@ const LIST_FILTER = `
 const PROFILE_COLUMNS = `
   pr.parent_email, ps.nisn, ps.gender, ps.place_of_birth,
   ps.date_of_birth::text AS date_of_birth, ps.birth_order, ps.sibling_count,
-  ps.physical_disability, ps.previous_school,
-  ${parentColumns("father")},
-  ${parentColumns("mother")}
+  ps.physical_disability, ps.previous_school
 `;
 
 const PROFILE_FROM = `
   FROM ppdb_registrations pr
   JOIN ppdb_registration_students ps ON ps.registration_id = pr.id
-  LEFT JOIN ppdb_registration_parents father
-    ON father.registration_id = pr.id AND father.parent_type = 'father'
-  LEFT JOIN ppdb_registration_parents mother
-    ON mother.registration_id = pr.id AND mother.parent_type = 'mother'
 `;
+
+const STUDENT_FORM_COLUMNS = `full_name, gender, nik, nisn, place_of_birth,
+  date_of_birth, religion, physical_disability, previous_school,
+  previous_school_npsn, previous_school_address, address, hamlet, rt_rw,
+  village, postal_code, district, city, province, home_phone, phone,
+  birth_certificate_number, kks_number, kps_number, kip_number, kip_name,
+  latitude, longitude, sibling_count`
+  .split(",")
+  .map((column) => column.trim()) as (keyof StudentForm)[];
 
 export async function insertWithin(
   tx: TransactionSql,
@@ -79,8 +84,6 @@ export async function insertWithin(
   );
   const registrationId = registrationRows[0].id;
   await insertStudentWithin(tx, registrationId, input.student);
-  await insertParentsWithin(tx, registrationId, input.parents);
-  await insertDetailsWithin(tx, registrationId, input.details);
 
   return registrationId;
 }
@@ -149,6 +152,60 @@ export async function insertShortWithin(
     ],
   );
   return registrationId;
+}
+
+export async function findFormById(
+  id: string,
+): Promise<PpdbRegistrationFormRow | null> {
+  const studentFields = STUDENT_FORM_COLUMNS.map(
+    (column) => `'${column}', ps.${column}`,
+  );
+  const rows = await sql.unsafe<PpdbRegistrationFormRow[]>(
+    `SELECT pr.id, pr.registration_number, pr.registration_type,
+            pr.parent_email, pr.contact_phone,
+            json_build_object(${studentFields.join(", ")}) AS student
+     FROM ppdb_registrations pr
+     JOIN ppdb_registration_students ps ON ps.registration_id = pr.id
+     WHERE pr.id = $1`,
+    [id],
+  );
+  return rows[0] ?? null;
+}
+
+export async function existsNikOnOther(
+  nik: string,
+  registrationId: string,
+): Promise<boolean> {
+  const rows = await sql.unsafe(
+    `SELECT id FROM ppdb_registration_students
+     WHERE nik = $1 AND registration_id <> $2
+     LIMIT 1`,
+    [nik, registrationId],
+  );
+  return rows.length > 0;
+}
+
+export async function updateFormWithin(
+  tx: TransactionSql,
+  input: UpdateRegistrationFormInput,
+): Promise<void> {
+  await tx.unsafe(
+    `UPDATE ppdb_registrations
+     SET parent_email = $2, full_form_completed_at = now(), updated_at = now()
+     WHERE id = $1`,
+    [input.registrationId, input.parentEmail],
+  );
+
+  const assignments = STUDENT_FORM_COLUMNS.map(
+    (column, index) => `${column} = $${index + 2}`,
+  );
+  const values = STUDENT_FORM_COLUMNS.map((column) => input.student[column]);
+  await tx.unsafe(
+    `UPDATE ppdb_registration_students
+     SET ${assignments.join(", ")}, updated_at = now()
+     WHERE registration_id = $1`,
+    [input.registrationId, ...values],
+  );
 }
 
 export async function existsShortDuplicate(
@@ -369,17 +426,6 @@ export async function countBySourceForAllYears(): Promise<
   );
 }
 
-function parentColumns(parent: "father" | "mother"): string {
-  return `
-    ${parent}.relationship_status AS ${parent}_status,
-    ${parent}.name AS ${parent}_name,
-    ${parent}.nik AS ${parent}_nik,
-    ${parent}.place_of_birth AS ${parent}_place_of_birth,
-    ${parent}.date_of_birth::text AS ${parent}_date_of_birth,
-    ${parent}.phone AS ${parent}_phone,
-    ${parent}.income AS ${parent}_income`;
-}
-
 async function insertStudentWithin(
   tx: TransactionSql,
   registrationId: string,
@@ -421,77 +467,6 @@ async function insertStudentWithin(
       student.physical_disability,
       student.previous_school,
       student.previous_school_transfer ?? null,
-    ],
-  );
-}
-
-async function insertParentsWithin(
-  tx: TransactionSql,
-  registrationId: string,
-  parents: CreatePpdbRegistrationRequest["parents"],
-): Promise<void> {
-  if (parents.length === 0) return;
-
-  const columnCount = 14;
-  const valueRows = parents.map((_, rowIndex) => {
-    const firstParameter = rowIndex * columnCount + 1;
-    const parameters = Array.from(
-      { length: columnCount },
-      (__, columnIndex) => `$${firstParameter + columnIndex}`,
-    );
-    return `(${parameters.join(", ")})`;
-  });
-  const values = parents.flatMap((parent) => [
-    registrationId,
-    parent.parent_type,
-    parent.relationship_status,
-    parent.name,
-    parent.nik,
-    parent.place_of_birth,
-    parent.date_of_birth,
-    parent.religion ?? null,
-    parent.education ?? null,
-    parent.occupation ?? null,
-    parent.position ?? null,
-    parent.income ?? null,
-    parent.citizenship ?? null,
-    parent.phone,
-  ]);
-
-  await tx.unsafe(
-    `INSERT INTO ppdb_registration_parents (
-       registration_id, parent_type, relationship_status, name, nik,
-       place_of_birth, date_of_birth, religion, education, occupation,
-       position, income, citizenship, phone
-     )
-     VALUES ${valueRows.join(", ")}`,
-    values,
-  );
-}
-
-async function insertDetailsWithin(
-  tx: TransactionSql,
-  registrationId: string,
-  details: CreatePpdbRegistrationRequest["details"],
-): Promise<void> {
-  await tx.unsafe(
-    `INSERT INTO ppdb_registration_details (
-       registration_id, living_with, distance_to_school, owned_vehicle,
-       transportation_method, talent, blood_type, height, weight,
-       head_circumference
-     )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-    [
-      registrationId,
-      details.living_with ?? null,
-      details.distance_to_school ?? null,
-      details.owned_vehicle ?? null,
-      details.transportation_method ?? null,
-      details.talent ?? null,
-      details.blood_type ?? null,
-      details.height ?? null,
-      details.weight ?? null,
-      details.head_circumference ?? null,
     ],
   );
 }

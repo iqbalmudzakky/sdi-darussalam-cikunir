@@ -5,6 +5,7 @@ import {
   UpdateRegistrationRequestSchema,
   type UpdateRegistrationInput,
 } from "@/modules/registration-admin/dto";
+import * as registrationLinkService from "@/modules/registration-link/service";
 import * as registrationService from "@/modules/registration/service";
 import { REGISTRATION_FAILURE } from "@/modules/shared/constant/registration";
 
@@ -50,6 +51,32 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
+
+  if (body.action === "send_form_link") {
+    try {
+      const whatsappUrl = await registrationLinkService.sendFormLink(
+        id,
+        user.id,
+      );
+      if (!whatsappUrl) {
+        const failure = REGISTRATION_FAILURE.not_found;
+        return NextResponse.json(
+          { error: failure.message },
+          { status: failure.status },
+        );
+      }
+      return NextResponse.json({ whatsapp_url: whatsappUrl });
+    } catch (error) {
+      console.error(
+        `PATCH /api/registrations/${id} send_form_link failed:`,
+        error,
+      );
+      return NextResponse.json(
+        { error: "Gagal membuat link form lengkap." },
+        { status: 500 },
+      );
+    }
+  }
 
   const parsed = UpdateRegistrationRequestSchema.safeParse(body);
   if (!parsed.success) {

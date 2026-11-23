@@ -363,9 +363,9 @@ function RegistrationSubmitted({ receipt }: RegistrationSubmittedProps) {
                 {step.label}
               </span>
 
-              {step.state === "current" && (
+              {step.badge && (
                 <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-medium text-white">
-                  Sekarang
+                  {step.badge}
                 </span>
               )}
 

@@ -617,7 +617,9 @@ istilah untuk Next.js + TypeScript:
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
 | `auth`                                           | `admin_users`, `refresh_tokens`, `login_attempts`                                                            |
 | `admin`                                          | `admin_action_tokens` — memanggil service `auth` untuk akun & sesi, tidak sebaliknya                         |
-| `registration`                                   | `ppdb_registrations`, `ppdb_registration_details`, `ppdb_registration_parents`, `ppdb_registration_students` |
+| `registration`                                   | `ppdb_registrations`, `ppdb_registration_students`                                                           |
+| `registration-biodata`                           | `ppdb_registration_parents`, `ppdb_registration_details`, `ppdb_registration_achievements`                   |
+| `registration-link`                              | `registration_form_links` — juga alur form lengkap (kirim link, buka, simpan)                                |
 | `payment`                                        | `registration_payments`, `doku_notification_events`                                                          |
 | `payment-settings`                               | `payment_settings`                                                                                           |
 | `registration-stats`                             | `registration_stats`                                                                                         |
@@ -628,8 +630,8 @@ istilah untuk Next.js + TypeScript:
 
 Tabel `registrations` (bentuk pendaftaran lama, kosong) tidak dipakai kode mana pun.
 
-`registration-intake` (form pendek, penomoran saat simpan) dan `registration-admin` (daftar & detail
-pendaftar beserta data bayar) tidak punya tabel: keduanya hanya memanggil service pemilik, supaya
+`registration-intake` (form singkat, penomoran saat simpan) dan `registration-admin` (daftar & detail
+pendaftar beserta data bayar dan orang tua) tidak punya tabel: keduanya hanya memanggil service pemilik, supaya
 service `registration`, `payment`, dan `registration-stats` tidak saling melingkar.
 
 **Kapan diterapkan:** hanya pada berkas yang disentuh, baik karena kodenya diubah maupun
@@ -1131,6 +1133,10 @@ diketik dua kali, tapi tetap bisa diubah.
 | K27 | Terhitung **pendaftar** sejak **form pendek** masuk, semua status termasuk Batal (diubah kepsek 17 Nov 2026; sebelumnya: setelah form lengkap)                                |
 | K28 | Hasil Diterima/Tidak Diterima bisa saling diganti selama Surat Keterangan Diterima belum dibuat. Setelah surat dibuat, hanya Kepsek, Wakepsek, dan Admin yang bisa mengubah   |
 | K29 | Batal bisa dibatalkan lewat **Aktifkan lagi**; status kembali ke posisi sebelum Batal                                                                                         |
+| K30 | Isian form lengkap mengikuti sheet FORM BIODATA. Isian form lama di luar sheet tidak ditanyakan lagi (datanya tetap)                                                          |
+| K31 | Ayah, ibu, wali cukup **tahun lahir**. Penghasilan dipilih dari **rentang** (Dapodik), bukan diketik                                                                          |
+| K32 | NIS, no. seri ijazah, SKHUN, no. UN tidak ditanyakan (anak TK belum punya)                                                                                                    |
+| K33 | Link form lengkap berlaku **14 hari** sejak dikirim sampai PR 3, lalu sampai hari tes. Kirim ulang mematikan link lama                                                        |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1257,10 +1263,11 @@ kosong (`DROP NOT NULL`). Wajib-tidaknya dicek di zod saat form lengkap dikirim.
 
 Kolom baru dari FORM BIODATA:
 
-- Siswa: `postal_code`, `previous_school_npsn`, `previous_school_address`,
-  `birth_certificate_number`, `kks_number`, `kps_number`, `pkh_number`, `kip_number`,
-  `latitude`, `longitude`, `travel_time`
-- Orang tua: `special_needs`; `parent_type` ditambah `guardian` untuk data wali
+- Siswa: `hamlet`, `postal_code`, `home_phone`, `previous_school_npsn`, `previous_school_address`,
+  `birth_certificate_number`, `kks_number`, `kps_number` (KPS/PKH), `kip_number`, `kip_name`,
+  `latitude`, `longitude`; detail: `travel_time_minutes`
+- Orang tua: `birth_year`, `special_needs`, `income_range`; tempat/tanggal lahir, NIK, dan no. HP
+  boleh kosong (wali tidak punya isian itu di sheet); `parent_type` ditambah `guardian` untuk data wali
 - Tabel baru `ppdb_registration_achievements` (jenis, tingkat, nama, tahun, penyelenggara)
 
 **`registration_payments`** — `registration_id` diisi **sejak pembayaran dibuat**, karena kini

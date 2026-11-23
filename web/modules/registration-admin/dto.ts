@@ -5,6 +5,7 @@ import type {
   Gender,
   ParentRelationshipStatus,
   PhysicalDisability,
+  PpdbRegistrationExportRow,
   PpdbRegistrationStatus,
   RegistrationProgram,
   RegistrationType,
@@ -101,7 +102,8 @@ export type RegistrationDocumentResponse = {
 };
 
 export type RegistrationDetailResponse = RegistrationListItemResponse &
-  RegistrationPaymentSummary & {
+  RegistrationPaymentSummary &
+  RegistrationParentColumns & {
     ip_address: string | null;
     parent_email: string | null;
     student_nik: string | null;
@@ -115,22 +117,6 @@ export type RegistrationDetailResponse = RegistrationListItemResponse &
     previous_school: string;
     nisn: string | null;
 
-    father_status: ParentRelationshipStatus | null;
-    father_name: string | null;
-    father_nik: string | null;
-    father_place_of_birth: string | null;
-    father_date_of_birth: string | null;
-    father_phone: string | null;
-    father_income: number | null;
-
-    mother_status: ParentRelationshipStatus | null;
-    mother_name: string | null;
-    mother_nik: string | null;
-    mother_place_of_birth: string | null;
-    mother_date_of_birth: string | null;
-    mother_phone: string | null;
-    mother_income: number | null;
-
     entry_age_label: string | null;
     documents: RegistrationDocumentResponse[];
     can_cancel: boolean;
@@ -143,3 +129,24 @@ export type RegistrationListResponse = {
   has_more: boolean;
   academic_years: string[];
 };
+
+export type RegistrationParentColumns = {
+  father_status: ParentRelationshipStatus | null;
+  father_name: string | null;
+  father_nik: string | null;
+  father_place_of_birth: string | null;
+  father_date_of_birth: string | null;
+  father_phone: string | null;
+  father_income: number | null;
+  mother_status: ParentRelationshipStatus | null;
+  mother_name: string | null;
+  mother_nik: string | null;
+  mother_place_of_birth: string | null;
+  mother_date_of_birth: string | null;
+  mother_phone: string | null;
+  mother_income: number | null;
+};
+
+export type RegistrationExportItem = PpdbRegistrationExportRow &
+  RegistrationParentColumns &
+  RegistrationPaymentSummary;

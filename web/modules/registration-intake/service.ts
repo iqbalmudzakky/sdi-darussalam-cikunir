@@ -13,10 +13,12 @@ import type {
   RegistrationSource,
   ShortRegistrationIdentity,
 } from "@/modules/registration/entity";
+import * as registrationBiodataService from "@/modules/registration-biodata/service";
 import * as schoolProfileService from "@/modules/school-profile/service";
+import { buildFlowSteps } from "@/modules/shared/registrationFlow";
 import {
   MINIMUM_ENTRY_AGE_YEARS,
-  REGISTRATION_FLOW_STEPS,
+  SHORT_FORM_FLOW_STEP,
   REGISTRATION_PROGRAM_LABEL,
   REGISTRATION_TYPE_LABEL,
   SHORT_FORM_MAX_PER_IP_PER_HOUR,
@@ -28,7 +30,6 @@ import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
 import type {
   CreateShortRegistrationInput,
   CreateShortRegistrationResult,
-  RegistrationFlowStepResponse,
   ShortFormOptionsQuery,
   ShortFormOptionsResponse,
   ShortRegistrationBlockReason,
@@ -50,7 +51,17 @@ export async function insertFullRegistrationWithin(
     academicYear,
     registrationNumber,
   };
-  return registrationService.insertWithin(tx, input, options);
+  const registrationId = await registrationService.insertWithin(
+    tx,
+    input,
+    options,
+  );
+  await registrationBiodataService.insertLegacyWithin(
+    tx,
+    registrationId,
+    input,
+  );
+  return registrationId;
 }
 
 export async function getShortFormOptions(
@@ -148,12 +159,7 @@ export async function createShortRegistration(
       "Untuk langkah selanjutnya bagaimana ya?",
     ].join("\n\n");
 
-    const flowSteps: RegistrationFlowStepResponse[] =
-      REGISTRATION_FLOW_STEPS.map((step) => ({
-        label: step.label,
-        state: step.state,
-        fee: step.showsFee ? registrationFee : null,
-      }));
+    const flowSteps = buildFlowSteps(SHORT_FORM_FLOW_STEP, registrationFee);
 
     const result: CreateShortRegistrationResult = {
       ok: true,

@@ -75,6 +75,7 @@ export type ShortRegistrationBlockReason =
 export type RegistrationFlowStepResponse = {
   label: string;
   state: "done" | "current" | "upcoming";
+  badge: string | null;
   fee: number | null;
 };
 

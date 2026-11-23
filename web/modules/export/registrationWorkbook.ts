@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
-import type { PpdbRegistrationExportItem } from "@/modules/registration/entity";
+import type { RegistrationExportItem } from "@/modules/registration-admin/dto";
 import { REGISTRATION_STATUS_LABEL } from "@/modules/shared/constant/registration";
 
 const REGISTRATION_TYPE_LABELS: Record<string, string> = {
@@ -57,7 +57,7 @@ export function getRegistrationsExportFilename(): string {
 }
 
 export async function buildRegistrationsWorkbookBuffer(
-  registrations: PpdbRegistrationExportItem[],
+  registrations: RegistrationExportItem[],
 ): Promise<ExcelJS.Buffer> {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "SD Islam Darussalam Cikunir";

@@ -8,9 +8,10 @@ import type {
   RegistrationPaymentSummary,
 } from "@/modules/payment/entity";
 import * as paymentService from "@/modules/payment/service";
+import type { RegistrationParentRow } from "@/modules/registration-biodata/entity";
+import * as registrationBiodataService from "@/modules/registration-biodata/service";
 import type {
   ListRegistrationsInput,
-  PpdbRegistrationExportItem,
   PpdbRegistrationFullRow,
   PpdbRegistrationListItem,
   RegistrationFilter,
@@ -25,6 +26,8 @@ import type {
   ExportRegistrationsQuery,
   ListRegistrationsQuery,
   RegistrationDetailResponse,
+  RegistrationExportItem,
+  RegistrationParentColumns,
   RegistrationListItemResponse,
   RegistrationListResponse,
   UpdateRegistrationFailureReason,
@@ -74,9 +77,12 @@ export async function getRegistrationDetail(
   if (!row) return null;
 
   const registrationIds = [id];
-  const payments =
-    await paymentService.getSummariesByRegistrationIds(registrationIds);
-  const detail = toDetail(row, payments);
+  const [payments, parents] = await Promise.all([
+    paymentService.getSummariesByRegistrationIds(registrationIds),
+    registrationBiodataService.listParentsByRegistrationIds(registrationIds),
+  ]);
+  const parentColumns = toParentColumns(id, parents);
+  const detail = toDetail(row, payments, parentColumns);
   return detail;
 }
 
@@ -117,11 +123,14 @@ export async function exportRegistrations(
   try {
     const rows = await registrationService.exportRows(query.statuses);
     const registrationIds = rows.map((row) => row.id);
-    const payments =
-      await paymentService.getSummariesByRegistrationIds(registrationIds);
+    const [payments, parents] = await Promise.all([
+      paymentService.getSummariesByRegistrationIds(registrationIds),
+      registrationBiodataService.listParentsByRegistrationIds(registrationIds),
+    ]);
 
-    const registrations: PpdbRegistrationExportItem[] = rows.map((row) => ({
+    const registrations: RegistrationExportItem[] = rows.map((row) => ({
       ...row,
+      ...toParentColumns(row.id, parents),
       ...toPaymentSummary(row.id, payments),
     }));
     const buffer = await buildRegistrationsWorkbookBuffer(registrations);
@@ -208,6 +217,7 @@ function toListItem(
 function toDetail(
   row: PpdbRegistrationFullRow,
   payments: RegistrationPaymentSummaries,
+  parentColumns: RegistrationParentColumns,
 ): RegistrationDetailResponse {
   const entryAge = row.academic_year
     ? calculateEntryAge(row.date_of_birth, row.academic_year)
@@ -216,6 +226,7 @@ function toDetail(
   const detail: RegistrationDetailResponse = {
     ...toListItem(row, payments),
     ...toPaymentSummary(row.id, payments),
+    ...parentColumns,
     ip_address: row.ip_address,
     parent_email: row.parent_email,
     student_nik: row.student_nik,
@@ -228,22 +239,6 @@ function toDetail(
     physical_disability: row.physical_disability,
     previous_school: row.previous_school,
     nisn: row.nisn,
-
-    father_status: row.father_status,
-    father_name: row.father_name,
-    father_nik: row.father_nik,
-    father_place_of_birth: row.father_place_of_birth,
-    father_date_of_birth: row.father_date_of_birth,
-    father_phone: row.father_phone,
-    father_income: row.father_income,
-
-    mother_status: row.mother_status,
-    mother_name: row.mother_name,
-    mother_nik: row.mother_nik,
-    mother_place_of_birth: row.mother_place_of_birth,
-    mother_date_of_birth: row.mother_date_of_birth,
-    mother_phone: row.mother_phone,
-    mother_income: row.mother_income,
 
     entry_age_label: entryAge
       ? `${entryAge.years} th ${entryAge.months} bln`
@@ -259,4 +254,40 @@ function toDetail(
     can_reactivate: row.status === "cancelled",
   };
   return detail;
+}
+
+function toParentColumns(
+  registrationId: string,
+  parents: RegistrationParentRow[],
+): RegistrationParentColumns {
+  const ownParents = parents.filter(
+    (parent) => parent.registration_id === registrationId,
+  );
+  const father = ownParents.find((parent) => parent.parent_type === "father");
+  const mother = ownParents.find((parent) => parent.parent_type === "mother");
+
+  const columns: RegistrationParentColumns = {
+    father_status: toRelationshipStatus(father),
+    father_name: father?.name ?? null,
+    father_nik: father?.nik ?? null,
+    father_place_of_birth: father?.place_of_birth ?? null,
+    father_date_of_birth: father?.date_of_birth ?? null,
+    father_phone: father?.phone ?? null,
+    father_income: father?.income ?? null,
+    mother_status: toRelationshipStatus(mother),
+    mother_name: mother?.name ?? null,
+    mother_nik: mother?.nik ?? null,
+    mother_place_of_birth: mother?.place_of_birth ?? null,
+    mother_date_of_birth: mother?.date_of_birth ?? null,
+    mother_phone: mother?.phone ?? null,
+    mother_income: mother?.income ?? null,
+  };
+  return columns;
+}
+
+function toRelationshipStatus(
+  parent?: RegistrationParentRow,
+): RegistrationParentColumns["father_status"] {
+  const status = parent?.relationship_status ?? null;
+  return status as RegistrationParentColumns["father_status"];
 }

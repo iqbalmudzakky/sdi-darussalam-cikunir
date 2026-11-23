@@ -7,12 +7,14 @@ import type {
   ListRegistrationsInput,
   NewShortRegistration,
   PpdbRegistrationExportRow,
+  PpdbRegistrationFormRow,
   PpdbRegistrationFullRow,
   PpdbRegistrationListItem,
   PpdbRegistrationStatus,
   RegistrationFilter,
   RegistrationSourceCounts,
   ShortRegistrationIdentity,
+  UpdateRegistrationFormInput,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest, RegistrantRegion } from "./dto";
 
@@ -62,6 +64,32 @@ export async function countShortFormsByIpLastHour(
 ): Promise<number> {
   return withDbLogging("registration.countShortFormsByIpLastHour", () =>
     repository.countShortFormsByIpLastHour(ipAddress),
+  );
+}
+
+export async function findFormById(
+  id: string,
+): Promise<PpdbRegistrationFormRow | null> {
+  return withDbLogging("registration.findFormById", () =>
+    repository.findFormById(id),
+  );
+}
+
+export async function existsNikOnOther(
+  nik: string,
+  registrationId: string,
+): Promise<boolean> {
+  return withDbLogging("registration.existsNikOnOther", () =>
+    repository.existsNikOnOther(nik, registrationId),
+  );
+}
+
+export async function updateFormWithin(
+  tx: TransactionSql,
+  input: UpdateRegistrationFormInput,
+): Promise<void> {
+  await withDbLogging("registration.updateFormWithin", () =>
+    repository.updateFormWithin(tx, input),
   );
 }
 
