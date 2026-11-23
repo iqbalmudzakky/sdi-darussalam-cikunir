@@ -20,7 +20,9 @@ import {
   listRegistrations,
   countPendingRegistrations,
   getRegistrantRegions,
+  listTestReminders,
 } from "@/lib/actions/registrations";
+import { TestReminderCard } from "@/components/admin/dashboard/TestReminderCard";
 import { getSchoolProfile } from "@/lib/actions/schoolProfile";
 import { getVisitSummary } from "@/lib/actions/analytics";
 import { getSession } from "@/lib/auth/session";
@@ -65,6 +67,7 @@ export default async function AdminDashboardPage() {
     pendingCount,
     visitSummary,
     registrantRegions,
+    testReminders,
   ] = await Promise.all([
     getSession(),
     getSchoolProfile(),
@@ -85,6 +88,7 @@ export default async function AdminDashboardPage() {
     countPendingRegistrations(),
     getVisitSummary(),
     getRegistrantRegions(),
+    listTestReminders(),
   ]);
 
   const recentRegistrations = registrations.items;
@@ -183,6 +187,8 @@ export default async function AdminDashboardPage() {
           Ringkasan konten website dan pendaftar yang masuk.
         </p>
       </div>
+
+      <TestReminderCard groups={testReminders} />
 
       {pendingCount > 0 && (
         <Link

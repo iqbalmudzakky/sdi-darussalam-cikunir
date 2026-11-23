@@ -106,9 +106,12 @@ export async function updateInfoWithin(
 export async function getSourceCounts(
   academicYear: string,
 ): Promise<RegistrationSourceCounts> {
-  return withDbLogging("registration.countBySourceForYear", () =>
-    repository.countBySourceForYear(academicYear),
-  );
+  const countsByYear = await getSourceCountsForAllYears();
+  const counts = countsByYear.get(academicYear) ?? {
+    online: 0,
+    offline_recorded: 0,
+  };
+  return counts;
 }
 
 export async function getSourceCountsForAllYears(): Promise<
@@ -138,8 +141,26 @@ export async function listAcademicYears(): Promise<string[]> {
 export async function findFullById(
   id: string,
 ): Promise<PpdbRegistrationFullRow | null> {
-  return withDbLogging("registration.findFullById", () =>
-    repository.findFullById(id),
+  const rows = await listFullByIds([id]);
+  return rows[0] ?? null;
+}
+
+export async function listFullByIds(
+  ids: string[],
+): Promise<PpdbRegistrationFullRow[]> {
+  if (ids.length === 0) return [];
+
+  return withDbLogging("registration.listFullByIds", () =>
+    repository.listFullByIds(ids),
+  );
+}
+
+export async function markScheduledWithin(
+  tx: TransactionSql,
+  id: string,
+): Promise<void> {
+  await withDbLogging("registration.markScheduledWithin", () =>
+    repository.markScheduledWithin(tx, id),
   );
 }
 

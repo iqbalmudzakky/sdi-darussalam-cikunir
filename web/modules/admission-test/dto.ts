@@ -1,0 +1,68 @@
+import { z } from "zod";
+import type { SessionUser } from "@/modules/auth/dto";
+
+export const ScheduleTestRequestSchema = z.object({
+  test_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal tes wajib diisi."),
+  test_time: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Jam tes wajib diisi."),
+  child_interviewer_id: z.uuid().nullable().default(null),
+  parent_interviewer_id: z.uuid().nullable().default(null),
+});
+
+export type ScheduleTestRequest = z.infer<typeof ScheduleTestRequestSchema>;
+
+export type SaveScheduleInput = {
+  registrationId: string;
+  request: ScheduleTestRequest;
+  actor: SessionUser;
+};
+
+export type SaveScheduleFailureReason =
+  "invalid_interviewer" | "forbidden_interviewer";
+
+export type InterviewerResponse = {
+  id: string;
+  name: string;
+};
+
+export type ScheduleResponse = {
+  test_date: string;
+  test_time: string;
+  weekday_short: string;
+  day_number: string;
+  month_short: string;
+  date_label: string;
+  time_label: string;
+  child_interviewer: InterviewerResponse | null;
+  parent_interviewer: InterviewerResponse | null;
+  is_reminded: boolean;
+};
+
+export type ScheduleOptionsResponse = {
+  interviewers: InterviewerResponse[];
+  can_assign_others: boolean;
+  self: InterviewerResponse | null;
+};
+
+export type ScheduleViewResponse = {
+  schedule: ScheduleResponse | null;
+  options: ScheduleOptionsResponse;
+};
+
+export type TestReminderResponse = {
+  registration_id: string;
+  registration_number: string | null;
+  full_name: string;
+  time_label: string;
+  interviewer_name: string | null;
+  whatsapp_url: string | null;
+};
+
+export type TestReminderGroupResponse = {
+  key: "today" | "tomorrow";
+  label: string;
+  reminders: TestReminderResponse[];
+};

@@ -318,17 +318,16 @@ export async function listAcademicYears(): Promise<string[]> {
   return rows.map((row) => row.academic_year);
 }
 
-export async function findFullById(
-  id: string,
-): Promise<PpdbRegistrationFullRow | null> {
-  const rows = await sql.unsafe<PpdbRegistrationFullRow[]>(
+export async function listFullByIds(
+  ids: string[],
+): Promise<PpdbRegistrationFullRow[]> {
+  return sql.unsafe<PpdbRegistrationFullRow[]>(
     `SELECT ${LIST_COLUMNS}, pr.ip_address, ps.nik AS student_nik,
             ps.address AS current_address, ${PROFILE_COLUMNS}
      ${PROFILE_FROM}
-     WHERE pr.id = $1`,
-    [id],
+     WHERE pr.id = ANY(string_to_array($1, ',')::uuid[])`,
+    [ids.join(",")],
   );
-  return rows[0] ?? null;
 }
 
 export async function remove(id: string): Promise<void> {
@@ -359,6 +358,18 @@ export async function reactivate(id: string): Promise<boolean> {
     [id],
   );
   return rows.length > 0;
+}
+
+export async function markScheduledWithin(
+  tx: TransactionSql,
+  id: string,
+): Promise<void> {
+  await tx.unsafe(
+    `UPDATE ppdb_registrations
+     SET status = 'scheduled', updated_at = now()
+     WHERE id = $1 AND status = 'new'`,
+    [id],
+  );
 }
 
 export async function setReceivedDocuments(
@@ -414,20 +425,6 @@ export async function listRegistrantRegions(
      LIMIT $1`,
     [limit],
   );
-}
-
-export async function countBySourceForYear(
-  academicYear: string,
-): Promise<RegistrationSourceCounts> {
-  const rows = await sql.unsafe<{ online: number; offline_recorded: number }[]>(
-    `SELECT
-       count(*) FILTER (WHERE source = 'online')::int AS online,
-       count(*) FILTER (WHERE source = 'offline')::int AS offline_recorded
-     FROM ppdb_registrations
-     WHERE academic_year = $1`,
-    [academicYear],
-  );
-  return rows[0] ?? { online: 0, offline_recorded: 0 };
 }
 
 export async function countBySourceForAllYears(): Promise<

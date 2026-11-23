@@ -135,6 +135,22 @@ export async function updateRegistrationForm(
   return result;
 }
 
+export async function markTestReminded(
+  id: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "mark_reminded" }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    return { ok: false, error: data.error ?? "Gagal menyimpan." };
+  }
+  return { ok: true };
+}
+
 export async function updateRegistration(
   id: string,
   input: UpdateRegistrationInput,

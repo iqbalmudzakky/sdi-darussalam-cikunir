@@ -106,6 +106,11 @@ export const REGISTRATION_FAILURE = {
     status: 409,
     message: "NIK anak sudah terdaftar, silakan hubungi panitia",
   },
+  invalid_interviewer: { status: 400, message: "Pewawancara tidak ditemukan." },
+  forbidden_interviewer: {
+    status: 403,
+    message: "Hanya kepsek atau wakepsek yang bisa memilih pewawancara lain.",
+  },
   invalid_document: {
     status: 400,
     message: "Berkas tidak sesuai jenis pendaftaran.",

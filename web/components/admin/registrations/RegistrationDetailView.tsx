@@ -16,11 +16,6 @@ import {
 } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { Button } from "@/components/ui/form/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/overlay/dialog";
 import { useToast } from "@/hooks/useToast";
 import {
   getRegistration,
@@ -32,13 +27,14 @@ import { formatRegistrationSummary } from "@/lib/registrationOptions";
 import type {
   RegistrationDetail,
   RegistrationDocument,
+  RegistrationStatusAction,
   UpdateRegistrationInput,
 } from "@/types/registration/Registration";
 import { RegistrationDetailDialog } from "./RegistrationDetailDialog";
 import { getDocumentTone } from "./RegistrationListItems";
 import { RegistrationStatusBadge } from "./RegistrationStatusBadge";
-
-type StatusAction = "cancel" | "reactivate";
+import { ScheduleCard } from "./ScheduleCard";
+import { StatusActionDialog } from "./StatusActionDialog";
 
 const cardVariants = cva(
   "rounded-xl border border-gray-200 bg-white p-4 shadow-(--admin-card-shadow)",
@@ -79,32 +75,6 @@ const documentButtonVariants = cva(
   },
 );
 
-const actionIconVariants = cva(
-  "flex h-14 w-14 items-center justify-center rounded-full",
-  {
-    variants: {
-      action: {
-        cancel: "bg-red-50 text-red-600",
-        reactivate: "bg-brand-50 text-brand-700",
-      },
-    },
-  },
-);
-
-const confirmButtonVariants = cva("h-10 flex-1 text-white", {
-  variants: {
-    action: {
-      cancel: "bg-red-600 hover:bg-red-700",
-      reactivate: "bg-brand-600 hover:bg-brand-700",
-    },
-  },
-});
-
-const namePillVariants = cva([
-  "max-w-full truncate rounded-full border border-gray-200 bg-gray-50 px-3",
-  "py-1 text-sm font-semibold text-gray-700",
-]);
-
 type RegistrationDetailViewProps = {
   id: string;
 };
@@ -117,7 +87,8 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [pendingAction, setPendingAction] = useState<StatusAction | null>(null);
+  const [pendingAction, setPendingAction] =
+    useState<RegistrationStatusAction | null>(null);
   const [isFullFormOpen, setIsFullFormOpen] = useState(false);
   const [isSendingLink, setIsSendingLink] = useState(false);
 
@@ -183,7 +154,7 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
     }
   }
 
-  async function handleStatusAction(action: StatusAction) {
+  async function handleStatusAction(action: RegistrationStatusAction) {
     const input: UpdateRegistrationInput = { action };
     const saved = await saveChange(input);
     if (!saved) return;
@@ -271,6 +242,12 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
         isSendingLink={isSendingLink}
         onSendFormLink={handleSendFormLink}
         onOpenFullForm={() => setIsFullFormOpen(true)}
+      />
+
+      <ScheduleCard
+        registration={registration}
+        isSaving={isSaving}
+        onSave={saveChange}
       />
 
       <div className="grid items-start gap-3 md:grid-cols-2">
@@ -433,77 +410,5 @@ function DocumentsCard({
         ))}
       </div>
     </section>
-  );
-}
-
-type StatusActionDialogProps = {
-  action: StatusAction | null;
-  name: string;
-  isBusy: boolean;
-  onClose: () => void;
-  onConfirm: (action: StatusAction) => void;
-};
-
-function StatusActionDialog({
-  action,
-  name,
-  isBusy,
-  onClose,
-  onConfirm,
-}: StatusActionDialogProps) {
-  const actionContent = {
-    cancel: {
-      title: "Batalkan pendaftar?",
-      confirmLabel: "Batalkan",
-      icon: Ban,
-    },
-    reactivate: {
-      title: "Aktifkan lagi?",
-      confirmLabel: "Aktifkan",
-      icon: RotateCcw,
-    },
-  };
-  const content = action && actionContent[action];
-
-  return (
-    <Dialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent size="sm" showCloseButton={false}>
-        {action && content && (
-          <>
-            <div className="flex flex-col items-center gap-3 text-center">
-              <span className={actionIconVariants({ action })}>
-                <content.icon className="h-7 w-7" />
-              </span>
-              <DialogTitle>{content.title}</DialogTitle>
-              <p className={namePillVariants()}>{name}</p>
-            </div>
-
-            <div className="mt-6 flex gap-2.5">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isBusy}
-                className="h-10 flex-1"
-              >
-                Kembali
-              </Button>
-              <Button
-                type="button"
-                onClick={() => onConfirm(action)}
-                disabled={isBusy}
-                className={confirmButtonVariants({ action })}
-              >
-                {isBusy ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  content.confirmLabel
-                )}
-              </Button>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
   );
 }

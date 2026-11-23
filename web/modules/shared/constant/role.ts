@@ -13,7 +13,8 @@ export type Permission =
   | "manage_accounts"
   | "view_admission_settings"
   | "manage_admission_settings"
-  | "manage_developer_accounts";
+  | "manage_developer_accounts"
+  | "assign_interviewers";
 
 export const ADMIN_ROLE_LABEL: Record<AdminRole, string> = {
   principal: "Kepsek",
@@ -29,8 +30,13 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     "manage_accounts",
     "view_admission_settings",
     "manage_admission_settings",
+    "assign_interviewers",
   ],
-  vice_principal: ["view_accounts", "view_admission_settings"],
+  vice_principal: [
+    "view_accounts",
+    "view_admission_settings",
+    "assign_interviewers",
+  ],
   administration_staff: [],
   teacher: [],
   developer: [
@@ -39,5 +45,6 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     "view_admission_settings",
     "manage_admission_settings",
     "manage_developer_accounts",
+    "assign_interviewers",
   ],
 };

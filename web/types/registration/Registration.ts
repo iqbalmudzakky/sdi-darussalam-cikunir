@@ -11,6 +11,7 @@ import type {
   RegistrationListResponse,
   UpdateRegistrationRequest,
 } from "@/modules/registration-admin/dto";
+import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
 import type { useFullRegistrationForm } from "@/hooks/useFullRegistrationForm";
 import type {
   FullFormLinkResult,
@@ -32,6 +33,13 @@ export type RegistrationDocument = RegistrationDocumentResponse;
 
 export type RegistrationFullForm = NonNullable<RegistrationDetail["full_form"]>;
 
+export type RegistrationSchedule = NonNullable<RegistrationDetail["schedule"]>;
+
+export type RegistrationScheduleOptions =
+  RegistrationDetail["schedule_options"];
+
+export type TestReminderGroup = TestReminderGroupResponse;
+
 export type RegistrationFormSection = RegistrationFormSectionResponse;
 
 export type RegistrationFormRow = RegistrationFormRowResponse;
@@ -49,6 +57,8 @@ export type ShortFormOptions = ShortFormOptionsResponse;
 export type UpdateRegistrationInput = UpdateRegistrationRequest;
 
 export type RegistrationStatus = Registration["status"];
+
+export type RegistrationStatusAction = "cancel" | "reactivate";
 
 export type RegistrationProgram = NonNullable<Registration["program"]>;
 

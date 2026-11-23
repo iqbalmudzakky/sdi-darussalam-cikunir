@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  ScheduleTestRequestSchema,
+  type ScheduleOptionsResponse,
+  type ScheduleResponse,
+} from "@/modules/admission-test/dto";
+import type { SessionUser } from "@/modules/auth/dto";
 import type { RegistrationPaymentSummary } from "@/modules/payment/entity";
 import {
   ACADEMIC_YEAR_PATTERN,
@@ -75,6 +81,11 @@ export const UpdateRegistrationRequestSchema = z.discriminatedUnion("action", [
     action: z.literal("update_form"),
     form: EditRegistrationFormSchema,
   }),
+  z.object({
+    action: z.literal("schedule"),
+    schedule: ScheduleTestRequestSchema,
+  }),
+  z.object({ action: z.literal("mark_reminded") }),
 ]);
 
 export type UpdateRegistrationRequest = z.infer<
@@ -84,6 +95,7 @@ export type UpdateRegistrationRequest = z.infer<
 export type UpdateRegistrationInput = {
   id: string;
   request: UpdateRegistrationRequest;
+  actor: SessionUser;
 };
 
 export type UpdateRegistrationFailureReason =
@@ -92,7 +104,9 @@ export type UpdateRegistrationFailureReason =
   | "invalid_document"
   | "duplicate_nik"
   | "invalid_year"
-  | "manual_duplicate";
+  | "manual_duplicate"
+  | "invalid_interviewer"
+  | "forbidden_interviewer";
 
 export type UpdateRegistrationResult =
   | { ok: true; registration: RegistrationDetailResponse }
@@ -196,6 +210,8 @@ export type RegistrationDetailResponse = RegistrationListItemResponse & {
   can_cancel: boolean;
   can_reactivate: boolean;
   can_send_form_link: boolean;
+  schedule: ScheduleResponse | null;
+  schedule_options: ScheduleOptionsResponse;
   full_form: RegistrationFullFormResponse | null;
 };
 

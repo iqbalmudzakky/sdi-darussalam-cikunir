@@ -7,6 +7,8 @@ import type {
   RegistrationEditFormResponse,
   RegistrationListResponse,
 } from "@/modules/registration-admin/dto";
+import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
+import * as admissionTestService from "@/modules/admission-test/service";
 import type { FullFormLinkResult } from "@/modules/registration-link/dto";
 import * as registrationLinkService from "@/modules/registration-link/service";
 import * as registrationService from "@/modules/registration/service";
@@ -43,6 +45,20 @@ export async function getRegistrationForm(
       error,
     );
     return null;
+  }
+}
+
+export async function listTestReminders(): Promise<
+  TestReminderGroupResponse[]
+> {
+  const user = await requireUser();
+  if (!user) return [];
+
+  try {
+    return await admissionTestService.listReminders();
+  } catch (error) {
+    console.error("lib/actions/registrations.listTestReminders failed:", error);
+    return [];
   }
 }
 

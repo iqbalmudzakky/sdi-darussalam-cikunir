@@ -21,6 +21,12 @@ import type {
   UpdateRegistrationInfoInput,
 } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
+import type {
+  SaveScheduleInput,
+  ScheduleViewResponse,
+} from "@/modules/admission-test/dto";
+import * as admissionTestService from "@/modules/admission-test/service";
+import type { SessionUser } from "@/modules/auth/dto";
 import { withTransaction } from "@/modules/db/postgres";
 import {
   RECEIVED_DOCUMENT_LABEL,
@@ -81,19 +87,21 @@ export async function listRegistrations(
 
 export async function getRegistrationDetail(
   id: string,
+  actor: SessionUser,
 ): Promise<RegistrationDetailResponse | null> {
   const row = await registrationService.findFullById(id);
   if (!row) return null;
 
   const registrationIds = [id];
   const hasFullForm = row.full_form_completed_at !== null;
-  const [payments, parents, form, extras] = await Promise.all([
+  const [payments, parents, form, extras, scheduleView] = await Promise.all([
     paymentService.getSummariesByRegistrationIds(registrationIds),
     registrationBiodataService.listParentsByRegistrationIds(registrationIds),
     hasFullForm ? registrationService.findFormById(id) : null,
     hasFullForm
       ? registrationBiodataService.getDetailsAndAchievements(id)
       : null,
+    admissionTestService.getScheduleView(id, actor),
   ]);
 
   const payment = toPaymentSummary(id, payments);
@@ -101,7 +109,7 @@ export async function getRegistrationDetail(
     form && extras
       ? buildRegistrationFullForm(row, form, parents, extras, payment)
       : null;
-  const detail = toDetail(row, payments, fullForm);
+  const detail = toDetail(row, payments, fullForm, scheduleView);
   return detail;
 }
 
@@ -141,7 +149,7 @@ export async function updateRegistration(
     const failureReason = await applyRegistrationUpdate(input);
     const registration = failureReason
       ? null
-      : await getRegistrationDetail(input.id);
+      : await getRegistrationDetail(input.id, input.actor);
 
     if (!registration) {
       const failure: UpdateRegistrationResult = {
@@ -210,8 +218,23 @@ async function applyRegistrationUpdate(
     return updateRegistrationForm(id, request.form);
   }
 
+  if (request.action === "mark_reminded") {
+    const marked = await admissionTestService.markReminded(id, input.actor.id);
+    return marked ? null : "not_found";
+  }
+
   const registration = await registrationService.findFullById(id);
   if (!registration) return "not_found";
+
+  if (request.action === "schedule") {
+    if (registration.status === "cancelled") return "invalid_state";
+    const scheduleInput: SaveScheduleInput = {
+      registrationId: id,
+      request: request.schedule,
+      actor: input.actor,
+    };
+    return admissionTestService.saveSchedule(scheduleInput);
+  }
 
   const document = request.document;
   const allowedDocuments =
@@ -335,6 +358,7 @@ function toDetail(
   row: PpdbRegistrationFullRow,
   payments: RegistrationPaymentSummaries,
   fullForm: RegistrationFullFormResponse | null,
+  scheduleView: ScheduleViewResponse,
 ): RegistrationDetailResponse {
   const entryAge = row.academic_year
     ? calculateEntryAge(row.date_of_birth, row.academic_year)
@@ -358,6 +382,8 @@ function toDetail(
     can_reactivate: row.status === "cancelled",
     can_send_form_link: row.source === "online" && Boolean(row.contact_phone),
     full_form: fullForm,
+    schedule: scheduleView.schedule,
+    schedule_options: scheduleView.options,
   };
   return detail;
 }

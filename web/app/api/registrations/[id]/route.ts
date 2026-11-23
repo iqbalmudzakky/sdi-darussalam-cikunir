@@ -21,8 +21,10 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const registration =
-      await registrationAdminService.getRegistrationDetail(id);
+    const registration = await registrationAdminService.getRegistrationDetail(
+      id,
+      user,
+    );
     if (!registration) {
       const failure = REGISTRATION_FAILURE.not_found;
       return NextResponse.json(
@@ -95,7 +97,11 @@ export async function PATCH(
   }
 
   try {
-    const input: UpdateRegistrationInput = { id, request: parsed.data };
+    const input: UpdateRegistrationInput = {
+      id,
+      request: parsed.data,
+      actor: user,
+    };
     const result = await registrationAdminService.updateRegistration(input);
     if (!result.ok) {
       const failure = REGISTRATION_FAILURE[result.reason];

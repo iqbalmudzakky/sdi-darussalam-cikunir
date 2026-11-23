@@ -1140,7 +1140,7 @@ diketik dua kali, tapi tetap bisa diubah.
 | K32 | NIS, no. seri ijazah, SKHUN, no. UN tidak ditanyakan (anak TK belum punya)                                                                                                    |
 | K33 | Link form lengkap berlaku **14 hari** sejak dikirim sampai PR 3, lalu sampai hari tes. Kirim ulang mematikan link lama                                                        |
 | K34 | Input manual (K24): orang tua datang langsung, panitia isi form lengkap saat itu. Yang wajib hanya isian form pendek (K3); sisanya dan email boleh kosong, dilengkapi guru nanti |
-| K35 | Rilis production dipercepat (23 Nov 2026): PR 2 + jadwal & pewawancara (F11). Tes, lunas, dan hasil sementara dikerjakan guru manual di luar website sampai fiturnya rilis    |
+| K35 | Rilis production setelah **satu alur PMB lengkap** (PR 2–5). Sempat dipercepat ke PR 2 + F11 (23 Nov), dibatalkan 24 Nov setelah tenggat dilonggarkan sekolah                |
 | K36 | Panitia bisa **Ubah data** pendaftar dengan aturan K34 (program boleh kosong). Ganti TA = nomor baru di urutan TA itu. "Kirim form lengkap" hanya untuk pendaftar online   |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
@@ -1358,12 +1358,15 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - CP mengisi tanggal + jam → status Terjadwal.
 - Pewawancara anak & ortu: dropdown dengan kolom cari dari akun PMB; tombol **"Ambil"** untuk
   diri sendiri.
+- Nama pewawancara diambil dari SSO (endpoint daftar guru & staf, dicocokkan lewat email akun,
+  diputuskan 23 Nov 2026), tanpa kolom nama di PMB. Sampai endpoint SSO siap, yang tampil bagian
+  depan email.
 - Dashboard: kartu **"Jadwal hari ini & besok"** dengan tombol WA pengingat per pendaftar dan
   tanda **Sudah diingatkan**. Setelah ditandai, pendaftar itu hilang dari daftar pengingat
   (dicatat siapa dan kapan).
 - Email pengingat H-1 ke orang tua yang punya email: route cron
   `/api/cron/send-test-reminders`, sekali sehari. Dicatat supaya tidak terkirim dua kali.
-  **Ditunda sampai setelah rilis K35** (butuh cron dari infra); sementara panitia mengingatkan
+  **Ditunda** (keputusan 23 Nov 2026, butuh cron dari infra); sementara panitia mengingatkan
   lewat WA dari kartu di atas.
 
 #### F12 — Pembayaran biaya pendaftaran
@@ -1462,9 +1465,9 @@ Setiap PR: **kode → review → deploy staging → uji → deploy production**,
 
 - **PR 1 rilis sendiri ke production.** Tidak mengubah alur pendaftar, dan peran baru perlu
   dicoba di production sebelum alur baru bergantung padanya.
-- **PR 2 dan F11 dari PR 3 dirilis ke production bersamaan** (K35, diubah 23 Nov 2026; sebelumnya
-  PR 2–5 ditahan sampai PR 5 lolos). Pendaftar bisa daftar sampai dapat jadwal tes. Tes, lunas,
-  dan hasil dicatat guru manual seperti sekarang sampai F12–F17 rilis menyusul.
+- **PR 2–5 ditahan di `staging`, lalu dirilis ke production bersamaan** setelah PR 5 lolos uji
+  (K35). PR 2 membuang pembayaran di depan. Kalau rilis sendiri, pendaftar masuk tanpa bayar padahal
+  layar tes, lunas, dan surat belum ada — sekolah terjebak di alur setengah jadi.
 - **PR 6 rilis sendiri** setelah alur baru berjalan di production (membuang nilai lama `CHECK`
   harus menunggu container lama benar-benar hilang).
 - Selama PR 2–5 ditahan, perbaikan mendesak untuk production dibuat dari branch `main`
