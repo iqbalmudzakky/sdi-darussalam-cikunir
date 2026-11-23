@@ -1142,6 +1142,7 @@ diketik dua kali, tapi tetap bisa diubah.
 | K34 | Input manual (K24): orang tua datang langsung, panitia isi form lengkap saat itu. Yang wajib hanya isian form pendek (K3); sisanya dan email boleh kosong, dilengkapi guru nanti |
 | K35 | Rilis production setelah **satu alur PMB lengkap** (PR 2–5). Sempat dipercepat ke PR 2 + F11 (23 Nov), dibatalkan 24 Nov setelah tenggat dilonggarkan sekolah                |
 | K36 | Panitia bisa **Ubah data** pendaftar dengan aturan K34 (program boleh kosong). Ganti TA = nomor baru di urutan TA itu. "Kirim form lengkap" hanya untuk pendaftar online   |
+| K37 | Jadwal tes **boleh diatur sebelum form lengkap diisi**. Link yang dikirim setelah ada jadwal berlaku sampai hari tes, dan pesan WA menyebut tanggal itu                       |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1460,6 +1461,16 @@ tersimpan) yang masih `pending` dibiarkan bisa selesai sampai kedaluwarsa. Jalur
 | 4   | Observasi, tes manual, Profil Kesiapan     | F13, F14           |
 | 5   | Surat-surat, PDF, pengaturan PMB           | F15, F16, F17, F18 |
 | 6   | Statistik + buang nilai lama dari `CHECK`  | F19, 11.7          |
+
+**Urutan sisa pekerjaan (24 Nov 2026, F7–F11 dan K24/K34/K36 sudah lolos uji staging):**
+
+1. K33: link form lengkap berlaku sampai hari tes.
+2. F12 pembayaran + email pengingat H-1 (F11, butuh cron infra).
+3. F13–F14 observasi & tes manual.
+4. F15–F18 surat, PDF, pengaturan PMB.
+5. Nama pewawancara dari SSO (F11): menunggu endpoint daftar guru & staf dari pemilik SSO; disambungkan
+   begitu siap.
+6. Satu akun SSO–LMS–PMB (bab 12): setelah fitur wawancara selesai.
 
 Setiap PR: **kode → review → deploy staging → uji → deploy production**, dengan aturan rilis:
 

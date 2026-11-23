@@ -1,5 +1,7 @@
 import * as repository from "./repository";
 import { withTransaction } from "@/modules/db/postgres";
+import type { TestDayResponse } from "@/modules/admission-test/dto";
+import * as admissionTestService from "@/modules/admission-test/service";
 import { getRegistrationFee } from "@/modules/payment-settings/service";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
 import type { UpdateRegistrationFormInput } from "@/modules/registration/entity";
@@ -55,7 +57,10 @@ export async function sendFormLink(
   registrationId: string,
   adminId: string,
 ): Promise<string | null> {
-  const registration = await registrationService.findFormById(registrationId);
+  const [registration, testDay] = await Promise.all([
+    registrationService.findFormById(registrationId),
+    admissionTestService.findTestDay(registrationId),
+  ]);
   if (!registration?.contact_phone) return null;
 
   const token = await createLink(registrationId, adminId);
@@ -64,7 +69,9 @@ export async function sendFormLink(
     "Assalamu'alaikum, berikut link form lengkap pendaftaran SDI Darussalam Cikunir.",
     `Nama anak: ${registration.student.full_name}\nNo. pendaftaran: ${registration.registration_number ?? "-"}`,
     formUrl,
-    `Link berlaku ${FORM_LINK_TTL_DAYS} hari.`,
+    testDay
+      ? `Link berlaku sampai ${testDay.date_label}.`
+      : `Link berlaku ${FORM_LINK_TTL_DAYS} hari.`,
   ].join("\n\n");
   return buildWhatsAppLink(registration.contact_phone, message);
 }
@@ -74,10 +81,13 @@ export async function getFullFormByToken(
 ): Promise<FullFormLinkResult> {
   try {
     const link = await findLink(token);
-    const registration = link
-      ? await registrationService.findFormById(link.registration_id)
-      : null;
-    const isActive = link ? new Date(link.expires_at) > new Date() : false;
+    const [registration, testDay] = link
+      ? await Promise.all([
+          registrationService.findFormById(link.registration_id),
+          admissionTestService.findTestDay(link.registration_id),
+        ])
+      : [null, null];
+    const isActive = isLinkActive(link, testDay);
 
     if (!registration || !isActive) {
       const profile = await schoolProfileService.getSchoolProfile();
@@ -125,8 +135,10 @@ export async function submitFullForm(
   const { token, request } = input;
   try {
     const link = await findLink(token);
-    const isActive = link ? new Date(link.expires_at) > new Date() : false;
-    if (!link || !isActive) {
+    const testDay = link
+      ? await admissionTestService.findTestDay(link.registration_id)
+      : null;
+    if (!link || !isLinkActive(link, testDay)) {
       const expired: SubmitFullFormResult = {
         ok: false,
         reason: "expired_link",
@@ -175,4 +187,16 @@ export async function submitFullForm(
     console.error("registrationLink.submitFullForm failed:", error);
     throw error;
   }
+}
+
+function isLinkActive(
+  link: RegistrationFormLink | null,
+  testDay: TestDayResponse | null,
+): boolean {
+  if (!link) return false;
+
+  const expiresAt = testDay
+    ? new Date(`${testDay.test_date}T23:59:59+07:00`)
+    : new Date(link.expires_at);
+  return expiresAt > new Date();
 }

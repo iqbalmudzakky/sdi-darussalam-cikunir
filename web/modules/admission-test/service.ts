@@ -14,6 +14,7 @@ import type {
   SaveScheduleInput,
   ScheduleResponse,
   ScheduleViewResponse,
+  TestDayResponse,
   TestReminderGroupResponse,
 } from "./dto";
 import type { AdmissionTestRow, SaveAdmissionTestInput } from "./entity";
@@ -105,6 +106,26 @@ export async function saveSchedule(
     await registrationService.markScheduledWithin(tx, registrationId);
   });
   return null;
+}
+
+export async function findTestDay(
+  registrationId: string,
+): Promise<TestDayResponse | null> {
+  const row = await withDbLogging("admissionTest.findByRegistrationId", () =>
+    repository.findByRegistrationId(registrationId),
+  );
+  if (!row) return null;
+
+  const testDay: TestDayResponse = {
+    test_date: row.test_date,
+    date_label: formatDate(row.test_date, {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+  };
+  return testDay;
 }
 
 export async function markReminded(

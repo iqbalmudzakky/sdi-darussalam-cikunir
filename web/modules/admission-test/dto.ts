@@ -56,6 +56,11 @@ export type ScheduleViewResponse = {
   options: ScheduleOptionsResponse;
 };
 
+export type TestDayResponse = {
+  test_date: string;
+  date_label: string;
+};
+
 export type TestReminderResponse = {
   registration_id: string;
   registration_number: string | null;
