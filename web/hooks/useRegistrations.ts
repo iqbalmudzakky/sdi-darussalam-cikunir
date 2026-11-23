@@ -4,10 +4,19 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useToast } from "@/hooks/useToast";
 import {
   listRegistrations,
+  submitFullForm,
   submitShortRegistration,
 } from "@/lib/api/registration/registrations";
 import { fetchShortFormOptions } from "@/lib/api/registration/registrationWindow";
 import type {
+  FullFormAchievementState,
+  FullFormData,
+  FullFormInput,
+  FullFormReceipt,
+  FullFormSection,
+  FullFormState,
+  FullFormStep,
+  FullRegistrationFormInput,
   ListRegistrationsParams,
   Registration,
   RegistrationListFilters,
@@ -228,6 +237,116 @@ export function useRegistrationList() {
   return list;
 }
 
+export function useFullRegistrationForm({
+  token,
+  form,
+}: FullRegistrationFormInput) {
+  const [values, setValues] = useState<FullFormState>(() =>
+    toFullFormState(form),
+  );
+  const [step, setStep] = useState<FullFormStep>("child");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [receipt, setReceipt] = useState<FullFormReceipt | null>(null);
+
+  function setSectionField(
+    section: FullFormSection,
+    field: string,
+    value: string,
+  ) {
+    setValues((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [field]: value },
+    }));
+    setFieldErrors((prev) => ({ ...prev, [`${section}.${field}`]: "" }));
+  }
+
+  function setParentEmail(value: string) {
+    setValues((prev) => ({ ...prev, parent_email: value }));
+    setFieldErrors((prev) => ({ ...prev, parent_email: "" }));
+  }
+
+  function addAchievement() {
+    const achievement: FullFormAchievementState = {
+      category: "",
+      level: "",
+      name: "",
+      year: "",
+      organizer: "",
+    };
+    setValues((prev) => ({
+      ...prev,
+      achievements: [...prev.achievements, achievement],
+    }));
+  }
+
+  function updateAchievement(index: number, field: string, value: string) {
+    setValues((prev) => ({
+      ...prev,
+      achievements: prev.achievements.map((achievement, position) =>
+        position === index ? { ...achievement, [field]: value } : achievement,
+      ),
+    }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      [`achievements.${index}.${field}`]: "",
+    }));
+  }
+
+  function removeAchievement(index: number) {
+    setValues((prev) => ({
+      ...prev,
+      achievements: prev.achievements.filter(
+        (_, position) => position !== index,
+      ),
+    }));
+  }
+
+  async function submit(): Promise<Record<string, string> | null> {
+    if (isSubmitting) return null;
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const input = toFullFormInput(values);
+      const result = await submitFullForm(token, input);
+      if (result.ok) {
+        setReceipt(result);
+        return null;
+      }
+      setFieldErrors(result.fieldErrors);
+      setSubmitError(result.error);
+      return result.fieldErrors;
+    } catch (error) {
+      console.error("Failed to submit full form:", error);
+      setSubmitError("Gagal mengirim. Coba lagi.");
+      return null;
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  const controller = {
+    registrationNumber: form.registration_number,
+    registrationType: form.registration_type,
+    values,
+    step,
+    fieldErrors,
+    isSubmitting,
+    submitError,
+    receipt,
+    setStep,
+    setSectionField,
+    setParentEmail,
+    addAchievement,
+    updateAchievement,
+    removeAchievement,
+    submit,
+  };
+  return controller;
+}
+
 function buildListParams(
   filters: RegistrationListFilters,
   search: string,
@@ -241,4 +360,90 @@ function buildListParams(
     offset,
   };
   return params;
+}
+
+function toFullFormState(form: FullFormData): FullFormState {
+  const { values } = form;
+  const emptyParent = {
+    name: "",
+    birth_year: "",
+    special_needs: "",
+    nik: "",
+    occupation: "",
+    education: "",
+    income_range: "",
+    phone: "",
+  };
+
+  const state: FullFormState = {
+    student: toTextRecord(values.student) as FullFormState["student"],
+    parent_email: values.parent_email ?? "",
+    father: { ...emptyParent, ...toTextRecord(values.father ?? {}) },
+    mother: { ...emptyParent, ...toTextRecord(values.mother ?? {}) },
+    guardian: { ...emptyParent, ...toTextRecord(values.guardian ?? {}) },
+    details: toTextRecord(
+      values.details ?? {
+        living_with: null,
+        transportation_method: null,
+        height: null,
+        weight: null,
+        distance_km: null,
+        travel_time_minutes: null,
+      },
+    ) as FullFormState["details"],
+    achievements: values.achievements.map(
+      (achievement) => toTextRecord(achievement) as FullFormAchievementState,
+    ),
+  };
+  return state;
+}
+
+function toFullFormInput(state: FullFormState): FullFormInput {
+  const guardian = state.guardian;
+
+  const input = {
+    student: {
+      ...state.student,
+      sibling_count: toNumber(state.student.sibling_count),
+      latitude: toNumber(state.student.latitude),
+      longitude: toNumber(state.student.longitude),
+    },
+    parent_email: state.parent_email,
+    father: { ...state.father, birth_year: toNumber(state.father.birth_year) },
+    mother: { ...state.mother, birth_year: toNumber(state.mother.birth_year) },
+    guardian: guardian.name.trim()
+      ? {
+          name: guardian.name,
+          birth_year: toNumber(guardian.birth_year),
+          occupation: guardian.occupation || null,
+          education: guardian.education || null,
+          income_range: guardian.income_range || null,
+        }
+      : null,
+    details: {
+      ...state.details,
+      height: toNumber(state.details.height),
+      weight: toNumber(state.details.weight),
+      distance_km: toNumber(state.details.distance_km),
+      travel_time_minutes: toNumber(state.details.travel_time_minutes),
+    },
+    achievements: state.achievements.map((achievement) => ({
+      ...achievement,
+      year: toNumber(achievement.year),
+    })),
+  };
+  return input as unknown as FullFormInput;
+}
+
+function toTextRecord(record: object): Record<string, string> {
+  const entries = Object.entries(record).map(([key, value]) => [
+    key,
+    value === null || value === undefined ? "" : String(value),
+  ]);
+  return Object.fromEntries(entries);
+}
+
+function toNumber(value: string): number | null {
+  const trimmed = value.trim().replace(",", ".");
+  return trimmed === "" ? null : Number(trimmed);
 }

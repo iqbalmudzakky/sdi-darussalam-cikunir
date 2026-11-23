@@ -4,7 +4,6 @@ import { useRef, useState, type ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import {
   ArrowLeftRight,
-  Check,
   ChevronRight,
   CircleCheck,
   GraduationCap,
@@ -16,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RegistrationFlowSteps } from "@/components/sections/RegistrationForm/RegistrationFlowSteps";
 import { ShortRegistrationForm } from "@/components/sections/RegistrationForm/ShortRegistrationForm";
 import { useToast } from "@/hooks/useToast";
 import { fetchRegistrationOpen } from "@/lib/api/registration/registrationWindow";
@@ -56,32 +56,6 @@ const typeOptionVariants = cva([
   "border-brand-100 bg-white p-4 text-left transition-colors",
   "hover:border-brand-300",
 ]);
-
-const stepMarkerVariants = cva(
-  [
-    "relative z-10 flex h-6.5 w-6.5 shrink-0 items-center justify-center",
-    "rounded-full border text-xs font-semibold",
-  ],
-  {
-    variants: {
-      state: {
-        done: "border-brand-600 bg-brand-600 text-white",
-        current: "border-2 border-brand-600 bg-brand-100 text-brand-700",
-        upcoming: "border-brand-200 bg-white text-ink-500",
-      },
-    },
-  },
-);
-
-const stepLabelVariants = cva("text-sm", {
-  variants: {
-    state: {
-      done: "text-ink-500",
-      current: "font-semibold text-ink-900",
-      upcoming: "text-ink-700",
-    },
-  },
-});
 
 const registrationNumberVariants = cva([
   "mt-3 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1",
@@ -317,8 +291,6 @@ type RegistrationSubmittedProps = {
 };
 
 function RegistrationSubmitted({ receipt }: RegistrationSubmittedProps) {
-  const lastStepIndex = receipt.flow_steps.length - 1;
-
   return (
     <div className="flex flex-col items-center">
       <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-brand-700">
@@ -333,50 +305,8 @@ function RegistrationSubmitted({ receipt }: RegistrationSubmittedProps) {
         No. {receipt.registration_number}
       </p>
 
-      <div className="mt-4 w-full rounded-xl border border-brand-100 bg-white p-4">
-        <p className="mb-3 text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase">
-          Alur pendaftaran
-        </p>
-
-        <ol>
-          {receipt.flow_steps.map((step, index) => (
-            <li
-              key={step.label}
-              className="relative flex items-center gap-3 pb-3.5 last:pb-0"
-            >
-              {index < lastStepIndex && (
-                <span
-                  aria-hidden="true"
-                  className="absolute top-6 bottom-0 left-3 w-px bg-brand-200"
-                />
-              )}
-
-              <span className={stepMarkerVariants({ state: step.state })}>
-                {step.state === "done" ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  index + 1
-                )}
-              </span>
-
-              <span className={stepLabelVariants({ state: step.state })}>
-                {step.label}
-              </span>
-
-              {step.badge && (
-                <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-medium text-white">
-                  {step.badge}
-                </span>
-              )}
-
-              {step.fee !== null && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
-                  Rp{step.fee.toLocaleString("id-ID")}
-                </span>
-              )}
-            </li>
-          ))}
-        </ol>
+      <div className="mt-4 w-full">
+        <RegistrationFlowSteps steps={receipt.flow_steps} />
       </div>
 
       {receipt.whatsapp_url && (

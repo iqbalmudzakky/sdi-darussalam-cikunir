@@ -5,6 +5,12 @@ import type {
   RegistrationListResponse,
   UpdateRegistrationRequest,
 } from "@/modules/registration-admin/dto";
+import type { useFullRegistrationForm } from "@/hooks/useRegistrations";
+import type {
+  FullFormLinkResult,
+  FullFormRequest,
+  SubmitFullFormResult,
+} from "@/modules/registration-link/dto";
 import type {
   CreateShortRegistrationResult,
   ShortFormOptionsResponse,
@@ -243,3 +249,73 @@ export type ShortFormOptionsQuery = {
 
 export type UpdateRegistrationResult =
   { ok: true; registration: RegistrationDetail } | { ok: false; error: string };
+
+export type FullFormLink = FullFormLinkResult;
+
+export type FullFormData = Extract<
+  FullFormLinkResult,
+  { status: "valid" }
+>["form"];
+
+export type FullFormInput = FullFormRequest;
+
+export type FullFormReceipt = Omit<
+  Extract<SubmitFullFormResult, { ok: true }>,
+  "ok"
+>;
+
+export type FullFormSubmitResult =
+  | ({ ok: true } & FullFormReceipt)
+  | {
+      ok: false;
+      error: string;
+      fieldErrors: Record<string, string>;
+    };
+
+export type FullFormStep = "child" | "parents" | "submit";
+
+type FullFormValues = FullFormData["values"];
+
+type AsText<T> = { [K in keyof T]-?: string };
+
+export type FullFormStudentState = AsText<FullFormValues["student"]>;
+
+export type FullFormParentState = AsText<
+  Omit<NonNullable<FullFormValues["father"]>, "parent_type">
+>;
+
+export type FullFormGuardianState = Pick<
+  FullFormParentState,
+  "name" | "birth_year" | "occupation" | "education" | "income_range"
+>;
+
+export type FullFormDetailsState = AsText<
+  NonNullable<FullFormValues["details"]>
+>;
+
+export type FullFormAchievementState = AsText<
+  FullFormValues["achievements"][number]
+>;
+
+export type FullFormState = {
+  student: FullFormStudentState;
+  parent_email: string;
+  father: FullFormParentState;
+  mother: FullFormParentState;
+  guardian: FullFormGuardianState;
+  details: FullFormDetailsState;
+  achievements: FullFormAchievementState[];
+};
+
+export type FullFormSection =
+  "student" | "father" | "mother" | "guardian" | "details";
+
+export type FullRegistrationFormInput = {
+  token: string;
+  form: FullFormData;
+};
+
+export type SendFormLinkResult =
+  { ok: true; whatsappUrl: string } | { ok: false; error: string };
+
+export type FullFormController = ReturnType<typeof useFullRegistrationForm>;

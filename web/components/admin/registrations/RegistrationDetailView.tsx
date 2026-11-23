@@ -19,11 +19,11 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/useToast";
 import {
   getRegistration,
+  sendFormLink,
   updateRegistration,
 } from "@/lib/api/registration/registrations";
 import { formatNumericDateOnly } from "@/lib/date";
 import { formatRegistrationSummary } from "@/lib/registrationOptions";
-import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import type {
   RegistrationDetail,
   RegistrationDocument,
@@ -114,6 +114,7 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [pendingAction, setPendingAction] = useState<StatusAction | null>(null);
   const [isFullFormOpen, setIsFullFormOpen] = useState(false);
+  const [isSendingLink, setIsSendingLink] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,6 +154,27 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
       return false;
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleSendFormLink() {
+    const whatsappWindow = window.open("", "_blank");
+    setIsSendingLink(true);
+    try {
+      const result = await sendFormLink(id);
+      if (!result.ok) {
+        whatsappWindow?.close();
+        toast.error(result.error);
+        return;
+      }
+      if (whatsappWindow) whatsappWindow.location.href = result.whatsappUrl;
+      else window.location.href = result.whatsappUrl;
+    } catch (error) {
+      console.error("Failed to send form link:", error);
+      whatsappWindow?.close();
+      toast.error("Gagal membuat link form lengkap");
+    } finally {
+      setIsSendingLink(false);
     }
   }
 
@@ -230,6 +252,8 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
 
       <SummaryCard
         registration={registration}
+        isSendingLink={isSendingLink}
+        onSendFormLink={handleSendFormLink}
         onOpenFullForm={() => setIsFullFormOpen(true)}
       />
 
@@ -291,10 +315,17 @@ function DataRow({ label, value }: { label: string; value: ReactNode }) {
 
 type SummaryCardProps = {
   registration: RegistrationDetail;
+  isSendingLink: boolean;
+  onSendFormLink: () => void;
   onOpenFullForm: () => void;
 };
 
-function SummaryCard({ registration, onOpenFullForm }: SummaryCardProps) {
+function SummaryCard({
+  registration,
+  isSendingLink,
+  onSendFormLink,
+  onOpenFullForm,
+}: SummaryCardProps) {
   const summaryParts = [
     registration.registration_number,
     formatRegistrationSummary(registration),
@@ -314,15 +345,19 @@ function SummaryCard({ registration, onOpenFullForm }: SummaryCardProps) {
 
       <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         {registration.contact_phone && (
-          <a
-            href={buildWhatsAppLink(registration.contact_phone)}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={onSendFormLink}
+            disabled={isSendingLink}
             className={chatButtonVariants()}
           >
-            <MessageCircle className="h-4 w-4" />
-            Chat orang tua
-          </a>
+            {isSendingLink ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MessageCircle className="h-4 w-4" />
+            )}
+            Kirim form lengkap
+          </button>
         )}
 
         {registration.has_full_form && (

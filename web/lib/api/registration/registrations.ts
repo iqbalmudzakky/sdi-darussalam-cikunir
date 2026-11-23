@@ -1,5 +1,8 @@
 import type {
+  FullFormInput,
+  FullFormSubmitResult,
   ListRegistrationsParams,
+  SendFormLinkResult,
   RegistrationDetail,
   RegistrationListPage,
   RegistrationStatus,
@@ -130,4 +133,42 @@ export async function getPendingFollowUpCount(): Promise<number> {
   if (!res.ok) throw new Error(`Failed to get pending count (${res.status})`);
   const data = await res.json();
   return data.count;
+}
+
+export async function submitFullForm(
+  token: string,
+  input: FullFormInput,
+): Promise<FullFormSubmitResult> {
+  const res = await fetch(`/api/registrations/form/${token}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const failure: FullFormSubmitResult = {
+      ok: false,
+      error: data.error ?? "Gagal mengirim form lengkap.",
+      fieldErrors: data.field_errors ?? {},
+    };
+    return failure;
+  }
+
+  const result: FullFormSubmitResult = { ok: true, ...data };
+  return result;
+}
+
+export async function sendFormLink(id: string): Promise<SendFormLinkResult> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "send_form_link" }),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  const result: SendFormLinkResult = res.ok
+    ? { ok: true, whatsappUrl: data.whatsapp_url }
+    : { ok: false, error: data.error ?? "Gagal membuat link form lengkap." };
+  return result;
 }

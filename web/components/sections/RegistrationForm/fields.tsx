@@ -358,3 +358,22 @@ export function TextareaField({
     </FieldWrapper>
   );
 }
+
+const formSectionHeadingVariants = cva([
+  "mb-4 border-b border-brand-200 pb-2",
+  "text-[11px] font-medium tracking-[0.18em] text-brand-600 uppercase",
+]);
+
+type FormSectionProps = {
+  title: string;
+  children: React.ReactNode;
+};
+
+export function FormSection({ title, children }: FormSectionProps) {
+  return (
+    <section>
+      <h3 className={formSectionHeadingVariants()}>{title}</h3>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}

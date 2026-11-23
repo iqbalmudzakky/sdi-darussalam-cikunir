@@ -6,6 +6,16 @@ import {
   REGISTRATION_TYPE_LABEL,
   REGISTRATION_TYPES,
 } from "@/modules/shared/constant/registration";
+import {
+  ACHIEVEMENT_CATEGORY_LABEL,
+  ACHIEVEMENT_LEVEL_LABEL,
+  EDUCATION_LEVEL_LABEL,
+  INCOME_RANGE_LABEL,
+  LIVING_ARRANGEMENT_LABEL,
+  PARENT_OCCUPATION_LABEL,
+  SPECIAL_NEEDS_LABEL,
+  TRANSPORTATION_LABEL,
+} from "@/modules/shared/constant/registrationForm";
 import type { Registration } from "@/types/registration/Registration";
 
 export { REGISTRATION_STATUS_LABEL };
@@ -42,6 +52,17 @@ export const RELIGION_OPTIONS = [
   { value: "konghucu", label: "Konghucu" },
 ];
 
+export const SPECIAL_NEEDS_OPTIONS = toOptions(SPECIAL_NEEDS_LABEL);
+export const OCCUPATION_OPTIONS = toOptions(PARENT_OCCUPATION_LABEL);
+export const EDUCATION_OPTIONS = toOptions(EDUCATION_LEVEL_LABEL);
+export const INCOME_RANGE_OPTIONS = toOptions(INCOME_RANGE_LABEL);
+export const TRANSPORTATION_OPTIONS = toOptions(TRANSPORTATION_LABEL);
+export const LIVING_ARRANGEMENT_OPTIONS = toOptions(LIVING_ARRANGEMENT_LABEL);
+export const ACHIEVEMENT_CATEGORY_OPTIONS = toOptions(
+  ACHIEVEMENT_CATEGORY_LABEL,
+);
+export const ACHIEVEMENT_LEVEL_OPTIONS = toOptions(ACHIEVEMENT_LEVEL_LABEL);
+
 export const PHYSICAL_DISABILITY_OPTIONS = [
   { value: "tidak_ada", label: "Tidak Ada" },
   { value: "ada", label: "Ada" },
@@ -77,4 +98,12 @@ export function formatRegistrationSummary(
   ];
 
   return parts.filter(Boolean).join(" · ");
+}
+
+function toOptions(labels: Record<string, string>) {
+  const options = Object.entries(labels).map(([value, label]) => ({
+    value,
+    label,
+  }));
+  return options;
 }
