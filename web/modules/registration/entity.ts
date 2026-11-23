@@ -121,12 +121,16 @@ export type RegistrationSourceCounts = {
   offline_recorded: number;
 };
 
-export type UpdateRegistrationContactInput = {
+export type UpdateRegistrationInfoInput = {
   registrationId: string;
-  program: RegistrationProgram;
+  registrationType: RegistrationType;
+  academicYear: string;
+  registrationNumber: string | null;
+  program: RegistrationProgram | null;
   targetGrade: number | null;
   contactName: string;
   contactPhone: string;
+  receivedDocuments: ReceivedDocument[];
 };
 
 export type UpdateRegistrationFormInput = {

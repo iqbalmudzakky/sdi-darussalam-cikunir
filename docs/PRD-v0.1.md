@@ -1141,6 +1141,7 @@ diketik dua kali, tapi tetap bisa diubah.
 | K33 | Link form lengkap berlaku **14 hari** sejak dikirim sampai PR 3, lalu sampai hari tes. Kirim ulang mematikan link lama                                                        |
 | K34 | Input manual (K24): orang tua datang langsung, panitia isi form lengkap saat itu. Yang wajib hanya isian form pendek (K3); sisanya dan email boleh kosong, dilengkapi guru nanti |
 | K35 | Rilis production dipercepat (23 Nov 2026): PR 2 + jadwal & pewawancara (F11). Tes, lunas, dan hasil sementara dikerjakan guru manual di luar website sampai fiturnya rilis    |
+| K36 | Panitia bisa **Ubah data** pendaftar dengan aturan K34 (program boleh kosong). Ganti TA = nomor baru di urutan TA itu. "Kirim form lengkap" hanya untuk pendaftar online   |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 

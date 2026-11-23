@@ -11,6 +11,7 @@ import {
 import type { ParentType } from "@/modules/registration-biodata/entity";
 import { TargetGradeSchema } from "@/modules/registration-intake/dto";
 import {
+  blankable,
   optionalEmail,
   personName,
   phoneNumber,
@@ -37,13 +38,26 @@ const RECEIVED_DOCUMENT_VALUES = Object.keys(RECEIVED_DOCUMENT_LABEL) as [
 
 const SORT_DIRECTION_VALUES = ["asc", "desc"] as const;
 
+const EditRegistrationBaseSchema = z.object({
+  academic_year: z
+    .string()
+    .regex(ACADEMIC_YEAR_PATTERN, "Tahun ajaran wajib dipilih."),
+  program: blankable(z.enum(REGISTRATION_PROGRAMS)),
+  contact_name: personName("Nama orang tua"),
+  contact_phone: phoneNumber("No. WhatsApp"),
+});
+
 const EditRegistrationFormSchema = ManualBiodataFormSchema.extend({
-  registration: z.object({
-    program: z.enum(REGISTRATION_PROGRAMS, { error: "Program wajib dipilih." }),
-    target_grade: TargetGradeSchema.nullable().default(null),
-    contact_name: personName("Nama orang tua"),
-    contact_phone: phoneNumber("No. WhatsApp"),
-  }),
+  registration: z.discriminatedUnion("registration_type", [
+    EditRegistrationBaseSchema.extend({
+      registration_type: z.literal("siswa_baru"),
+      target_grade: z.null().default(null),
+    }),
+    EditRegistrationBaseSchema.extend({
+      registration_type: z.literal("pindahan"),
+      target_grade: TargetGradeSchema,
+    }),
+  ]),
   student: ManualStudentFormSchema,
   parent_email: optionalEmail("Email"),
 });
@@ -73,7 +87,12 @@ export type UpdateRegistrationInput = {
 };
 
 export type UpdateRegistrationFailureReason =
-  "not_found" | "invalid_state" | "invalid_document" | "duplicate_nik";
+  | "not_found"
+  | "invalid_state"
+  | "invalid_document"
+  | "duplicate_nik"
+  | "invalid_year"
+  | "manual_duplicate";
 
 export type UpdateRegistrationResult =
   | { ok: true; registration: RegistrationDetailResponse }

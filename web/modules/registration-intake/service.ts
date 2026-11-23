@@ -70,6 +70,27 @@ export async function insertFullRegistrationWithin(
   return registrationId;
 }
 
+export async function assignRegistrationNumberWithin(
+  tx: TransactionSql,
+  academicYear: string,
+): Promise<string> {
+  await registrationStatsService.ensureAcademicYearWithin(tx, academicYear);
+  return registrationService.nextRegistrationNumberWithin(tx, academicYear);
+}
+
+export async function listTargetAcademicYears(): Promise<string[]> {
+  const current = await registrationStatsService.getCurrentAcademicYear();
+  if (!current) return [];
+
+  const startYear = Number(current.split("/")[0]);
+  const yearCount = TARGET_ACADEMIC_YEAR_SPAN + 1;
+  const years = Array.from(
+    { length: yearCount },
+    (_, offset) => `${startYear + offset}/${startYear + offset + 1}`,
+  );
+  return years;
+}
+
 export async function getShortFormOptions(
   query: ShortFormOptionsQuery,
 ): Promise<ShortFormOptionsResponse> {
@@ -294,15 +315,10 @@ async function insertShortRegistrationWithin(
   ipAddress: string,
   source: RegistrationSource,
 ): Promise<{ registrationId: string; registrationNumber: string }> {
-  await registrationStatsService.ensureAcademicYearWithin(
+  const registrationNumber = await assignRegistrationNumberWithin(
     tx,
     request.academic_year,
   );
-  const registrationNumber =
-    await registrationService.nextRegistrationNumberWithin(
-      tx,
-      request.academic_year,
-    );
 
   const registration: NewShortRegistration = {
     source,
@@ -346,19 +362,6 @@ async function buildDuplicateWhatsAppUrl(
     "Mohon bantuannya untuk dicek.",
   ].join("\n\n");
   return buildWhatsAppLink(contactPhone, message);
-}
-
-async function listTargetAcademicYears(): Promise<string[]> {
-  const current = await registrationStatsService.getCurrentAcademicYear();
-  if (!current) return [];
-
-  const startYear = Number(current.split("/")[0]);
-  const yearCount = TARGET_ACADEMIC_YEAR_SPAN + 1;
-  const years = Array.from(
-    { length: yearCount },
-    (_, offset) => `${startYear + offset}/${startYear + offset + 1}`,
-  );
-  return years;
 }
 
 async function getAdmissionContactPhone(): Promise<string> {

@@ -140,7 +140,7 @@ export function FullRegistrationForm(input: FullRegistrationFormInput) {
       if ("id" in result) {
         toast.success(
           input.mode === "edit"
-            ? "Perubahan tersimpan"
+            ? `Perubahan tersimpan, No. ${result.registration_number}`
             : `Tersimpan, No. ${result.registration_number}`,
         );
         router.push(`/registrations/${result.id}`);

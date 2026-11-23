@@ -10,13 +10,15 @@ import type {
 import * as paymentService from "@/modules/payment/service";
 import type { RegistrationParentRow } from "@/modules/registration-biodata/entity";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
+import * as registrationIntakeService from "@/modules/registration-intake/service";
 import type {
   ListRegistrationsInput,
   PpdbRegistrationFullRow,
   PpdbRegistrationListItem,
   RegistrationFilter,
-  UpdateRegistrationContactInput,
+  ShortRegistrationIdentity,
   UpdateRegistrationFormInput,
+  UpdateRegistrationInfoInput,
 } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
 import { withTransaction } from "@/modules/db/postgres";
@@ -228,35 +230,61 @@ async function updateRegistrationForm(
   id: string,
   form: EditRegistrationForm,
 ): Promise<UpdateRegistrationFailureReason | null> {
-  const registration = await registrationService.findFormById(id);
+  const registration = await registrationService.findFullById(id);
   if (!registration) return "not_found";
 
+  const next = form.registration;
+  const isYearChanged = next.academic_year !== registration.academic_year;
   const nik = form.student.nik;
-  const isDuplicateNik = nik
-    ? await registrationService.existsNikOnOther(nik, id)
-    : false;
+  const identity: ShortRegistrationIdentity = {
+    fullName: form.student.full_name,
+    dateOfBirth: form.student.date_of_birth,
+    academicYear: next.academic_year,
+  };
+  const unchangedYears: string[] = [];
+  const [academicYears, isDuplicate, isDuplicateNik] = await Promise.all([
+    isYearChanged
+      ? registrationIntakeService.listTargetAcademicYears()
+      : unchangedYears,
+    isYearChanged ? registrationService.existsShortDuplicate(identity) : false,
+    nik ? registrationService.existsNikOnOther(nik, id) : false,
+  ]);
+  if (isYearChanged && !academicYears.includes(next.academic_year)) {
+    return "invalid_year";
+  }
+  if (isDuplicate) return "manual_duplicate";
   if (isDuplicateNik) return "duplicate_nik";
 
-  const isTransfer = registration.registration_type === "pindahan";
-  const contact: UpdateRegistrationContactInput = {
-    registrationId: id,
-    program: form.registration.program,
-    targetGrade: isTransfer
-      ? (form.registration.target_grade ?? registration.target_grade)
-      : null,
-    contactName: form.registration.contact_name,
-    contactPhone: form.registration.contact_phone,
-  };
+  const allowedDocuments = RECEIVED_DOCUMENTS_BY_TYPE[next.registration_type];
   const formInput: UpdateRegistrationFormInput = {
     registrationId: id,
     parentEmail: form.parent_email,
     student: {
       ...form.student,
-      phone: form.student.phone ?? form.registration.contact_phone,
+      phone: form.student.phone ?? next.contact_phone,
     },
   };
   await withTransaction(async (tx) => {
-    await registrationService.updateContactWithin(tx, contact);
+    const registrationNumber = isYearChanged
+      ? await registrationIntakeService.assignRegistrationNumberWithin(
+          tx,
+          next.academic_year,
+        )
+      : registration.registration_number;
+    const info: UpdateRegistrationInfoInput = {
+      registrationId: id,
+      registrationType: next.registration_type,
+      academicYear: next.academic_year,
+      registrationNumber,
+      program: next.program,
+      targetGrade: next.target_grade,
+      contactName: next.contact_name,
+      contactPhone: next.contact_phone,
+      receivedDocuments: registration.received_documents.filter((code) =>
+        allowedDocuments.includes(code),
+      ),
+    };
+    await registrationService.updateInfoWithin(tx, info);
     await registrationService.updateFormWithin(tx, formInput);
     await registrationBiodataService.replaceWithin(tx, id, form);
   });

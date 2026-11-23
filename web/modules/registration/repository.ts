@@ -14,7 +14,7 @@ import type {
   RegistrationFilter,
   RegistrationSourceCounts,
   ShortRegistrationIdentity,
-  UpdateRegistrationContactInput,
+  UpdateRegistrationInfoInput,
   UpdateRegistrationFormInput,
 } from "./entity";
 import type { CreatePpdbRegistrationRequest, StudentForm } from "./dto";
@@ -211,21 +211,26 @@ export async function updateFormWithin(
   );
 }
 
-export async function updateContactWithin(
+export async function updateInfoWithin(
   tx: TransactionSql,
-  input: UpdateRegistrationContactInput,
+  input: UpdateRegistrationInfoInput,
 ): Promise<void> {
   await tx.unsafe(
     `UPDATE ppdb_registrations
-     SET program = $2, target_grade = $3, contact_name = $4,
-         contact_phone = $5, updated_at = now()
+     SET registration_type = $2, academic_year = $3, registration_number = $4,
+         program = $5, target_grade = $6, contact_name = $7, contact_phone = $8,
+         received_documents = string_to_array($9, ','), updated_at = now()
      WHERE id = $1`,
     [
       input.registrationId,
+      input.registrationType,
+      input.academicYear,
+      input.registrationNumber,
       input.program,
       input.targetGrade,
       input.contactName,
       input.contactPhone,
+      input.receivedDocuments.join(","),
     ],
   );
 }

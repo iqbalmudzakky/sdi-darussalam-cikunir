@@ -38,7 +38,13 @@ export function useFullRegistrationForm(input: FullRegistrationFormInput) {
   const [options, setOptions] = useState<ShortFormOptions | null>(null);
 
   const registrationType = values.registration.registration_type;
-  const academicYears = options?.academic_years ?? [];
+  const savedYear =
+    input.mode === "edit" ? input.form.registration.academic_year : null;
+  const openYears = options?.academic_years ?? [];
+  const academicYears =
+    savedYear && !openYears.includes(savedYear)
+      ? [savedYear, ...openYears]
+      : openYears;
   const academicYear =
     values.registration.academic_year || academicYears[0] || "";
 
@@ -179,18 +185,9 @@ async function submitByMode(
   if (input.mode === "manual") {
     return createManualRegistration(manualInput);
   }
-  const editInput = {
-    ...manualInput,
-    registration: {
-      program: manualInput.registration.program,
-      target_grade: manualInput.registration.target_grade,
-      contact_name: manualInput.registration.contact_name,
-      contact_phone: manualInput.registration.contact_phone,
-    },
-  };
   return updateRegistrationForm(
     input.form.id,
-    editInput as unknown as EditRegistrationInput,
+    manualInput as unknown as EditRegistrationInput,
   );
 }
 
