@@ -30,6 +30,7 @@ const PAYMENT_STATUS_LABELS = {
   success: "Lunas",
   failed: "Gagal",
   expired: "Kedaluwarsa",
+  cancelled: "Dibatalkan",
 } as const;
 
 function formatDateOnly(value: string): string {

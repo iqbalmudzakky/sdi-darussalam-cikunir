@@ -38,6 +38,8 @@ export type RegistrationSchedule = NonNullable<RegistrationDetail["schedule"]>;
 export type RegistrationScheduleOptions =
   RegistrationDetail["schedule_options"];
 
+export type RegistrationPaymentView = RegistrationDetail["payment"];
+
 export type TestReminderGroup = TestReminderGroupResponse;
 
 export type RegistrationFormSection = RegistrationFormSectionResponse;

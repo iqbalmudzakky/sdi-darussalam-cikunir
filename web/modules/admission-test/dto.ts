@@ -56,6 +56,11 @@ export type ScheduleViewResponse = {
   options: ScheduleOptionsResponse;
 };
 
+export type ReminderEmailSummary = {
+  sent: number;
+  skipped: number;
+};
+
 export type TestDayResponse = {
   test_date: string;
   date_label: string;

@@ -1,6 +1,7 @@
 import type { CreatePpdbRegistrationRequest } from "@/modules/registration/dto";
 
-export type PaymentStatus = "pending" | "success" | "failed" | "expired";
+export type PaymentStatus =
+  "pending" | "success" | "failed" | "expired" | "cancelled";
 
 export type PaymentSource = "online" | "manual";
 
@@ -12,13 +13,19 @@ export type RegistrationPayload = Omit<
   "ip_address"
 >;
 
+export type PaymentSnapshot = {
+  student: { full_name: string; nik: string | null };
+  parent_email: string | null;
+  parents: { parent_type: "father"; phone: string }[];
+};
+
 export type RegistrationPayment = {
   id: string;
   invoice_number: string;
   amount: number;
   status: PaymentStatus;
   source: PaymentSource;
-  payload: RegistrationPayload;
+  payload: RegistrationPayload | PaymentSnapshot;
   registration_id: string | null;
   session_id: string | null;
   token_id: string | null;
@@ -33,21 +40,27 @@ export type RegistrationPayment = {
   updated_at: string;
 };
 
-export type NewRegistrationPayment = {
-  invoice_number: string;
-  amount: number;
-  payload: RegistrationPayload;
-  ip_address: string | null;
-};
-
-export type NewManualPayment = {
+export type NewFeePayment = {
+  registrationId: string;
   invoiceNumber: string;
   amount: number;
-  payload: RegistrationPayload;
-  ipAddress: string | null;
+  snapshot: PaymentSnapshot;
+  recordedBy: string;
+};
+
+export type NewManualPayment = NewFeePayment & {
   paymentMethod: ManualPaymentMethod;
   receiptNumber: string | null;
-  paidAt: string;
+};
+
+export type FeePaymentRow = {
+  status: PaymentStatus;
+  source: PaymentSource;
+  amount: number;
+  payment_method: string | null;
+  receipt_number: string | null;
+  paid_at: string | null;
+  recorded_by: string | null;
 };
 
 export type SettlementDetails = {

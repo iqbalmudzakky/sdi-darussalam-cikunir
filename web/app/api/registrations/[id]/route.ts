@@ -5,6 +5,7 @@ import {
   UpdateRegistrationRequestSchema,
   type UpdateRegistrationInput,
 } from "@/modules/registration-admin/dto";
+import * as paymentService from "@/modules/payment/service";
 import * as registrationLinkService from "@/modules/registration-link/service";
 import * as registrationService from "@/modules/registration/service";
 import { REGISTRATION_FAILURE } from "@/modules/shared/constant/registration";
@@ -75,6 +76,32 @@ export async function PATCH(
       );
       return NextResponse.json(
         { error: "Gagal membuat link form lengkap." },
+        { status: 500 },
+      );
+    }
+  }
+
+  if (body.action === "send_payment_link") {
+    try {
+      const result = await paymentService.createPaymentLink(id, user);
+      if (!result.ok) {
+        const failure =
+          result.reason === "gateway_error"
+            ? { status: 502, message: "Gagal membuat link pembayaran DOKU." }
+            : REGISTRATION_FAILURE[result.reason];
+        return NextResponse.json(
+          { error: failure.message },
+          { status: failure.status },
+        );
+      }
+      return NextResponse.json({ whatsapp_url: result.whatsapp_url });
+    } catch (error) {
+      console.error(
+        `PATCH /api/registrations/${id} send_payment_link failed:`,
+        error,
+      );
+      return NextResponse.json(
+        { error: "Gagal membuat link pembayaran." },
         { status: 500 },
       );
     }

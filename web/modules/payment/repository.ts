@@ -3,9 +3,10 @@ import type { TransactionSql } from "postgres";
 import type { CheckoutSession } from "./doku";
 import type {
   DokuNotification,
+  FeePaymentRow,
   ListPaymentsInput,
+  NewFeePayment,
   NewManualPayment,
-  NewRegistrationPayment,
   PaymentFilter,
   PaymentStatus,
   RegistrationPayment,
@@ -18,22 +19,8 @@ const COLUMNS = `
   id, invoice_number, amount, status, source, payload, registration_id,
   session_id, token_id, payment_url, expired_date,
   payment_method, acquirer, receipt_number, paid_at, ip_address,
-  created_at, updated_at
+  recorded_by, created_at, updated_at
 `;
-
-export async function insert(
-  input: NewRegistrationPayment,
-): Promise<RegistrationPayment> {
-  const rows = await sql.unsafe<RegistrationPayment[]>(
-    `INSERT INTO registration_payments (invoice_number, amount, payload, ip_address)
-     VALUES ($1, $2, $3, $4)
-     RETURNING ${COLUMNS}`,
-    // postgres.js serialises the object into jsonb itself — passing a
-    // pre-stringified value would store a JSON *string* rather than an object.
-    [input.invoice_number, input.amount, input.payload, input.ip_address],
-  );
-  return rows[0];
-}
 
 export async function attachSession(
   id: string,
@@ -167,60 +154,6 @@ export async function sumRevenue(input: {
   return rows[0];
 }
 
-/* Menghitung semua sesi dari satu IP, termasuk yang ditinggalkan. Penjaga
- * cadangan supaya sesi tidak bisa dibuat tanpa batas. */
-export async function countAllByIpSince(
-  ip: string,
-  minutesAgo: number,
-): Promise<number> {
-  const rows = await sql.unsafe<{ count: number }[]>(
-    `SELECT COUNT(*)::int AS count
-     FROM registration_payments
-     WHERE ip_address = $1
-       AND created_at > now() - ($2 || ' minutes')::interval`,
-    [ip, minutesAgo],
-  );
-  return rows[0].count;
-}
-
-/* Hanya sesi yang sudah berakhir (lunas/gagal/kedaluwarsa) yang dihitung.
- * Membuka halaman DOKU lalu batal itu wajar dan tidak boleh mengunci orang. */
-export async function countByIpSince(
-  ip: string,
-  minutesAgo: number,
-): Promise<number> {
-  const rows = await sql.unsafe<{ count: number }[]>(
-    `SELECT COUNT(*)::int AS count
-     FROM registration_payments
-     WHERE ip_address = $1
-       AND status <> 'pending'
-       AND created_at > now() - ($2 || ' minutes')::interval`,
-    [ip, minutesAgo],
-  );
-  return rows[0].count;
-}
-
-/**
- * A pendaftar counts as already registered only once they have paid — an
- * abandoned checkout must not block them from trying again.
- *
- * Dicek lewat NIK, sama seperti penjagaan duplikat di jalur input manual: NIK
- * unik per orang, sedangkan nama + tanggal lahir bisa kebetulan sama pada dua
- * anak yang berbeda.
- */
-export async function existsPaidDuplicate(nik: string): Promise<boolean> {
-  /* Biodata ada di payload -> 'student', mengikuti DTO PPDB. */
-  const rows = await sql.unsafe(
-    `SELECT id
-     FROM registration_payments
-     WHERE status = 'success'
-       AND payload -> 'student' ->> 'nik' = $1
-     LIMIT 1`,
-    [nik],
-  );
-  return rows.length > 0;
-}
-
 export async function markFailed(
   invoiceNumber: string,
   status: Extract<PaymentStatus, "failed" | "expired">,
@@ -267,30 +200,85 @@ export async function attachRegistrationIdWithin(
   );
 }
 
-export async function insertManualWithin(
-  tx: TransactionSql,
-  input: NewManualPayment,
-  registrationId: string,
-): Promise<RegistrationPayment> {
-  const rows = await tx.unsafe<RegistrationPayment[]>(
+export async function insertPendingFee(input: NewFeePayment): Promise<string> {
+  const rows = await sql.unsafe<{ id: string }[]>(
     `INSERT INTO registration_payments
        (invoice_number, amount, status, source, payload, registration_id,
-        payment_method, receipt_number, paid_at, ip_address)
-     VALUES ($1, $2, 'success', 'manual', $3, $4, $5, $6, $7, $8)
-     RETURNING ${COLUMNS}`,
+        recorded_by)
+     VALUES ($1, $2, 'pending', 'online', $3, $4, $5)
+     RETURNING id`,
     [
       input.invoiceNumber,
       input.amount,
-      input.payload,
-      registrationId,
-      input.paymentMethod,
-      input.receiptNumber,
-      input.paidAt,
-      input.ipAddress,
+      input.snapshot,
+      input.registrationId,
+      input.recordedBy,
     ],
   );
+  return rows[0].id;
+}
 
-  return rows[0];
+export async function insertManualWithin(
+  tx: TransactionSql,
+  input: NewManualPayment,
+): Promise<void> {
+  await tx.unsafe(
+    `INSERT INTO registration_payments
+       (invoice_number, amount, status, source, payload, registration_id,
+        payment_method, receipt_number, paid_at, recorded_by)
+     VALUES ($1, $2, 'success', 'manual', $3, $4, $5, $6, now(), $7)`,
+    [
+      input.invoiceNumber,
+      input.amount,
+      input.snapshot,
+      input.registrationId,
+      input.paymentMethod,
+      input.receiptNumber,
+      input.recordedBy,
+    ],
+  );
+}
+
+export async function expirePendingWithin(
+  tx: TransactionSql,
+  registrationId: string,
+): Promise<void> {
+  await tx.unsafe(
+    `UPDATE registration_payments
+     SET status = 'expired', updated_at = now()
+     WHERE registration_id = $1 AND status = 'pending'`,
+    [registrationId],
+  );
+}
+
+export async function cancelManual(
+  registrationId: string,
+  actorId: string,
+): Promise<boolean> {
+  const rows = await sql.unsafe(
+    `UPDATE registration_payments
+     SET status = 'cancelled', cancelled_at = now(), cancelled_by = $2,
+         updated_at = now()
+     WHERE registration_id = $1 AND status = 'success' AND source = 'manual'
+     RETURNING id`,
+    [registrationId, actorId],
+  );
+  return rows.length > 0;
+}
+
+export async function findLatestFee(
+  registrationId: string,
+): Promise<FeePaymentRow | null> {
+  const rows = await sql.unsafe<FeePaymentRow[]>(
+    `SELECT status, source, amount, payment_method, receipt_number, paid_at,
+            recorded_by
+     FROM registration_payments
+     WHERE registration_id = $1 AND status IN ('success', 'pending')
+     ORDER BY (status = 'success') DESC, created_at DESC
+     LIMIT 1`,
+    [registrationId],
+  );
+  return rows[0] ?? null;
 }
 
 /* Mencatat notifikasi. false berarti Request-Id sudah pernah masuk. */
@@ -323,6 +311,7 @@ export async function listSummariesByRegistrationIds(
        invoice_number
      FROM registration_payments
      WHERE registration_id = ANY(string_to_array($1, ',')::uuid[])
+       AND status <> 'cancelled'
      ORDER BY registration_id, (status = 'success') DESC, created_at DESC`,
     [registrationIds.join(",")],
   );

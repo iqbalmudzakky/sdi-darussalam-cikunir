@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { SessionUser } from "@/modules/auth/dto";
 import type {
   ManualPaymentMethod,
   PaymentSource,
@@ -10,6 +11,7 @@ const PAYMENT_STATUSES: [PaymentStatus, ...PaymentStatus[]] = [
   "success",
   "failed",
   "expired",
+  "cancelled",
 ];
 
 const MANUAL_PAYMENT_METHODS: [ManualPaymentMethod, ...ManualPaymentMethod[]] =
@@ -17,23 +19,42 @@ const MANUAL_PAYMENT_METHODS: [ManualPaymentMethod, ...ManualPaymentMethod[]] =
 
 const SORT_DIRECTION_VALUES = ["asc", "desc"] as const;
 
-export const ManualPaymentRequestSchema = z.object({
-  amount: z.coerce.number().int().positive("Nominal harus lebih dari 0."),
-  payment_method: z.enum(MANUAL_PAYMENT_METHODS),
+export const MarkPaidRequestSchema = z.object({
+  method: z.enum(MANUAL_PAYMENT_METHODS, { error: "Metode wajib dipilih." }),
   receipt_number: z
     .string()
     .trim()
-    .max(50)
+    .max(50, "No. kuitansi maksimal 50 karakter.")
     .nullable()
     .optional()
     .transform((value) => value || null),
-  paid_at: z
-    .string()
-    .trim()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal bayar wajib diisi."),
 });
 
-export type ManualPaymentRequest = z.infer<typeof ManualPaymentRequestSchema>;
+export type MarkPaidRequest = z.infer<typeof MarkPaidRequestSchema>;
+
+export type MarkPaidInput = {
+  registrationId: string;
+  request: MarkPaidRequest;
+  actor: SessionUser;
+};
+
+export type PaymentActionFailureReason =
+  "not_found" | "invalid_state" | "forbidden_payment" | "already_paid";
+
+export type PaymentLinkResult =
+  | { ok: true; whatsapp_url: string }
+  | { ok: false; reason: PaymentActionFailureReason | "gateway_error" };
+
+export type PaymentViewResponse = {
+  state: "unpaid" | "waiting" | "paid";
+  amount_label: string;
+  method_label: string | null;
+  receipt_number: string | null;
+  recorded_by_name: string | null;
+  paid_at_label: string | null;
+  can_manage: boolean;
+  can_cancel: boolean;
+};
 
 const dateFilter = () =>
   z

@@ -1,4 +1,5 @@
-export type PaymentStatus = "pending" | "success" | "failed" | "expired";
+export type PaymentStatus =
+  "pending" | "success" | "failed" | "expired" | "cancelled";
 
 export type PaymentSource = "online" | "manual";
 

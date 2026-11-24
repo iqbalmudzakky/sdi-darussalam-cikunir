@@ -116,6 +116,11 @@ export const REGISTRATION_FAILURE = {
     status: 400,
     message: "Waktu tes sudah lewat. Pilih tanggal dan jam berikutnya.",
   },
+  forbidden_payment: {
+    status: 403,
+    message: "Hanya kepsek atau wakepsek yang bisa mengurus pembayaran.",
+  },
+  already_paid: { status: 409, message: "Pendaftar ini sudah lunas." },
   invalid_time: { status: 400, message: "Pilih jam tes dari daftar." },
   invalid_interviewer: { status: 400, message: "Pewawancara tidak ditemukan." },
   forbidden_interviewer: {

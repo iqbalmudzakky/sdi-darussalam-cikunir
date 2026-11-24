@@ -10,7 +10,7 @@ import {
   generateDigest,
   generateSignature,
 } from "./signature";
-import type { RegistrationPayload } from "./entity";
+import type { PaymentSnapshot } from "./entity";
 
 export type CheckoutSession = {
   paymentUrl: string;
@@ -20,15 +20,11 @@ export type CheckoutSession = {
 };
 
 export type CreateCheckoutResult =
-  | { ok: true; session: CheckoutSession }
-  | { ok: false; message: string };
-
-/* Halaman bayar berlaku satu jam, mengikuti default DOKU. */
-const PAYMENT_DUE_DATE_MINUTES = 60;
+  { ok: true; session: CheckoutSession } | { ok: false; message: string };
 
 /* DOKU minta format 62…, sedangkan kita menyimpan 08…. */
 function toInternationalPhone(localNumber: string): string {
-  return localNumber.replace(/^0/, "62");
+  return localNumber.replace(/^\+/, "").replace(/^0/, "62");
 }
 
 /* customer.name hanya boleh huruf; tanda baca dibuang agar tidak ditolak. */
@@ -37,7 +33,7 @@ function toCustomerName(fullName: string): string {
 }
 
 /* Nama pakai nama anak, bukan ayah/ibu — pembayarnya bisa siapa saja. */
-function buildCustomer(payload: RegistrationPayload) {
+function buildCustomer(payload: PaymentSnapshot) {
   const parents = payload.parents ?? [];
   const contact =
     parents.find((parent) => parent.parent_type === "father") ?? parents[0];
@@ -53,7 +49,8 @@ function buildCustomer(payload: RegistrationPayload) {
 export async function createCheckoutSession(input: {
   invoiceNumber: string;
   amount: number;
-  payload: RegistrationPayload;
+  payload: PaymentSnapshot;
+  dueMinutes: number;
   /** The originating request, so dev can derive the tunnel host from it. */
   request?: Request;
 }): Promise<CreateCheckoutResult> {
@@ -79,7 +76,7 @@ export async function createCheckoutSession(input: {
       ],
     },
     payment: {
-      payment_due_date: PAYMENT_DUE_DATE_MINUTES,
+      payment_due_date: input.dueMinutes,
       type: "SALE",
     },
     customer: buildCustomer(input.payload),

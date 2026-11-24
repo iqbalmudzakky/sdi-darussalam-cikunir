@@ -212,3 +212,17 @@ export async function sendFormLink(id: string): Promise<SendFormLinkResult> {
     : { ok: false, error: data.error ?? "Gagal membuat link form lengkap." };
   return result;
 }
+
+export async function sendPaymentLink(id: string): Promise<SendFormLinkResult> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "send_payment_link" }),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  const result: SendFormLinkResult = res.ok
+    ? { ok: true, whatsappUrl: data.whatsapp_url }
+    : { ok: false, error: data.error ?? "Gagal membuat link pembayaran." };
+  return result;
+}

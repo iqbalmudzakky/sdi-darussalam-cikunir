@@ -5,6 +5,10 @@ import {
   type ScheduleResponse,
 } from "@/modules/admission-test/dto";
 import type { SessionUser } from "@/modules/auth/dto";
+import {
+  MarkPaidRequestSchema,
+  type PaymentViewResponse,
+} from "@/modules/payment/dto";
 import type { RegistrationPaymentSummary } from "@/modules/payment/entity";
 import {
   ACADEMIC_YEAR_PATTERN,
@@ -86,6 +90,11 @@ export const UpdateRegistrationRequestSchema = z.discriminatedUnion("action", [
     schedule: ScheduleTestRequestSchema,
   }),
   z.object({ action: z.literal("mark_reminded") }),
+  z.object({
+    action: z.literal("mark_paid"),
+    payment: MarkPaidRequestSchema,
+  }),
+  z.object({ action: z.literal("cancel_payment") }),
 ]);
 
 export type UpdateRegistrationRequest = z.infer<
@@ -108,7 +117,9 @@ export type UpdateRegistrationFailureReason =
   | "invalid_interviewer"
   | "forbidden_interviewer"
   | "past_schedule"
-  | "invalid_time";
+  | "invalid_time"
+  | "forbidden_payment"
+  | "already_paid";
 
 export type UpdateRegistrationResult =
   | { ok: true; registration: RegistrationDetailResponse }
@@ -214,6 +225,7 @@ export type RegistrationDetailResponse = RegistrationListItemResponse & {
   can_send_form_link: boolean;
   schedule: ScheduleResponse | null;
   schedule_options: ScheduleOptionsResponse;
+  payment: PaymentViewResponse;
   full_form: RegistrationFullFormResponse | null;
 };
 

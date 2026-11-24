@@ -3,13 +3,16 @@ import type { AdminSummary } from "@/modules/auth/entity";
 import * as authService from "@/modules/auth/service";
 import { withDbLogging } from "@/modules/db/errors";
 import { withTransaction } from "@/modules/db/postgres";
+import { sendTestReminderEmail } from "@/modules/email/email";
 import * as registrationService from "@/modules/registration/service";
 import { TEST_TIME_SLOT } from "@/modules/shared/constant/registration";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
+import { toStaffName } from "@/modules/shared/staffName";
 import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
 import * as repository from "./repository";
 import type {
   InterviewerResponse,
+  ReminderEmailSummary,
   SaveScheduleFailureReason,
   SaveScheduleInput,
   ScheduleResponse,
@@ -202,6 +205,52 @@ export async function listReminders(): Promise<TestReminderGroupResponse[]> {
   return groups.filter((group) => group.reminders.length > 0);
 }
 
+export async function sendTomorrowReminderEmails(): Promise<ReminderEmailSummary> {
+  const dayMs = 24 * 60 * 60 * 1000;
+  const tomorrow = jakartaDateKey(new Date(Date.now() + dayMs));
+  const rows = await withDbLogging("admissionTest.listForEmailReminder", () =>
+    repository.listForEmailReminder(tomorrow),
+  );
+  if (rows.length === 0) {
+    const nothingToSend: ReminderEmailSummary = { sent: 0, skipped: 0 };
+    return nothingToSend;
+  }
+
+  const registrations = await registrationService.listFullByIds(
+    rows.map((row) => row.registration_id),
+  );
+  const sentIds: string[] = [];
+  for (const row of rows) {
+    const registration = registrations.find(
+      (item) => item.id === row.registration_id,
+    );
+    if (!registration?.parent_email || registration.status === "cancelled") {
+      continue;
+    }
+
+    const schedule = toSchedule(row, []);
+    const sent = await sendTestReminderEmail({
+      to: registration.parent_email,
+      studentName: registration.full_name,
+      registrationNumber: registration.registration_number,
+      dateLabel: schedule.date_label,
+      timeLabel: schedule.time_label,
+    });
+    if (sent) sentIds.push(row.registration_id);
+  }
+
+  if (sentIds.length > 0) {
+    await withDbLogging("admissionTest.markEmailReminded", () =>
+      repository.markEmailReminded(sentIds),
+    );
+  }
+  const summary: ReminderEmailSummary = {
+    sent: sentIds.length,
+    skipped: rows.length - sentIds.length,
+  };
+  return summary;
+}
+
 function listTestTimes(): string[] {
   const { firstMinute, lastMinute, stepMinutes } = TEST_TIME_SLOT;
   const slotCount = (lastMinute - firstMinute) / stepMinutes + 1;
@@ -221,7 +270,7 @@ function toInterviewers(accounts: AdminSummary[]): InterviewerResponse[] {
     )
     .map((account) => ({
       id: account.id,
-      name: account.email.split("@")[0],
+      name: toStaffName(account.email),
     }))
     .sort((first, second) => first.name.localeCompare(second.name));
   return interviewers;

@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/useToast";
 import {
   getRegistration,
   sendFormLink,
+  sendPaymentLink,
   updateRegistration,
 } from "@/lib/api/registration/registrations";
 import { formatNumericDateOnly } from "@/lib/date";
@@ -31,8 +32,9 @@ import type {
   UpdateRegistrationInput,
 } from "@/types/registration/Registration";
 import { RegistrationDetailDialog } from "./RegistrationDetailDialog";
-import { getDocumentTone } from "./RegistrationListItems";
-import { RegistrationStatusBadge } from "./RegistrationStatusBadge";
+import { getDocumentTone } from "../RegistrationListItems";
+import { RegistrationStatusBadge } from "../RegistrationStatusBadge";
+import { PaymentCard } from "./PaymentCard";
 import { ScheduleCard } from "./ScheduleCard";
 import { StatusActionDialog } from "./StatusActionDialog";
 
@@ -90,7 +92,9 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
   const [pendingAction, setPendingAction] =
     useState<RegistrationStatusAction | null>(null);
   const [isFullFormOpen, setIsFullFormOpen] = useState(false);
-  const [isSendingLink, setIsSendingLink] = useState(false);
+  const [sendingLink, setSendingLink] = useState<"form" | "payment" | null>(
+    null,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -133,11 +137,12 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
     }
   }
 
-  async function handleSendFormLink() {
+  async function handleSendLink(kind: "form" | "payment") {
     const whatsappWindow = window.open("", "_blank");
-    setIsSendingLink(true);
+    setSendingLink(kind);
     try {
-      const result = await sendFormLink(id);
+      const result =
+        kind === "form" ? await sendFormLink(id) : await sendPaymentLink(id);
       if (!result.ok) {
         whatsappWindow?.close();
         toast.error(result.error);
@@ -145,12 +150,13 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
       }
       if (whatsappWindow) whatsappWindow.location.href = result.whatsappUrl;
       else window.location.href = result.whatsappUrl;
+      if (kind === "payment") setRegistration(await getRegistration(id));
     } catch (error) {
-      console.error("Failed to send form link:", error);
+      console.error(`Failed to send ${kind} link:`, error);
       whatsappWindow?.close();
-      toast.error("Gagal membuat link form lengkap");
+      toast.error("Gagal membuat link");
     } finally {
-      setIsSendingLink(false);
+      setSendingLink(null);
     }
   }
 
@@ -239,8 +245,8 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
 
       <SummaryCard
         registration={registration}
-        isSendingLink={isSendingLink}
-        onSendFormLink={handleSendFormLink}
+        isSendingLink={sendingLink === "form"}
+        onSendFormLink={() => handleSendLink("form")}
         onOpenFullForm={() => setIsFullFormOpen(true)}
       />
 
@@ -248,6 +254,14 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
         registration={registration}
         isSaving={isSaving}
         onSave={saveChange}
+      />
+
+      <PaymentCard
+        registration={registration}
+        isSaving={isSaving}
+        isSendingLink={sendingLink === "payment"}
+        onSave={saveChange}
+        onSendLink={() => handleSendLink("payment")}
       />
 
       <div className="grid items-start gap-3 md:grid-cols-2">

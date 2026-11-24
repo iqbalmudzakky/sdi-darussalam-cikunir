@@ -236,6 +236,109 @@ export async function sendPaymentReceiptEmail(input: {
   }
 }
 
+export async function sendTestReminderEmail(input: {
+  to: string;
+  studentName: string;
+  registrationNumber: string | null;
+  dateLabel: string;
+  timeLabel: string;
+}): Promise<boolean> {
+  try {
+    const resend = createEmailClient();
+    const { error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: input.to,
+      subject: `Pengingat Jadwal Tes — ${input.studentName}`,
+      html: buildTestReminderHtml(input),
+    });
+
+    if (error) {
+      console.error("[email] sendTestReminderEmail failed:", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("[email] sendTestReminderEmail failed:", error);
+    return false;
+  }
+}
+
+function buildTestReminderHtml(input: {
+  studentName: string;
+  registrationNumber: string | null;
+  dateLabel: string;
+  timeLabel: string;
+}): string {
+  const siteUrl = getSiteUrl();
+  const rows = [
+    ["Nama anak", input.studentName],
+    ["No. pendaftaran", input.registrationNumber ?? "-"],
+    ["Hari, tanggal", input.dateLabel],
+    ["Jam", `${input.timeLabel} WIB`],
+  ]
+    .map(
+      ([label, value]) => `
+              <tr>
+                <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;color:#71717a;">${label}</td>
+                <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;text-align:right;font-weight:600;color:#18181b;">${value}</td>
+              </tr>`,
+    )
+    .join("");
+
+  return `
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+  Pengingat jadwal tes dan wawancara ${input.studentName}: ${input.dateLabel}, ${input.timeLabel} WIB.
+</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;padding:32px 16px;font-family:Arial,Helvetica,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;">
+        <tr>
+          <td style="background-color:${BRAND_600};padding:24px 32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="vertical-align:middle;">
+                  <img src="${siteUrl}/logo.png" width="36" height="36" alt="${SCHOOL_NAME}" style="display:block;border-radius:6px;" />
+                </td>
+                <td style="vertical-align:middle;padding-left:12px;">
+                  <span style="color:#ffffff;font-size:16px;font-weight:700;">${SCHOOL_NAME}</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="background-color:${BRAND_100};color:${BRAND_700};font-size:13px;font-weight:700;padding:6px 14px;border-radius:999px;">
+                  Jadwal Tes Besok
+                </td>
+              </tr>
+            </table>
+            <p style="font-size:15px;color:#18181b;line-height:1.6;margin:20px 0 0;">
+              Assalamu'alaikum. Kami mengingatkan jadwal tes dan wawancara calon murid ${SCHOOL_NAME}.
+            </p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;font-size:14px;">${rows}
+            </table>
+            <p style="font-size:13px;color:#71717a;line-height:1.6;margin:28px 0 0;">
+              Terima kasih.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px 32px;background-color:#fafafa;border-top:1px solid #f0f0f0;">
+            <p style="margin:0;font-size:12px;color:#a1a1aa;">${SCHOOL_NAME}</p>
+            <p style="margin:4px 0 0;font-size:12px;color:#a1a1aa;">Email ini dibuat otomatis. Mohon tidak membalas ke alamat ini.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+`;
+}
+
 function buildActionEmailHtml(input: {
   preheader: string;
   iconPath: string;

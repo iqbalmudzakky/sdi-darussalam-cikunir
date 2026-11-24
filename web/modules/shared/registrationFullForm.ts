@@ -234,6 +234,7 @@ function toPaymentSection(
     pending: "Belum dibayar",
     failed: "Gagal",
     expired: "Kedaluwarsa",
+    cancelled: "Dibatalkan",
   };
   const paidAt = payment.paid_at
     ? new Intl.DateTimeFormat("id-ID", {

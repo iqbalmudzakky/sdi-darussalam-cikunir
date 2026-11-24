@@ -26,6 +26,11 @@ export const PAYMENT_STATUS_META: Record<
     icon: XCircle,
     className: "border-gray-200 bg-gray-100 text-gray-600",
   },
+  cancelled: {
+    label: "Dibatalkan",
+    icon: XCircle,
+    className: "border-gray-200 bg-gray-100 text-gray-600",
+  },
 };
 
 type PaymentStatusBadgeProps = {

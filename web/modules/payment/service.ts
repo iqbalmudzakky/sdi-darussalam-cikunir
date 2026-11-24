@@ -5,45 +5,39 @@ import * as repository from "./repository";
 import * as registrationIntakeService from "@/modules/registration-intake/service";
 import * as registrationService from "@/modules/registration/service";
 import { createCheckoutSession } from "./doku";
-import {
-  getRegistrationFee,
-  isRegistrationOpen,
-} from "@/modules/payment-settings/service";
+import type { SessionUser } from "@/modules/auth/dto";
+import * as authService from "@/modules/auth/service";
+import { getRegistrationFee } from "@/modules/payment-settings/service";
 import { sendPaymentReceiptEmail } from "@/modules/email/email";
 import { buildAdminUrl } from "@/modules/shared/siteUrl";
+import { toStaffName } from "@/modules/shared/staffName";
+import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
 import type {
   DokuNotification,
+  FeePaymentRow,
   ListPaymentsInput,
+  NewFeePayment,
+  NewManualPayment,
   PaymentFilter,
   PaymentStatus,
   RegistrationPayload,
   RegistrationPayment,
   RegistrationPaymentListItem,
   RegistrationPaymentSummaries,
+  PaymentSnapshot,
   SettlementDetails,
 } from "./entity";
 import type {
   ListPaymentsRequest,
+  MarkPaidInput,
+  PaymentActionFailureReason,
+  PaymentLinkResult,
+  PaymentViewResponse,
   PaymentListItemResponse,
   PaymentListResponse,
   PaymentRevenueSummaryResponse,
   RevenueSummaryRequest,
 } from "./dto";
-
-/* Sesi yang sudah berakhir: lunas, gagal, atau kedaluwarsa. */
-const RATE_LIMIT_MAX_PER_HOUR = 3;
-/* Batas cadangan, termasuk sesi yang ditinggalkan. */
-const RATE_LIMIT_MAX_SESSIONS_PER_HOUR = 15;
-const RATE_LIMIT_WINDOW_MINUTES = 60;
-
-export type StartPaymentResult =
-  | { ok: true; paymentUrl: string; invoiceNumber: string }
-  | {
-      ok: false;
-      reason:
-        "registration_closed" | "rate_limited" | "duplicate" | "gateway_error";
-      message: string;
-    };
 
 /* Maksimal 30 karakter agar diterima channel kartu kredit. */
 function generateInvoiceNumber(
@@ -53,93 +47,6 @@ function generateInvoiceNumber(
   const date = now.toISOString().slice(0, 10).replace(/-/g, "");
   const suffix = randomBytes(4).toString("hex").toUpperCase();
   return `${prefix}-${date}-${suffix}`;
-}
-
-export async function startRegistrationPayment(input: {
-  payload: RegistrationPayload;
-  ipAddress: string;
-  request?: Request;
-}): Promise<StartPaymentResult> {
-  if (!(await isRegistrationOpen())) {
-    return {
-      ok: false,
-      reason: "registration_closed",
-      message: "Pendaftaran belum dibuka.",
-    };
-  }
-
-  /* Dilewati saat development: menguji pembayaran berarti membayar berulang
-   * dari satu mesin, persis pola yang hendak dicegah. */
-  if (process.env.NODE_ENV !== "development") {
-    const sessionCount = await withDbLogging("payment.countAllByIpSince", () =>
-      repository.countAllByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
-    );
-    const recentCount = await withDbLogging("payment.countByIpSince", () =>
-      repository.countByIpSince(input.ipAddress, RATE_LIMIT_WINDOW_MINUTES),
-    );
-    if (
-      recentCount >= RATE_LIMIT_MAX_PER_HOUR ||
-      sessionCount >= RATE_LIMIT_MAX_SESSIONS_PER_HOUR
-    ) {
-      return {
-        ok: false,
-        reason: "rate_limited",
-        message: "Terlalu banyak percobaan. Coba lagi beberapa saat lagi.",
-      };
-    }
-  }
-
-  const nik = input.payload.student.nik;
-
-  const [isPaidDuplicate, isAlreadyRegistered] = await Promise.all([
-    withDbLogging("payment.existsPaidDuplicate", () =>
-      repository.existsPaidDuplicate(nik),
-    ),
-    registrationService.existsDuplicateByNik(nik),
-  ]);
-
-  if (isPaidDuplicate || isAlreadyRegistered) {
-    return {
-      ok: false,
-      reason: "duplicate",
-      message:
-        "Pendaftaran dengan NIK ini sudah terdaftar. Silakan hubungi kami jika ada kendala.",
-    };
-  }
-
-  const amount = await getRegistrationFee();
-  const invoiceNumber = generateInvoiceNumber("PPDB");
-
-  const payment = await withDbLogging("payment.insert", () =>
-    repository.insert({
-      invoice_number: invoiceNumber,
-      amount,
-      payload: input.payload,
-      ip_address: input.ipAddress,
-    }),
-  );
-
-  const result = await createCheckoutSession({
-    invoiceNumber,
-    amount,
-    payload: input.payload,
-    request: input.request,
-  });
-
-  if (!result.ok) {
-    /* Dibiarkan pending sebagai jejak percobaan yang gagal. */
-    return { ok: false, reason: "gateway_error", message: result.message };
-  }
-
-  await withDbLogging("payment.attachSession", () =>
-    repository.attachSession(payment.id, result.session),
-  );
-
-  return {
-    ok: true,
-    paymentUrl: result.session.paymentUrl,
-    invoiceNumber,
-  };
 }
 
 async function settleAsRegistration(
@@ -153,9 +60,10 @@ async function settleAsRegistration(
       details,
     );
     if (!claimed) return null;
+    if (payment.registration_id) return payment.registration_id;
 
     const registrationInput = {
-      ...payment.payload,
+      ...(payment.payload as RegistrationPayload),
       ip_address: payment.ip_address ?? "unknown",
     };
 
@@ -265,6 +173,153 @@ export async function getPaymentStatus(
   };
 }
 
+export async function getPaymentView(
+  registrationId: string,
+  actor: SessionUser,
+): Promise<PaymentViewResponse> {
+  const [latest, registrationFee, accounts] = await Promise.all([
+    withDbLogging("payment.findLatestFee", () =>
+      repository.findLatestFee(registrationId),
+    ),
+    getRegistrationFee(),
+    authService.listAccounts(),
+  ]);
+  const isPaid = latest?.status === "success";
+  const recorder = accounts.find(
+    (account) => account.id === latest?.recorded_by,
+  );
+  const methodLabels: Record<string, string> = {
+    CASH: "Tunai",
+    TRANSFER: "Transfer",
+  };
+  const methodLabel =
+    latest?.source === "manual"
+      ? (methodLabels[latest.payment_method ?? ""] ?? null)
+      : "DOKU";
+
+  const view: PaymentViewResponse = {
+    state: isPaid ? "paid" : latest ? "waiting" : "unpaid",
+    amount_label: formatRupiah(isPaid ? latest.amount : registrationFee),
+    method_label: isPaid ? methodLabel : null,
+    receipt_number: isPaid ? latest.receipt_number : null,
+    recorded_by_name: isPaid && recorder ? toStaffName(recorder.email) : null,
+    paid_at_label:
+      isPaid && latest.paid_at ? formatDateTime(latest.paid_at) : null,
+    can_manage: authService.hasPermission(actor.role, "manage_payments"),
+    can_cancel:
+      isPaid &&
+      latest.source === "manual" &&
+      authService.hasPermission(actor.role, "cancel_payments"),
+  };
+  return view;
+}
+
+export async function markPaid(
+  input: MarkPaidInput,
+): Promise<PaymentActionFailureReason | null> {
+  const { registrationId, request, actor } = input;
+  const [registration, latest, registrationFee] = await Promise.all([
+    registrationService.findFullById(registrationId),
+    withDbLogging("payment.findLatestFee", () =>
+      repository.findLatestFee(registrationId),
+    ),
+    getRegistrationFee(),
+  ]);
+  const blockReason = findPaymentBlock(actor, registration, latest);
+  if (blockReason || !registration) return blockReason ?? "not_found";
+
+  const payment: NewManualPayment = {
+    registrationId,
+    invoiceNumber: generateInvoiceNumber("MANUAL"),
+    amount: registrationFee,
+    snapshot: toSnapshot(registration),
+    recordedBy: actor.id,
+    paymentMethod: request.method,
+    receiptNumber: request.receipt_number,
+  };
+  await withTransaction(async (tx) => {
+    await repository.expirePendingWithin(tx, registrationId);
+    await repository.insertManualWithin(tx, payment);
+  });
+  return null;
+}
+
+export async function cancelPayment(
+  registrationId: string,
+  actor: SessionUser,
+): Promise<PaymentActionFailureReason | null> {
+  if (!authService.hasPermission(actor.role, "cancel_payments")) {
+    return "forbidden_payment";
+  }
+
+  const cancelled = await withDbLogging("payment.cancelManual", () =>
+    repository.cancelManual(registrationId, actor.id),
+  );
+  return cancelled ? null : "not_found";
+}
+
+export async function createPaymentLink(
+  registrationId: string,
+  actor: SessionUser,
+): Promise<PaymentLinkResult> {
+  const [registration, latest, registrationFee] = await Promise.all([
+    registrationService.findFullById(registrationId),
+    withDbLogging("payment.findLatestFee", () =>
+      repository.findLatestFee(registrationId),
+    ),
+    getRegistrationFee(),
+  ]);
+  const blockReason = registration?.contact_phone
+    ? findPaymentBlock(actor, registration, latest)
+    : "not_found";
+  if (blockReason || !registration?.contact_phone) {
+    const blocked: PaymentLinkResult = {
+      ok: false,
+      reason: blockReason ?? "not_found",
+    };
+    return blocked;
+  }
+
+  const payment: NewFeePayment = {
+    registrationId,
+    invoiceNumber: generateInvoiceNumber("PPDB"),
+    amount: registrationFee,
+    snapshot: toSnapshot(registration),
+    recordedBy: actor.id,
+  };
+  const paymentId = await withDbLogging("payment.insertPendingFee", () =>
+    repository.insertPendingFee(payment),
+  );
+  const checkout = await createCheckoutSession({
+    invoiceNumber: payment.invoiceNumber,
+    amount: payment.amount,
+    payload: payment.snapshot,
+    dueMinutes: 24 * 60,
+  });
+  if (!checkout.ok) {
+    const gatewayError: PaymentLinkResult = {
+      ok: false,
+      reason: "gateway_error",
+    };
+    return gatewayError;
+  }
+
+  await withDbLogging("payment.attachSession", () =>
+    repository.attachSession(paymentId, checkout.session),
+  );
+  const message = [
+    "Assalamu'alaikum, berikut link pembayaran biaya pendaftaran SDI Darussalam Cikunir.",
+    `Nama anak: ${registration.full_name}\nNo. pendaftaran: ${registration.registration_number ?? "-"}\nBiaya: ${formatRupiah(payment.amount)}`,
+    checkout.session.paymentUrl,
+  ].join("\n\n");
+
+  const result: PaymentLinkResult = {
+    ok: true,
+    whatsapp_url: buildWhatsAppLink(registration.contact_phone, message),
+  };
+  return result;
+}
+
 function toPaymentListItemResponse(
   item: RegistrationPaymentListItem,
 ): PaymentListItemResponse {
@@ -346,4 +401,53 @@ export async function getSummariesByRegistrationIds(
     rows.map(({ registration_id, ...summary }) => [registration_id, summary]),
   );
   return summaries;
+}
+
+function findPaymentBlock(
+  actor: SessionUser,
+  registration: { status: string } | null,
+  latest: FeePaymentRow | null,
+): PaymentActionFailureReason | null {
+  if (!authService.hasPermission(actor.role, "manage_payments")) {
+    return "forbidden_payment";
+  }
+  if (!registration) return "not_found";
+  if (registration.status === "cancelled") return "invalid_state";
+  if (latest?.status === "success") return "already_paid";
+  return null;
+}
+
+function toSnapshot(registration: {
+  full_name: string;
+  student_nik: string | null;
+  parent_email: string | null;
+  contact_phone: string | null;
+}): PaymentSnapshot {
+  const snapshot: PaymentSnapshot = {
+    student: {
+      full_name: registration.full_name,
+      nik: registration.student_nik,
+    },
+    parent_email: registration.parent_email,
+    parents: registration.contact_phone
+      ? [{ parent_type: "father", phone: registration.contact_phone }]
+      : [],
+  };
+  return snapshot;
+}
+
+function formatRupiah(value: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatDateTime(value: string): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    timeZone: "Asia/Jakarta",
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
 }

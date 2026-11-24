@@ -7,6 +7,7 @@ import type {
   RegistrationPaymentSummaries,
   RegistrationPaymentSummary,
 } from "@/modules/payment/entity";
+import type { MarkPaidInput, PaymentViewResponse } from "@/modules/payment/dto";
 import * as paymentService from "@/modules/payment/service";
 import type { RegistrationParentRow } from "@/modules/registration-biodata/entity";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
@@ -94,22 +95,24 @@ export async function getRegistrationDetail(
 
   const registrationIds = [id];
   const hasFullForm = row.full_form_completed_at !== null;
-  const [payments, parents, form, extras, scheduleView] = await Promise.all([
-    paymentService.getSummariesByRegistrationIds(registrationIds),
-    registrationBiodataService.listParentsByRegistrationIds(registrationIds),
-    hasFullForm ? registrationService.findFormById(id) : null,
-    hasFullForm
-      ? registrationBiodataService.getDetailsAndAchievements(id)
-      : null,
-    admissionTestService.getScheduleView(id, actor),
-  ]);
+  const [payments, parents, form, extras, scheduleView, paymentView] =
+    await Promise.all([
+      paymentService.getSummariesByRegistrationIds(registrationIds),
+      registrationBiodataService.listParentsByRegistrationIds(registrationIds),
+      hasFullForm ? registrationService.findFormById(id) : null,
+      hasFullForm
+        ? registrationBiodataService.getDetailsAndAchievements(id)
+        : null,
+      admissionTestService.getScheduleView(id, actor),
+      paymentService.getPaymentView(id, actor),
+    ]);
 
   const payment = toPaymentSummary(id, payments);
   const fullForm =
     form && extras
       ? buildRegistrationFullForm(row, form, parents, extras, payment)
       : null;
-  const detail = toDetail(row, payments, fullForm, scheduleView);
+  const detail = toDetail(row, payments, fullForm, scheduleView, paymentView);
   return detail;
 }
 
@@ -216,6 +219,19 @@ async function applyRegistrationUpdate(
 
   if (request.action === "update_form") {
     return updateRegistrationForm(id, request.form);
+  }
+
+  if (request.action === "mark_paid") {
+    const markInput: MarkPaidInput = {
+      registrationId: id,
+      request: request.payment,
+      actor: input.actor,
+    };
+    return paymentService.markPaid(markInput);
+  }
+
+  if (request.action === "cancel_payment") {
+    return paymentService.cancelPayment(id, input.actor);
   }
 
   if (request.action === "mark_reminded") {
@@ -359,6 +375,7 @@ function toDetail(
   payments: RegistrationPaymentSummaries,
   fullForm: RegistrationFullFormResponse | null,
   scheduleView: ScheduleViewResponse,
+  paymentView: PaymentViewResponse,
 ): RegistrationDetailResponse {
   const entryAge = row.academic_year
     ? calculateEntryAge(row.date_of_birth, row.academic_year)
@@ -384,6 +401,7 @@ function toDetail(
     full_form: fullForm,
     schedule: scheduleView.schedule,
     schedule_options: scheduleView.options,
+    payment: paymentView,
   };
   return detail;
 }

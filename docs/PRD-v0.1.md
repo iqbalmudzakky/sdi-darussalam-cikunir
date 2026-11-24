@@ -1367,16 +1367,23 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
   (dicatat siapa dan kapan).
 - Email pengingat H-1 ke orang tua yang punya email: route cron
   `/api/cron/send-test-reminders`, sekali sehari. Dicatat supaya tidak terkirim dua kali.
-  **Ditunda** (keputusan 23 Nov 2026, butuh cron dari infra); sementara panitia mengingatkan
-  lewat WA dari kartu di atas.
+  Dikode bersama F12 (24 Nov 2026), dikirim untuk jadwal **besok** (WIB); ganti tanggal/jam
+  membuat email dikirim ulang. Butuh cron harian dari infra.
 
 #### F12 — Pembayaran biaya pendaftaran
 
-- **Tandai lunas**: pilih Tunai/Transfer, nomor kuitansi opsional. Tercatat siapa dan kapan.
-  Pembatalan lunas hanya kepsek/admin.
-- **DOKU**: tombol "Bayar lewat DOKU" membuat link pembayaran untuk pendaftar itu. Link bisa
-  dibuka di HP orang tua (kirim WA). Lunas otomatis dari notifikasi DOKU, seperti sekarang.
-- Halaman Transaksi tetap, kini selalu terhubung ke pendaftar.
+- **Tandai lunas** (kepsek, wakepsek, admin): pilih Tunai/Transfer, nomor kuitansi opsional.
+  Waktu bayar = saat tombol diklik (tanpa isian tanggal, 24 Nov 2026). Tercatat siapa dan kapan.
+  Link DOKU yang masih menunggu ikut dimatikan supaya tidak bayar dua kali.
+- **Batalkan lunas** (kepsek, wakepsek, admin; wakepsek ditambahkan 24 Nov 2026), hanya untuk lunas
+  yang ditandai manual (salah klik).
+  Lunas lewat DOKU berarti uang sudah masuk, jadi tidak dibatalkan dari sistem.
+- **Kirim link bayar** (kepsek, wakepsek, admin): membuat sesi DOKU untuk pendaftar itu, berlaku
+  **24 jam**, lalu WA ke nomor kontak orang tua. Status kartu jadi "Menunggu Pembayaran"; lunas
+  otomatis dari notifikasi DOKU. Lewat 24 jam, panitia kirim ulang.
+- `payload` pembayaran baru berisi potongan data pendaftar (nama, NIK, email, WA kontak) supaya
+  halaman Transaksi tetap menampilkan dan mencari seperti sekarang. Jalur lama "bayar dulu baru
+  daftar" (`/api/payments/checkout`) dihapus; sesi lama yang masih menggantung tetap diselesaikan.
 
 #### F13 — Observasi & Profil Kesiapan (PMB saja)
 

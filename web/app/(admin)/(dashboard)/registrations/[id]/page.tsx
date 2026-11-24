@@ -1,4 +1,4 @@
-import { RegistrationDetailView } from "@/components/admin/registrations/RegistrationDetailView";
+import { RegistrationDetailView } from "@/components/admin/registrations/detail/RegistrationDetailView";
 
 type RegistrationDetailPageProps = {
   params: Promise<{ id: string }>;

@@ -56,6 +56,11 @@ export async function saveWithin(
           AND admission_tests.test_time = EXCLUDED.test_time
          THEN admission_tests.reminded_by
        END,
+       email_reminded_at = CASE
+         WHEN admission_tests.test_date = EXCLUDED.test_date
+          AND admission_tests.test_time = EXCLUDED.test_time
+         THEN admission_tests.email_reminded_at
+       END,
        updated_at = now()`,
     [
       input.registrationId,
@@ -80,4 +85,29 @@ export async function markReminded(
     [registrationId, actorId],
   );
   return rows.length > 0;
+}
+
+export async function listForEmailReminder(
+  testDate: string,
+): Promise<AdmissionTestRow[]> {
+  return sql.unsafe<AdmissionTestRow[]>(
+    `SELECT registration_id, test_date::text AS test_date,
+            to_char(test_time, 'HH24:MI') AS test_time, child_interviewer_id,
+            parent_interviewer_id, reminded_at
+     FROM admission_tests
+     WHERE test_date = $1 AND email_reminded_at IS NULL
+     ORDER BY test_time`,
+    [testDate],
+  );
+}
+
+export async function markEmailReminded(
+  registrationIds: string[],
+): Promise<void> {
+  await sql.unsafe(
+    `UPDATE admission_tests
+     SET email_reminded_at = now(), updated_at = now()
+     WHERE registration_id = ANY(string_to_array($1, ',')::uuid[])`,
+    [registrationIds.join(",")],
+  );
 }
