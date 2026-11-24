@@ -16,7 +16,8 @@ export type Permission =
   | "manage_developer_accounts"
   | "assign_interviewers"
   | "manage_payments"
-  | "cancel_payments";
+  | "cancel_payments"
+  | "record_test_results";
 
 export const ADMIN_ROLE_LABEL: Record<AdminRole, string> = {
   principal: "Kepsek",
@@ -35,6 +36,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     "assign_interviewers",
     "manage_payments",
     "cancel_payments",
+    "record_test_results",
   ],
   vice_principal: [
     "view_accounts",
@@ -42,6 +44,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     "assign_interviewers",
     "manage_payments",
     "cancel_payments",
+    "record_test_results",
   ],
   administration_staff: [],
   teacher: [],
@@ -54,5 +57,6 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     "assign_interviewers",
     "manage_payments",
     "cancel_payments",
+    "record_test_results",
   ],
 };

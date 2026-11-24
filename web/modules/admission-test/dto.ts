@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { SessionUser } from "@/modules/auth/dto";
+import { blankable } from "@/modules/validation/validators";
 
 export const ScheduleTestRequestSchema = z.object({
   test_date: z
@@ -26,6 +27,35 @@ export type SaveScheduleFailureReason =
   | "past_schedule"
   | "invalid_time";
 
+export const ManualResultRequestSchema = z.object({
+  tested_on: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal tes wajib diisi."),
+  notes: blankable(
+    z.string().trim().max(3000, "Catatan hasil tes maksimal 3000 karakter."),
+  ),
+});
+
+export type ManualResultRequest = z.infer<typeof ManualResultRequestSchema>;
+
+export type RecordManualResultInput = {
+  registrationId: string;
+  request: ManualResultRequest;
+  actor: SessionUser;
+};
+
+export type RecordManualResultFailureReason =
+  | "not_found"
+  | "invalid_state"
+  | "forbidden_result"
+  | "no_schedule"
+  | "future_test_date";
+
+export type ManualResultResponse = {
+  tested_on: string;
+  notes: string | null;
+};
+
 export type InterviewerResponse = {
   id: string;
   name: string;
@@ -42,6 +72,7 @@ export type ScheduleResponse = {
   child_interviewer: InterviewerResponse | null;
   parent_interviewer: InterviewerResponse | null;
   is_reminded: boolean;
+  manual_result: ManualResultResponse | null;
 };
 
 export type ScheduleOptionsResponse = {

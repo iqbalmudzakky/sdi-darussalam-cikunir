@@ -37,6 +37,7 @@ import { RegistrationStatusBadge } from "../RegistrationStatusBadge";
 import { PaymentCard } from "./PaymentCard";
 import { ScheduleCard } from "./ScheduleCard";
 import { StatusActionDialog } from "./StatusActionDialog";
+import { TestResultCard } from "./TestResultCard";
 
 const cardVariants = cva(
   "rounded-xl border border-gray-200 bg-white p-4 shadow-(--admin-card-shadow)",
@@ -251,6 +252,12 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
       />
 
       <ScheduleCard
+        registration={registration}
+        isSaving={isSaving}
+        onSave={saveChange}
+      />
+
+      <TestResultCard
         registration={registration}
         isSaving={isSaving}
         onSave={saveChange}

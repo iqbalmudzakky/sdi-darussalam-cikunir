@@ -236,29 +236,34 @@ export async function sendPaymentReceiptEmail(input: {
   }
 }
 
-export async function sendTestReminderEmail(input: {
+export type TestReminderEmail = {
   to: string;
   studentName: string;
   registrationNumber: string | null;
   dateLabel: string;
   timeLabel: string;
-}): Promise<boolean> {
+};
+
+export async function sendTestReminderEmails(
+  reminders: TestReminderEmail[],
+): Promise<boolean> {
+  const emails = reminders.map((input) => ({
+    from: EMAIL_FROM,
+    to: input.to,
+    subject: `Pengingat Jadwal Tes — ${input.studentName}`,
+    html: buildTestReminderHtml(input),
+  }));
+
   try {
     const resend = createEmailClient();
-    const { error } = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: input.to,
-      subject: `Pengingat Jadwal Tes — ${input.studentName}`,
-      html: buildTestReminderHtml(input),
-    });
-
+    const { error } = await resend.batch.send(emails);
     if (error) {
-      console.error("[email] sendTestReminderEmail failed:", error);
+      console.error("[email] sendTestReminderEmails failed:", error);
       return false;
     }
     return true;
   } catch (error) {
-    console.error("[email] sendTestReminderEmail failed:", error);
+    console.error("[email] sendTestReminderEmails failed:", error);
     return false;
   }
 }

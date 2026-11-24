@@ -7,6 +7,8 @@ import type {
   RegistrationEditFormResponse,
   RegistrationListResponse,
 } from "@/modules/registration-admin/dto";
+import type { ObservationViewResponse } from "@/modules/observation/dto";
+import * as observationService from "@/modules/observation/service";
 import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
 import * as admissionTestService from "@/modules/admission-test/service";
 import type { FullFormLinkResult } from "@/modules/registration-link/dto";
@@ -44,6 +46,20 @@ export async function getRegistrationForm(
       "lib/actions/registrations.getRegistrationForm failed:",
       error,
     );
+    return null;
+  }
+}
+
+export async function getObservation(
+  id: string,
+): Promise<ObservationViewResponse | null> {
+  const user = await requireUser();
+  if (!user) return null;
+
+  try {
+    return await observationService.getObservationView(id, user);
+  } catch (error) {
+    console.error("lib/actions/registrations.getObservation failed:", error);
     return null;
   }
 }

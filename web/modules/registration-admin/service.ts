@@ -7,7 +7,7 @@ import type {
   RegistrationPaymentSummaries,
   RegistrationPaymentSummary,
 } from "@/modules/payment/entity";
-import type { MarkPaidInput, PaymentViewResponse } from "@/modules/payment/dto";
+import type { MarkPaidInput } from "@/modules/payment/dto";
 import * as paymentService from "@/modules/payment/service";
 import type { RegistrationParentRow } from "@/modules/registration-biodata/entity";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
@@ -23,10 +23,11 @@ import type {
 } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
 import type {
+  RecordManualResultInput,
   SaveScheduleInput,
-  ScheduleViewResponse,
 } from "@/modules/admission-test/dto";
 import * as admissionTestService from "@/modules/admission-test/service";
+import * as observationService from "@/modules/observation/service";
 import type { SessionUser } from "@/modules/auth/dto";
 import { withTransaction } from "@/modules/db/postgres";
 import {
@@ -42,7 +43,6 @@ import type {
   RegistrationDetailResponse,
   RegistrationEditFormResponse,
   RegistrationExportItem,
-  RegistrationFullFormResponse,
   RegistrationParentColumns,
   RegistrationListItemResponse,
   RegistrationListResponse,
@@ -50,6 +50,7 @@ import type {
   UpdateRegistrationInput,
   UpdateRegistrationResult,
 } from "./dto";
+import type { RegistrationDetailParts, TestStatus } from "./entity";
 
 export async function listRegistrations(
   query: ListRegistrationsQuery,
@@ -95,24 +96,57 @@ export async function getRegistrationDetail(
 
   const registrationIds = [id];
   const hasFullForm = row.full_form_completed_at !== null;
-  const [payments, parents, form, extras, scheduleView, paymentView] =
-    await Promise.all([
-      paymentService.getSummariesByRegistrationIds(registrationIds),
-      registrationBiodataService.listParentsByRegistrationIds(registrationIds),
-      hasFullForm ? registrationService.findFormById(id) : null,
-      hasFullForm
-        ? registrationBiodataService.getDetailsAndAchievements(id)
-        : null,
-      admissionTestService.getScheduleView(id, actor),
-      paymentService.getPaymentView(id, actor),
-    ]);
+  const [
+    payments,
+    parents,
+    form,
+    extras,
+    scheduleView,
+    paymentView,
+    observation,
+  ] = await Promise.all([
+    paymentService.getSummariesByRegistrationIds(registrationIds),
+    registrationBiodataService.listParentsByRegistrationIds(registrationIds),
+    hasFullForm ? registrationService.findFormById(id) : null,
+    hasFullForm
+      ? registrationBiodataService.getDetailsAndAchievements(id)
+      : null,
+    admissionTestService.getScheduleView(id, actor),
+    paymentService.getPaymentView(id, actor),
+    row.registration_type === "siswa_baru"
+      ? observationService.getSummary(id)
+      : null,
+  ]);
 
+  const schedule = scheduleView.schedule;
+  const childInterviewerId = schedule?.child_interviewer?.id ?? null;
+  const canRecord =
+    row.status !== "cancelled" &&
+    admissionTestService.canRecordResult(actor, childInterviewerId);
+  const isManual = row.registration_type === "pindahan";
+  const manualStatus: TestStatus = schedule?.manual_result
+    ? "tested"
+    : "not_tested";
+  const testStatus = isManual
+    ? manualStatus
+    : (observation?.state ?? "not_tested");
   const payment = toPaymentSummary(id, payments);
   const fullForm =
     form && extras
       ? buildRegistrationFullForm(row, form, parents, extras, payment)
       : null;
-  const detail = toDetail(row, payments, fullForm, scheduleView, paymentView);
+
+  const parts: RegistrationDetailParts = {
+    fullForm,
+    scheduleView,
+    paymentView,
+    observation,
+    testStatus,
+    canStartTest:
+      canRecord && testStatus !== "tested" && (!isManual || schedule !== null),
+    canEditTest: canRecord && isManual && testStatus === "tested",
+  };
+  const detail = toDetail(row, payments, parts);
   return detail;
 }
 
@@ -232,6 +266,15 @@ async function applyRegistrationUpdate(
 
   if (request.action === "cancel_payment") {
     return paymentService.cancelPayment(id, input.actor);
+  }
+
+  if (request.action === "save_manual_result") {
+    const resultInput: RecordManualResultInput = {
+      registrationId: id,
+      request: request.result,
+      actor: input.actor,
+    };
+    return admissionTestService.recordManualResult(resultInput);
   }
 
   if (request.action === "mark_reminded") {
@@ -373,9 +416,7 @@ function toListItem(
 function toDetail(
   row: PpdbRegistrationFullRow,
   payments: RegistrationPaymentSummaries,
-  fullForm: RegistrationFullFormResponse | null,
-  scheduleView: ScheduleViewResponse,
-  paymentView: PaymentViewResponse,
+  parts: RegistrationDetailParts,
 ): RegistrationDetailResponse {
   const entryAge = row.academic_year
     ? calculateEntryAge(row.date_of_birth, row.academic_year)
@@ -398,10 +439,14 @@ function toDetail(
     can_cancel: row.status !== "cancelled",
     can_reactivate: row.status === "cancelled",
     can_send_form_link: row.source === "online" && Boolean(row.contact_phone),
-    full_form: fullForm,
-    schedule: scheduleView.schedule,
-    schedule_options: scheduleView.options,
-    payment: paymentView,
+    full_form: parts.fullForm,
+    schedule: parts.scheduleView.schedule,
+    schedule_options: parts.scheduleView.options,
+    payment: parts.paymentView,
+    observation: parts.observation,
+    test_status: parts.testStatus,
+    can_start_test: parts.canStartTest,
+    can_edit_test: parts.canEditTest,
   };
   return detail;
 }

@@ -2,6 +2,7 @@ import { sql } from "@/modules/db/postgres";
 import type { TransactionSql } from "postgres";
 import type { ReceivedDocument } from "@/modules/shared/constant/registration";
 import type {
+  AdvanceStatusInput,
   InsertFullRegistrationInput,
   ListRegistrationsInput,
   NewShortRegistration,
@@ -360,15 +361,15 @@ export async function reactivate(id: string): Promise<boolean> {
   return rows.length > 0;
 }
 
-export async function markScheduledWithin(
+export async function advanceStatusWithin(
   tx: TransactionSql,
-  id: string,
+  input: AdvanceStatusInput,
 ): Promise<void> {
   await tx.unsafe(
     `UPDATE ppdb_registrations
-     SET status = 'scheduled', updated_at = now()
-     WHERE id = $1 AND status = 'new'`,
-    [id],
+     SET status = $2, updated_at = now()
+     WHERE id = $1 AND status = ANY(string_to_array($3, ','))`,
+    [input.id, input.nextStatus, input.fromStatuses.join(",")],
   );
 }
 

@@ -3,7 +3,11 @@ import type { AdminSummary } from "@/modules/auth/entity";
 import * as authService from "@/modules/auth/service";
 import { withDbLogging } from "@/modules/db/errors";
 import { withTransaction } from "@/modules/db/postgres";
-import { sendTestReminderEmail } from "@/modules/email/email";
+import {
+  sendTestReminderEmails,
+  type TestReminderEmail,
+} from "@/modules/email/email";
+import type { AdvanceStatusInput } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
 import { TEST_TIME_SLOT } from "@/modules/shared/constant/registration";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
@@ -12,6 +16,8 @@ import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
 import * as repository from "./repository";
 import type {
   InterviewerResponse,
+  RecordManualResultFailureReason,
+  RecordManualResultInput,
   ReminderEmailSummary,
   SaveScheduleFailureReason,
   SaveScheduleInput,
@@ -19,8 +25,13 @@ import type {
   ScheduleViewResponse,
   TestDayResponse,
   TestReminderGroupResponse,
+  TestReminderResponse,
 } from "./dto";
-import type { AdmissionTestRow, SaveAdmissionTestInput } from "./entity";
+import type {
+  AdmissionTestRow,
+  SaveAdmissionTestInput,
+  SaveManualResultInput,
+} from "./entity";
 
 export async function getScheduleView(
   registrationId: string,
@@ -102,11 +113,16 @@ export async function saveSchedule(
     parentInterviewerId: request.parent_interviewer_id,
     actorId: actor.id,
   };
+  const statusInput: AdvanceStatusInput = {
+    id: registrationId,
+    nextStatus: "scheduled",
+    fromStatuses: ["new"],
+  };
   await withTransaction(async (tx) => {
     await withDbLogging("admissionTest.saveWithin", () =>
       repository.saveWithin(tx, saveInput),
     );
-    await registrationService.markScheduledWithin(tx, registrationId);
+    await registrationService.advanceStatusWithin(tx, statusInput);
   });
   return null;
 }
@@ -129,6 +145,69 @@ export async function findTestDay(
     }),
   };
   return testDay;
+}
+
+export async function recordManualResult(
+  input: RecordManualResultInput,
+): Promise<RecordManualResultFailureReason | null> {
+  const { registrationId, request, actor } = input;
+  const [registration, row] = await Promise.all([
+    registrationService.findFullById(registrationId),
+    withDbLogging("admissionTest.findByRegistrationId", () =>
+      repository.findByRegistrationId(registrationId),
+    ),
+  ]);
+  if (!registration) return "not_found";
+  if (
+    registration.status === "cancelled" ||
+    registration.registration_type !== "pindahan"
+  ) {
+    return "invalid_state";
+  }
+  const childInterviewerId = row?.child_interviewer_id ?? null;
+  if (!canRecordResult(actor, childInterviewerId)) {
+    return "forbidden_result";
+  }
+  if (!row) return "no_schedule";
+  if (request.tested_on > jakartaDateKey(new Date())) return "future_test_date";
+
+  const saveInput: SaveManualResultInput = {
+    registrationId,
+    testedOn: request.tested_on,
+    notes: request.notes,
+    actorId: actor.id,
+  };
+  const statusInput: AdvanceStatusInput = {
+    id: registrationId,
+    nextStatus: "tested",
+    fromStatuses: ["new", "scheduled"],
+  };
+  await withTransaction(async (tx) => {
+    await withDbLogging("admissionTest.saveManualResultWithin", () =>
+      repository.saveManualResultWithin(tx, saveInput),
+    );
+    await registrationService.advanceStatusWithin(tx, statusInput);
+  });
+  return null;
+}
+
+export function canRecordResult(
+  actor: SessionUser,
+  childInterviewerId: string | null,
+): boolean {
+  return (
+    authService.hasPermission(actor.role, "record_test_results") ||
+    actor.id === childInterviewerId
+  );
+}
+
+export async function findChildInterviewerId(
+  registrationId: string,
+): Promise<string | null> {
+  const row = await withDbLogging("admissionTest.findByRegistrationId", () =>
+    repository.findByRegistrationId(registrationId),
+  );
+  return row?.child_interviewer_id ?? null;
 }
 
 export async function markReminded(
@@ -158,47 +237,57 @@ export async function listReminders(): Promise<TestReminderGroupResponse[]> {
   ]);
   const interviewers = toInterviewers(accounts);
 
+  const entries = rows.flatMap((row) => {
+    const registration = registrations.find(
+      (item) => item.id === row.registration_id,
+    );
+    if (!registration || registration.status === "cancelled") return [];
+
+    const schedule = toSchedule(row, interviewers);
+    const message = [
+      "Assalamu'alaikum, kami mengingatkan jadwal tes dan wawancara calon murid SDI Darussalam Cikunir.",
+      `Nama anak: ${registration.full_name}\nNo. pendaftaran: ${registration.registration_number ?? "-"}\nHari, tanggal: ${schedule.date_label}\nJam: ${schedule.time_label} WIB`,
+      "Terima kasih.",
+    ].join("\n\n");
+    const whatsappUrl = registration.contact_phone
+      ? buildWhatsAppLink(registration.contact_phone, message)
+      : null;
+    const reminder: TestReminderResponse = {
+      registration_id: registration.id,
+      registration_number: registration.registration_number,
+      full_name: registration.full_name,
+      time_label: schedule.time_label,
+      interviewer_name: schedule.child_interviewer?.name ?? null,
+      whatsapp_url: whatsappUrl,
+    };
+    const entry = { testDate: row.test_date, reminder };
+    return [entry];
+  });
+
   const days = [
-    { key: "today", prefix: "Hari ini", date: today },
-    { key: "tomorrow", prefix: "Besok", date: tomorrow },
+    {
+      key: "today",
+      prefix: "Hari ini",
+      date: today,
+    },
+    {
+      key: "tomorrow",
+      prefix: "Besok",
+      date: tomorrow,
+    },
   ] as const;
   const groups = days.map((day) => {
-    const reminders = rows
-      .filter((row) => row.test_date === day.date)
-      .flatMap((row) => {
-        const registration = registrations.find(
-          (item) => item.id === row.registration_id,
-        );
-        if (!registration || registration.status === "cancelled") return [];
-
-        const schedule = toSchedule(row, interviewers);
-        const message = [
-          "Assalamu'alaikum, kami mengingatkan jadwal tes dan wawancara calon murid SDI Darussalam Cikunir.",
-          `Nama anak: ${registration.full_name}\nNo. pendaftaran: ${registration.registration_number ?? "-"}\nHari, tanggal: ${schedule.date_label}\nJam: ${schedule.time_label} WIB`,
-          "Terima kasih.",
-        ].join("\n\n");
-        const reminder = {
-          registration_id: registration.id,
-          registration_number: registration.registration_number,
-          full_name: registration.full_name,
-          time_label: schedule.time_label,
-          interviewer_name: schedule.child_interviewer?.name ?? null,
-          whatsapp_url: registration.contact_phone
-            ? buildWhatsAppLink(registration.contact_phone, message)
-            : null,
-        };
-        return [reminder];
-      });
     const shortDate = formatDate(day.date, {
       weekday: "long",
       day: "numeric",
       month: "short",
     });
-
     const group: TestReminderGroupResponse = {
       key: day.key,
       label: `${day.prefix} · ${shortDate}`,
-      reminders,
+      reminders: entries
+        .filter((entry) => entry.testDate === day.date)
+        .map((entry) => entry.reminder),
     };
     return group;
   });
@@ -207,7 +296,8 @@ export async function listReminders(): Promise<TestReminderGroupResponse[]> {
 
 export async function sendTomorrowReminderEmails(): Promise<ReminderEmailSummary> {
   const dayMs = 24 * 60 * 60 * 1000;
-  const tomorrow = jakartaDateKey(new Date(Date.now() + dayMs));
+  const tomorrowDate = new Date(Date.now() + dayMs);
+  const tomorrow = jakartaDateKey(tomorrowDate);
   const rows = await withDbLogging("admissionTest.claimForEmailReminder", () =>
     repository.claimForEmailReminder(tomorrow),
   );
@@ -216,29 +306,34 @@ export async function sendTomorrowReminderEmails(): Promise<ReminderEmailSummary
     return nothingToSend;
   }
 
-  const registrations = await registrationService.listFullByIds(
-    rows.map((row) => row.registration_id),
-  );
-  const sentIds: string[] = [];
-  for (const row of rows) {
+  const registrationIds = rows.map((row) => row.registration_id);
+  const registrations =
+    await registrationService.listFullByIds(registrationIds);
+  const deliveries = rows.flatMap((row) => {
     const registration = registrations.find(
       (item) => item.id === row.registration_id,
     );
     if (!registration?.parent_email || registration.status === "cancelled") {
-      continue;
+      return [];
     }
 
     const schedule = toSchedule(row, []);
-    const sent = await sendTestReminderEmail({
+    const email: TestReminderEmail = {
       to: registration.parent_email,
       studentName: registration.full_name,
       registrationNumber: registration.registration_number,
       dateLabel: schedule.date_label,
       timeLabel: schedule.time_label,
-    });
-    if (sent) sentIds.push(row.registration_id);
-  }
+    };
+    const delivery = { registrationId: row.registration_id, email };
+    return [delivery];
+  });
 
+  const emails = deliveries.map((delivery) => delivery.email);
+  const isSent = emails.length > 0 && (await sendTestReminderEmails(emails));
+  const sentIds = isSent
+    ? deliveries.map((delivery) => delivery.registrationId)
+    : [];
   const unsentIds = rows
     .map((row) => row.registration_id)
     .filter((id) => !sentIds.includes(id));
@@ -303,6 +398,9 @@ function toSchedule(
     child_interviewer: findInterviewer(row.child_interviewer_id),
     parent_interviewer: findInterviewer(row.parent_interviewer_id),
     is_reminded: row.reminded_at !== null,
+    manual_result: row.manual_tested_on
+      ? { tested_on: row.manual_tested_on, notes: row.manual_notes }
+      : null,
   };
   return schedule;
 }

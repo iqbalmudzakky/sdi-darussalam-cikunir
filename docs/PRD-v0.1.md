@@ -1286,7 +1286,7 @@ pendaftar sudah ada lebih dulu. Kolom baru `recorded_by` (akun yang menandai lun
 | Tabel                     | Domain                | Isi                                                                                              |
 | ------------------------- | --------------------- | ------------------------------------------------------------------------------------------------ |
 | `registration_form_links` | `registration-link`   | Token link form lengkap (hash), kedaluwarsa, dibuat oleh                                         |
-| `admission_tests`         | `admission-test`      | Jadwal tes, pewawancara anak, pewawancara ortu, catatan tes manual, pengingat terkirim           |
+| `admission_tests`         | `admission-test`      | Jadwal tes, pewawancara anak & ortu, pengingat terkirim, tanggal + catatan tes manual (pindahan) |
 | `observations`            | `observation`         | Tanggal, observer, catatan awal, rekomendasi                                                     |
 | `observation_scores`      | `observation`         | 56 baris: nomor indikator, skor 1–4, catatan                                                     |
 | `admission_settings`      | `admission-settings`  | Satu baris: nominal per program, diskon, batas bayar, rekening, penanda tangan, CP PMB, CP surat |
@@ -1368,7 +1368,8 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Email pengingat H-1 ke orang tua yang punya email: route cron
   `/api/cron/send-test-reminders`, sekali sehari. Dicatat supaya tidak terkirim dua kali.
   Dikode bersama F12 (24 Nov 2026), dikirim untuk jadwal **besok** (WIB); ganti tanggal/jam
-  membuat email dikirim ulang. Butuh cron harian dari infra.
+  membuat email dikirim ulang. Butuh cron harian dari infra. Semua email hari itu dikirim dalam
+  satu panggilan batch Resend (maks. 100 email), bukan satu per satu.
 
 #### F12 — Pembayaran biaya pendaftaran
 
@@ -1402,10 +1403,18 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
   total, kesimpulan umum, dimensi paling kuat & yang perlu diperkuat (persentase, 11.2.2),
   catatan/rekomendasi diketik observer.
 - Simpan observasi → status Sudah Tes.
+- Dikode 24 Nov 2026: tombol **Petunjuk** di judul halaman Observasi Kesiapan dan Profil Kesiapan.
+  Persentase ditampilkan di samping skor (`20/24 (83%)`, total `188 / 224 (83%)`), dibulatkan
+  ke bawah supaya angka tidak tampil 75% saat kategorinya masih Perlu Penguatan.
+- Skor disimpan di `observations` + `observation_scores` (11.5.2). Profil Kesiapan tidak disimpan,
+  selalu dihitung ulang dari skor. Hak isi: izin `record_test_results` (kepsek, wakepsek, admin)
+  atau pewawancara anak di jadwal. Yang lain hanya melihat.
 
 #### F14 — Tes manual (Pindahan)
 
 - Cukup catatan hasil tes + tanggal. Simpan → status Sudah Tes.
+- Tanggal tes wajib dan tidak boleh lewat hari ini; catatan boleh kosong. Hak isi sama dengan F13.
+  Disimpan di `admission_tests` (11.5.2), jadi jadwal tes harus diatur dulu.
 
 #### F15 — Surat pernyataan keuangan
 
@@ -1482,7 +1491,7 @@ tersimpan) yang masih `pending` dibiarkan bisa selesai sampai kedaluwarsa. Jalur
 
 1. K33: link form lengkap berlaku sampai hari tes.
 2. F12 pembayaran + email pengingat H-1 (F11, butuh cron infra).
-3. F13–F14 observasi & tes manual.
+3. F13–F14 observasi & tes manual (dikode 24 Nov 2026, menunggu uji).
 4. F15–F18 surat, PDF, pengaturan PMB.
 5. Nama pewawancara dari SSO (F11): menunggu endpoint daftar guru & staf dari pemilik SSO; disambungkan
    begitu siap.

@@ -3,6 +3,7 @@ import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
 import type { ReceivedDocument } from "@/modules/shared/constant/registration";
 import type {
+  AdvanceStatusInput,
   InsertFullRegistrationInput,
   ListRegistrationsInput,
   NewShortRegistration,
@@ -155,12 +156,12 @@ export async function listFullByIds(
   );
 }
 
-export async function markScheduledWithin(
+export async function advanceStatusWithin(
   tx: TransactionSql,
-  id: string,
+  input: AdvanceStatusInput,
 ): Promise<void> {
-  await withDbLogging("registration.markScheduledWithin", () =>
-    repository.markScheduledWithin(tx, id),
+  await withDbLogging("registration.advanceStatusWithin", () =>
+    repository.advanceStatusWithin(tx, input),
   );
 }
 

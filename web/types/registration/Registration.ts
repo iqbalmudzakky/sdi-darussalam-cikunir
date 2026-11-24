@@ -11,6 +11,10 @@ import type {
   RegistrationListResponse,
   UpdateRegistrationRequest,
 } from "@/modules/registration-admin/dto";
+import type {
+  ObservationViewResponse,
+  SaveObservationRequest,
+} from "@/modules/observation/dto";
 import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
 import type { useFullRegistrationForm } from "@/hooks/useFullRegistrationForm";
 import type {
@@ -39,6 +43,19 @@ export type RegistrationScheduleOptions =
   RegistrationDetail["schedule_options"];
 
 export type RegistrationPaymentView = RegistrationDetail["payment"];
+
+export type RegistrationManualResult = NonNullable<
+  RegistrationSchedule["manual_result"]
+>;
+
+export type ObservationView = ObservationViewResponse;
+
+export type ObservationDimension = ObservationView["dimensions"][number];
+
+export type SaveObservationPayload = SaveObservationRequest;
+
+export type SaveObservationResult =
+  { ok: true; observation: ObservationView } | { ok: false; error: string };
 
 export type TestReminderGroup = TestReminderGroupResponse;
 

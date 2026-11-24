@@ -151,3 +151,9 @@ export type PpdbRegistrationFormRow = {
   contact_phone: string | null;
   student: { [K in keyof StudentForm]: StudentForm[K] | null };
 };
+
+export type AdvanceStatusInput = {
+  id: string;
+  nextStatus: PpdbRegistrationStatus;
+  fromStatuses: PpdbRegistrationStatus[];
+};

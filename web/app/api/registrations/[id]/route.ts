@@ -5,6 +5,11 @@ import {
   UpdateRegistrationRequestSchema,
   type UpdateRegistrationInput,
 } from "@/modules/registration-admin/dto";
+import {
+  SaveObservationRequestSchema,
+  type SaveObservationRequestInput,
+} from "@/modules/observation/dto";
+import * as observationService from "@/modules/observation/service";
 import * as paymentService from "@/modules/payment/service";
 import * as registrationLinkService from "@/modules/registration-link/service";
 import * as registrationService from "@/modules/registration/service";
@@ -102,6 +107,45 @@ export async function PATCH(
       );
       return NextResponse.json(
         { error: "Gagal membuat link pembayaran." },
+        { status: 500 },
+      );
+    }
+  }
+
+  if (body.action === "save_observation") {
+    const parsedObservation = SaveObservationRequestSchema.safeParse(body);
+    if (!parsedObservation.success) {
+      return NextResponse.json(
+        {
+          error:
+            parsedObservation.error.issues[0]?.message ?? "Data tidak valid.",
+        },
+        { status: 400 },
+      );
+    }
+
+    try {
+      const input: SaveObservationRequestInput = {
+        registrationId: id,
+        request: parsedObservation.data,
+        actor: user,
+      };
+      const result = await observationService.saveObservation(input);
+      if (!result.ok) {
+        const failure = REGISTRATION_FAILURE[result.reason];
+        return NextResponse.json(
+          { error: failure.message },
+          { status: failure.status },
+        );
+      }
+      return NextResponse.json(result.observation);
+    } catch (error) {
+      console.error(
+        `PATCH /api/registrations/${id} save_observation failed:`,
+        error,
+      );
+      return NextResponse.json(
+        { error: "Gagal menyimpan observasi." },
         { status: 500 },
       );
     }

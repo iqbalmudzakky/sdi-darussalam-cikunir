@@ -1,10 +1,12 @@
 import { z } from "zod";
 import {
+  ManualResultRequestSchema,
   ScheduleTestRequestSchema,
   type ScheduleOptionsResponse,
   type ScheduleResponse,
 } from "@/modules/admission-test/dto";
 import type { SessionUser } from "@/modules/auth/dto";
+import type { ObservationSummaryResponse } from "@/modules/observation/dto";
 import {
   MarkPaidRequestSchema,
   type PaymentViewResponse,
@@ -95,6 +97,10 @@ export const UpdateRegistrationRequestSchema = z.discriminatedUnion("action", [
     payment: MarkPaidRequestSchema,
   }),
   z.object({ action: z.literal("cancel_payment") }),
+  z.object({
+    action: z.literal("save_manual_result"),
+    result: ManualResultRequestSchema,
+  }),
 ]);
 
 export type UpdateRegistrationRequest = z.infer<
@@ -119,7 +125,10 @@ export type UpdateRegistrationFailureReason =
   | "past_schedule"
   | "invalid_time"
   | "forbidden_payment"
-  | "already_paid";
+  | "already_paid"
+  | "forbidden_result"
+  | "no_schedule"
+  | "future_test_date";
 
 export type UpdateRegistrationResult =
   | { ok: true; registration: RegistrationDetailResponse }
@@ -226,6 +235,10 @@ export type RegistrationDetailResponse = RegistrationListItemResponse & {
   schedule: ScheduleResponse | null;
   schedule_options: ScheduleOptionsResponse;
   payment: PaymentViewResponse;
+  observation: ObservationSummaryResponse | null;
+  test_status: ObservationSummaryResponse["state"];
+  can_start_test: boolean;
+  can_edit_test: boolean;
   full_form: RegistrationFullFormResponse | null;
 };
 

@@ -131,4 +131,21 @@ export const REGISTRATION_FAILURE = {
     status: 400,
     message: "Berkas tidak sesuai jenis pendaftaran.",
   },
+  forbidden_result: {
+    status: 403,
+    message:
+      "Hanya pewawancara anak, kepsek, atau wakepsek yang bisa mengisi hasil tes.",
+  },
+  incomplete_observation: {
+    status: 400,
+    message: "Isi skor ke-56 indikator dulu.",
+  },
+  no_schedule: {
+    status: 409,
+    message: "Atur jadwal tes dulu.",
+  },
+  future_test_date: {
+    status: 400,
+    message: "Tanggal tes tidak boleh melewati hari ini.",
+  },
 } as const;

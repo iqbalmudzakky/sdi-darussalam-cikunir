@@ -9,6 +9,8 @@ import type {
   RegistrationDetail,
   RegistrationListPage,
   RegistrationStatus,
+  SaveObservationPayload,
+  SaveObservationResult,
   ShortRegistrationInput,
   ShortRegistrationResult,
   UpdateRegistrationInput,
@@ -224,5 +226,22 @@ export async function sendPaymentLink(id: string): Promise<SendFormLinkResult> {
   const result: SendFormLinkResult = res.ok
     ? { ok: true, whatsappUrl: data.whatsapp_url }
     : { ok: false, error: data.error ?? "Gagal membuat link pembayaran." };
+  return result;
+}
+
+export async function saveObservation(
+  id: string,
+  payload: SaveObservationPayload,
+): Promise<SaveObservationResult> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  const result: SaveObservationResult = res.ok
+    ? { ok: true, observation: data }
+    : { ok: false, error: data.error ?? "Gagal menyimpan observasi." };
   return result;
 }
