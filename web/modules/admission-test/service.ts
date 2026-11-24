@@ -208,8 +208,8 @@ export async function listReminders(): Promise<TestReminderGroupResponse[]> {
 export async function sendTomorrowReminderEmails(): Promise<ReminderEmailSummary> {
   const dayMs = 24 * 60 * 60 * 1000;
   const tomorrow = jakartaDateKey(new Date(Date.now() + dayMs));
-  const rows = await withDbLogging("admissionTest.listForEmailReminder", () =>
-    repository.listForEmailReminder(tomorrow),
+  const rows = await withDbLogging("admissionTest.claimForEmailReminder", () =>
+    repository.claimForEmailReminder(tomorrow),
   );
   if (rows.length === 0) {
     const nothingToSend: ReminderEmailSummary = { sent: 0, skipped: 0 };
@@ -239,9 +239,12 @@ export async function sendTomorrowReminderEmails(): Promise<ReminderEmailSummary
     if (sent) sentIds.push(row.registration_id);
   }
 
-  if (sentIds.length > 0) {
-    await withDbLogging("admissionTest.markEmailReminded", () =>
-      repository.markEmailReminded(sentIds),
+  const unsentIds = rows
+    .map((row) => row.registration_id)
+    .filter((id) => !sentIds.includes(id));
+  if (unsentIds.length > 0) {
+    await withDbLogging("admissionTest.releaseEmailReminder", () =>
+      repository.releaseEmailReminder(unsentIds),
     );
   }
   const summary: ReminderEmailSummary = {

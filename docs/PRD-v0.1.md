@@ -1387,12 +1387,21 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 
 #### F13 — Observasi & Profil Kesiapan (PMB saja)
 
-- Layar isi 56 indikator per dimensi: skor 1–4 dengan tombol (bukan ketik), catatan per
-  indikator opsional. Keterangan skor dari lembar Petunjuk tampil sebagai ikon info.
-- Header terisi dari biodata: nama, nomor, tanggal lahir, asal TK, usia per 1 Juli, observer.
-- Profil Kesiapan dihitung di service: per dimensi (skor, maks., kategori), total, kesimpulan,
-  dimensi terkuat & terlemah (11.2.2), catatan/rekomendasi diketik observer.
-- Simpan → status Sudah Tes.
+- Layar isi 56 indikator **satu dimensi per layar** (chip 9 dimensi untuk berpindah): skor 1–4
+  dengan tombol (bukan ketik), catatan per indikator opsional. Ikon info membuka **Petunjuk
+  Penggunaan** berisi lembar Petunjuk Excel (Skor 4–1, Penting, Kategori, Catatan) + Kesimpulan
+  umum (ambang ≥75% / 50–74% / <50%).
+- **Istilah mengikuti Excel** (24 Nov 2026): Tanggal Lahir, Asal TK/RA/PAUD, Tanggal Observasi,
+  Usia Pada Bulan Juli, Note, Kesimpulan umum, Dimensi paling kuat, Dimensi yang perlu
+  diperkuat, Catatan/Rekomendasi, kategori Baik / Perlu Penguatan / Perlu Pendampingan.
+- Header terisi dari biodata. Observer = pewawancara anak di jadwal; bila kosong, yang menyimpan.
+  Yang boleh mengisi: kepsek, wakepsek, admin, guru yang ditugaskan sebagai pewawancara anak.
+- Skor **tersimpan otomatis tiap pindah dimensi** (bisa dilanjutkan). **Simpan observasi** baru
+  aktif setelah ke-56 indikator terisi.
+- Profil Kesiapan dihitung di service dengan rumus Excel: per dimensi (skor, maks., kategori),
+  total, kesimpulan umum, dimensi paling kuat & yang perlu diperkuat (persentase, 11.2.2),
+  catatan/rekomendasi diketik observer.
+- Simpan observasi → status Sudah Tes.
 
 #### F14 — Tes manual (Pindahan)
 

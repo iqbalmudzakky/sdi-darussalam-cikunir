@@ -87,26 +87,26 @@ export async function markReminded(
   return rows.length > 0;
 }
 
-export async function listForEmailReminder(
+export async function claimForEmailReminder(
   testDate: string,
 ): Promise<AdmissionTestRow[]> {
   return sql.unsafe<AdmissionTestRow[]>(
-    `SELECT registration_id, test_date::text AS test_date,
-            to_char(test_time, 'HH24:MI') AS test_time, child_interviewer_id,
-            parent_interviewer_id, reminded_at
-     FROM admission_tests
+    `UPDATE admission_tests
+     SET email_reminded_at = now(), updated_at = now()
      WHERE test_date = $1 AND email_reminded_at IS NULL
-     ORDER BY test_time`,
+     RETURNING registration_id, test_date::text AS test_date,
+               to_char(test_time, 'HH24:MI') AS test_time, child_interviewer_id,
+               parent_interviewer_id, reminded_at`,
     [testDate],
   );
 }
 
-export async function markEmailReminded(
+export async function releaseEmailReminder(
   registrationIds: string[],
 ): Promise<void> {
   await sql.unsafe(
     `UPDATE admission_tests
-     SET email_reminded_at = now(), updated_at = now()
+     SET email_reminded_at = NULL, updated_at = now()
      WHERE registration_id = ANY(string_to_array($1, ',')::uuid[])`,
     [registrationIds.join(",")],
   );
