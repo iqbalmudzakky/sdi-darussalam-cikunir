@@ -114,7 +114,7 @@ export function TestResultCard({
             <span className="shrink-0 text-lg font-bold text-gray-900 tabular-nums">
               {observation.score_label}
             </span>
-            <div className="w-full max-w-xs">
+            <div className="min-w-0 flex-1">
               <ProgressBar
                 ratio={observation.ratio}
                 tone={observation.conclusion?.tone}
