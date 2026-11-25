@@ -3,6 +3,7 @@ import {
   ManualResultRequestSchema,
   ScheduleTestRequestSchema,
   type ScheduleOptionsResponse,
+  type TestAssignmentResponse,
   type ScheduleResponse,
 } from "@/modules/admission-test/dto";
 import type { SessionUser } from "@/modules/auth/dto";
@@ -15,7 +16,6 @@ import {
   MarkPaidRequestSchema,
   type PaymentViewResponse,
 } from "@/modules/payment/dto";
-import type { RegistrationPaymentSummary } from "@/modules/payment/entity";
 import {
   ACADEMIC_YEAR_PATTERN,
   ManualStudentFormSchema,
@@ -33,8 +33,6 @@ import {
   phoneNumber,
 } from "@/modules/validation/validators";
 import type {
-  ParentRelationshipStatus,
-  PpdbRegistrationExportRow,
   PpdbRegistrationStatus,
   RegistrationProgram,
   RegistrationType,
@@ -153,6 +151,7 @@ export const ListRegistrationsQuerySchema = z.object({
     .default(""),
   program: z.enum(REGISTRATION_PROGRAMS).or(z.literal("")).default(""),
   registration_type: z.enum(REGISTRATION_TYPES).or(z.literal("")).default(""),
+  scope: z.literal("mine").or(z.literal("")).default(""),
   sort: z.enum(SORT_DIRECTION_VALUES).default("desc"),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   offset: z.coerce.number().int().min(0).default(0),
@@ -160,14 +159,6 @@ export const ListRegistrationsQuerySchema = z.object({
 
 export type ListRegistrationsQuery = z.infer<
   typeof ListRegistrationsQuerySchema
->;
-
-export const ExportRegistrationsQuerySchema = z.object({
-  statuses: z.array(z.enum(REGISTRATION_STATUSES)).default([]),
-});
-
-export type ExportRegistrationsQuery = z.infer<
-  typeof ExportRegistrationsQuerySchema
 >;
 
 export type RegistrationListItemResponse = {
@@ -186,6 +177,7 @@ export type RegistrationListItemResponse = {
   is_paid: boolean;
   received_document_count: number;
   required_document_count: number;
+  assignment: TestAssignmentResponse | null;
 };
 
 export type RegistrationDocumentResponse = {
@@ -268,24 +260,3 @@ export type RegistrationListResponse = {
   has_more: boolean;
   academic_years: string[];
 };
-
-export type RegistrationParentColumns = {
-  father_status: ParentRelationshipStatus | null;
-  father_name: string | null;
-  father_nik: string | null;
-  father_place_of_birth: string | null;
-  father_date_of_birth: string | null;
-  father_phone: string | null;
-  father_income: number | null;
-  mother_status: ParentRelationshipStatus | null;
-  mother_name: string | null;
-  mother_nik: string | null;
-  mother_place_of_birth: string | null;
-  mother_date_of_birth: string | null;
-  mother_phone: string | null;
-  mother_income: number | null;
-};
-
-export type RegistrationExportItem = PpdbRegistrationExportRow &
-  RegistrationParentColumns &
-  RegistrationPaymentSummary;

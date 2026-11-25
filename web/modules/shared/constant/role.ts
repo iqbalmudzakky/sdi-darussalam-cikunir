@@ -19,7 +19,8 @@ export type Permission =
   | "cancel_payments"
   | "record_test_results"
   | "manage_pmb_settings"
-  | "decide_admissions";
+  | "decide_admissions"
+  | "assign_leader_roles";
 
 export const ADMIN_ROLE_LABEL: Record<AdminRole, string> = {
   principal: "Kepsek",
@@ -33,6 +34,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
   principal: [
     "view_accounts",
     "manage_accounts",
+    "assign_leader_roles",
     "view_admission_settings",
     "manage_admission_settings",
     "assign_interviewers",
@@ -44,6 +46,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
   ],
   vice_principal: [
     "view_accounts",
+    "manage_accounts",
     "view_admission_settings",
     "assign_interviewers",
     "manage_payments",
@@ -57,6 +60,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
   developer: [
     "view_accounts",
     "manage_accounts",
+    "assign_leader_roles",
     "view_admission_settings",
     "manage_admission_settings",
     "manage_developer_accounts",
@@ -68,3 +72,8 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     "decide_admissions",
   ],
 };
+
+export const LEADER_ROLES: readonly AdminRole[] = [
+  "principal",
+  "vice_principal",
+];

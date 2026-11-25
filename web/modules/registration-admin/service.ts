@@ -1,15 +1,9 @@
-import type ExcelJS from "exceljs";
-import {
-  buildRegistrationsWorkbookBuffer,
-  getRegistrationsExportFilename,
-} from "@/modules/export/registrationWorkbook";
 import type {
   RegistrationPaymentSummaries,
   RegistrationPaymentSummary,
 } from "@/modules/payment/entity";
 import type { MarkPaidInput } from "@/modules/payment/dto";
 import * as paymentService from "@/modules/payment/service";
-import type { RegistrationParentRow } from "@/modules/registration-biodata/entity";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
 import * as registrationIntakeService from "@/modules/registration-intake/service";
 import type {
@@ -25,6 +19,7 @@ import * as registrationService from "@/modules/registration/service";
 import type {
   RecordManualResultInput,
   SaveScheduleInput,
+  TestAssignmentResponse,
 } from "@/modules/admission-test/dto";
 import * as admissionTestService from "@/modules/admission-test/service";
 import type {
@@ -43,12 +38,9 @@ import { calculateEntryAge } from "@/modules/shared/entryAge";
 import { buildRegistrationFullForm } from "@/modules/shared/registrationFullForm";
 import type {
   EditRegistrationForm,
-  ExportRegistrationsQuery,
   ListRegistrationsQuery,
   RegistrationDetailResponse,
   RegistrationEditFormResponse,
-  RegistrationExportItem,
-  RegistrationParentColumns,
   RegistrationListItemResponse,
   RegistrationListResponse,
   UpdateRegistrationFailureReason,
@@ -59,13 +51,19 @@ import type { RegistrationDetailParts } from "./entity";
 
 export async function listRegistrations(
   query: ListRegistrationsQuery,
+  actor: SessionUser,
 ): Promise<RegistrationListResponse> {
+  const assignments =
+    query.scope === "mine"
+      ? await admissionTestService.listAssignments(actor.id)
+      : null;
   const filter: RegistrationFilter = {
     search: query.search,
     statuses: query.statuses,
     academicYear: query.academic_year,
     program: query.program,
     registrationType: query.registration_type,
+    registrationIds: assignments?.map((item) => item.registration_id) ?? null,
   };
   const listInput: ListRegistrationsInput = {
     ...filter,
@@ -84,7 +82,7 @@ export async function listRegistrations(
     await paymentService.getSummariesByRegistrationIds(registrationIds);
 
   const response: RegistrationListResponse = {
-    items: items.map((item) => toListItem(item, payments)),
+    items: items.map((item) => toListItem(item, payments, assignments)),
     total,
     has_more: query.offset + items.length < total,
     academic_years: academicYears,
@@ -200,35 +198,6 @@ export async function updateRegistration(
       `registrationAdmin.updateRegistration failed for ${input.id}:`,
       error,
     );
-    throw error;
-  }
-}
-
-export async function exportRegistrations(
-  query: ExportRegistrationsQuery,
-): Promise<{
-  buffer: ExcelJS.Buffer;
-  filename: string;
-}> {
-  try {
-    const rows = await registrationService.exportRows(query.statuses);
-    const registrationIds = rows.map((row) => row.id);
-    const [payments, parents] = await Promise.all([
-      paymentService.getSummariesByRegistrationIds(registrationIds),
-      registrationBiodataService.listParentsByRegistrationIds(registrationIds),
-    ]);
-
-    const registrations: RegistrationExportItem[] = rows.map((row) => ({
-      ...row,
-      ...toParentColumns(row.id, parents),
-      ...toPaymentSummary(row.id, payments),
-    }));
-    const buffer = await buildRegistrationsWorkbookBuffer(registrations);
-    const filename = getRegistrationsExportFilename();
-    const workbook = { buffer, filename };
-    return workbook;
-  } catch (error) {
-    console.error("registrationAdmin.exportRegistrations failed:", error);
     throw error;
   }
 }
@@ -396,6 +365,7 @@ function toPaymentSummary(
 function toListItem(
   item: PpdbRegistrationListItem,
   payments: RegistrationPaymentSummaries,
+  assignments: TestAssignmentResponse[] | null = null,
 ): RegistrationListItemResponse {
   const payment = payments.get(item.id);
   const response: RegistrationListItemResponse = {
@@ -415,6 +385,8 @@ function toListItem(
     received_document_count: item.received_documents.length,
     required_document_count:
       RECEIVED_DOCUMENTS_BY_TYPE[item.registration_type].length,
+    assignment:
+      assignments?.find((entry) => entry.registration_id === item.id) ?? null,
   };
   return response;
 }
@@ -453,40 +425,4 @@ function toDetail(
     ...parts.progress,
   };
   return detail;
-}
-
-function toParentColumns(
-  registrationId: string,
-  parents: RegistrationParentRow[],
-): RegistrationParentColumns {
-  const ownParents = parents.filter(
-    (parent) => parent.registration_id === registrationId,
-  );
-  const father = ownParents.find((parent) => parent.parent_type === "father");
-  const mother = ownParents.find((parent) => parent.parent_type === "mother");
-
-  const columns: RegistrationParentColumns = {
-    father_status: toRelationshipStatus(father),
-    father_name: father?.name ?? null,
-    father_nik: father?.nik ?? null,
-    father_place_of_birth: father?.place_of_birth ?? null,
-    father_date_of_birth: father?.date_of_birth ?? null,
-    father_phone: father?.phone ?? null,
-    father_income: father?.income ?? null,
-    mother_status: toRelationshipStatus(mother),
-    mother_name: mother?.name ?? null,
-    mother_nik: mother?.nik ?? null,
-    mother_place_of_birth: mother?.place_of_birth ?? null,
-    mother_date_of_birth: mother?.date_of_birth ?? null,
-    mother_phone: mother?.phone ?? null,
-    mother_income: mother?.income ?? null,
-  };
-  return columns;
-}
-
-function toRelationshipStatus(
-  parent?: RegistrationParentRow,
-): RegistrationParentColumns["father_status"] {
-  const status = parent?.relationship_status ?? null;
-  return status as RegistrationParentColumns["father_status"];
 }

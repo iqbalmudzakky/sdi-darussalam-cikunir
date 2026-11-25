@@ -127,7 +127,7 @@ export function PaymentSettingsForm({
 
       <AdminFormSection title="Jadwal Pendaftaran">
         <div className="flex flex-wrap gap-4">
-          <div className="max-w-xs">
+          <div className="w-full sm:w-72">
             <DateField
               id="registration-opens-on"
               label="Tanggal buka"
@@ -136,7 +136,7 @@ export function PaymentSettingsForm({
             />
           </div>
 
-          <div className="max-w-xs">
+          <div className="w-full sm:w-72">
             <DateField
               id="registration-closes-on"
               label="Tanggal tutup"

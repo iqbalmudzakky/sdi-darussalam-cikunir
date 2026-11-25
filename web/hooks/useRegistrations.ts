@@ -136,6 +136,7 @@ export function useRegistrationList() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<RegistrationListFilters>({
+    scope: "",
     status: "",
     academicYear: "",
     program: "",

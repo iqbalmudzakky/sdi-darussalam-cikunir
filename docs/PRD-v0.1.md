@@ -1451,7 +1451,7 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
   memakai nama ini; bila kosong, bagian depan email. Bila endpoint SSO siap, nama diambil dari SSO.
 - **Wakepsek** boleh mengundang & mengubah akun, **hanya peran Guru dan TU**.
 - Daftar Pendaftar punya saringan untuk pendaftar yang dipegang akun yang login (pewawancara anak atau
-  orang tua), dengan chip peran. Nama saringan menunggu keputusan user.
+  orang tua): pilihan **Semua / Tugas saya**, chip peran **Observer** / **Wawancara ortu** + jadwal.
 - Didesain di FigCraft dulu.
 
 #### F18 — Pengaturan PMB (kepsek, wakepsek)

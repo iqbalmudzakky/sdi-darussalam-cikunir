@@ -6,7 +6,14 @@ import { ADMIN_ROLES, type AdminRole } from "@/modules/shared/constant/role";
 
 export type AdminStatus = "invited" | "active" | "deactivated";
 
+const FullNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Nama wajib diisi.")
+  .max(120, "Nama maksimal 120 karakter.");
+
 export const InviteAdminRequestSchema = z.object({
+  full_name: FullNameSchema,
   email: z
     .string()
     .trim()
@@ -21,8 +28,9 @@ export const UpdateAdminRequestSchema = z
   .object({
     role: z.enum(ADMIN_ROLES).optional(),
     status: z.enum(["active", "deactivated"]).optional(),
+    full_name: FullNameSchema.optional(),
   })
-  .refine((data) => data.role !== undefined || data.status !== undefined, {
+  .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: "Tidak ada perubahan yang dikirim.",
   });
 
@@ -66,11 +74,13 @@ export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>;
 export type AdminResponse = {
   id: string;
   email: string;
+  full_name: string;
   role: AdminRole;
   status: AdminStatus;
   created_at: string;
   is_self: boolean;
   can_manage: boolean;
+  can_rename: boolean;
 };
 
 export type AdminListResponse = {

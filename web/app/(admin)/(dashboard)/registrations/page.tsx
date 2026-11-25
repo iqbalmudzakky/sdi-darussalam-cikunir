@@ -6,6 +6,7 @@ import { cva } from "class-variance-authority";
 import { Download, Inbox, Loader2, Plus, Search } from "lucide-react";
 import { ExportRegistrationsDialog } from "@/components/admin/registrations/ExportRegistrationsDialog";
 import { RegistrationFilters } from "@/components/admin/registrations/RegistrationFilters";
+import { ScopeToggle } from "@/components/admin/registrations/ScopeToggle";
 import {
   RegistrationCard,
   RegistrationRow,
@@ -15,6 +16,7 @@ import { AdminPageHeader } from "@/components/admin/shared/AdminPageHeader";
 import { Button } from "@/components/ui/form/button";
 import { useRegistrationList } from "@/hooks/useRegistrations";
 import { cn } from "@/lib/utils";
+import type { RegistrationListFilters } from "@/types/registration/Registration";
 
 const tableVariants = cva([
   "hidden overflow-hidden rounded-xl border border-gray-200 bg-white",
@@ -26,6 +28,11 @@ export default function AdminRegistrationsPage() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const isReady = !list.isLoading && !list.loadError;
 
+  function handleScopeChange(scope: RegistrationListFilters["scope"]) {
+    const patch = { scope };
+    list.changeFilters(patch);
+  }
+
   return (
     <div className="mx-auto max-w-6xl">
       <AdminPageHeader
@@ -33,6 +40,11 @@ export default function AdminRegistrationsPage() {
         count={isReady ? list.total : undefined}
         action={
           <div className="flex items-center gap-2">
+            <ScopeToggle
+              scope={list.filters.scope}
+              onChange={handleScopeChange}
+              className="hidden sm:flex"
+            />
             <Button
               type="button"
               variant="outline"
@@ -57,6 +69,12 @@ export default function AdminRegistrationsPage() {
             </Button>
           </div>
         }
+      />
+
+      <ScopeToggle
+        scope={list.filters.scope}
+        onChange={handleScopeChange}
+        className="mb-3 flex sm:hidden"
       />
 
       <RegistrationFilters

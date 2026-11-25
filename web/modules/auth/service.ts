@@ -255,7 +255,7 @@ export async function countOtherActiveAccountManagers(
   excludeId: string,
 ): Promise<number> {
   const managerRoles = ADMIN_ROLES.filter((role) =>
-    ROLE_PERMISSIONS[role].includes("manage_accounts"),
+    ROLE_PERMISSIONS[role].includes("assign_leader_roles"),
   );
   const count = await withDbLogging("auth.countActiveByRoles", () =>
     repository.countActiveByRoles(managerRoles, excludeId),

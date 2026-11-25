@@ -25,7 +25,7 @@ export async function findByEmail(
 
 export async function findById(id: string): Promise<AdminSummary | null> {
   const rows = await sql.unsafe<AdminSummary[]>(
-    `SELECT id, email, role, status, created_at
+    `SELECT id, email, full_name, role, status, created_at
      FROM admin_users WHERE id = $1`,
     [id],
   );
@@ -74,7 +74,7 @@ export async function revokeAllRefreshTokensForUser(
 
 export async function listAdmins(): Promise<AdminSummary[]> {
   return sql.unsafe<AdminSummary[]>(
-    `SELECT id, email, role, status, created_at
+    `SELECT id, email, full_name, role, status, created_at
      FROM admin_users ORDER BY created_at`,
   );
 }
@@ -83,10 +83,10 @@ export async function insertInvitedAdmin(
   input: NewInvitedAdmin,
 ): Promise<AdminSummary> {
   const rows = await sql.unsafe<AdminSummary[]>(
-    `INSERT INTO admin_users (email, role, status, password_hash)
-     VALUES ($1, $2, 'invited', NULL)
-     RETURNING id, email, role, status, created_at`,
-    [input.email, input.role],
+    `INSERT INTO admin_users (email, full_name, role, status, password_hash)
+     VALUES ($1, $3, $2, 'invited', NULL)
+     RETURNING id, email, full_name, role, status, created_at`,
+    [input.email, input.role, input.full_name],
   );
   return rows[0];
 }
@@ -99,10 +99,11 @@ export async function updateAdmin(
     `UPDATE admin_users
      SET role = COALESCE($1, role),
          status = COALESCE($2, status),
+         full_name = COALESCE($4, full_name),
          updated_at = now()
      WHERE id = $3
-     RETURNING id, email, role, status, created_at`,
-    [patch.role ?? null, patch.status ?? null, id],
+     RETURNING id, email, full_name, role, status, created_at`,
+    [patch.role ?? null, patch.status ?? null, id, patch.full_name ?? null],
   );
   return rows[0];
 }
@@ -115,7 +116,7 @@ export async function setPasswordAndActivate(
     `UPDATE admin_users
      SET password_hash = $1, status = 'active', updated_at = now()
      WHERE id = $2
-     RETURNING id, email, role, status, created_at`,
+     RETURNING id, email, full_name, role, status, created_at`,
     [passwordHash, id],
   );
   return rows[0];
@@ -129,7 +130,7 @@ export async function updatePassword(
     `UPDATE admin_users
      SET password_hash = $1, updated_at = now()
      WHERE id = $2
-     RETURNING id, email, role, status, created_at`,
+     RETURNING id, email, full_name, role, status, created_at`,
     [passwordHash, id],
   );
   return rows[0];

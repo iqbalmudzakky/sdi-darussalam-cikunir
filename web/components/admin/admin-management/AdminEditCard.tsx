@@ -31,6 +31,7 @@ import type {
   AdminRole,
   UpdateAdminInput,
 } from "@/types/account/Admin";
+import { RenameAdminDialog } from "./RenameAdminDialog";
 
 type ActionResult = { ok: boolean; error?: string };
 
@@ -207,9 +208,19 @@ export function AdminEditCard({
   return (
     <>
       <div className={cardVariants({ self: item.is_self })}>
-        <h3 className="font-semibold wrap-break-word text-gray-900">
-          {item.email}
-        </h3>
+        <div className="flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-semibold wrap-break-word text-gray-900">
+              {item.full_name || item.email}
+            </h3>
+            {item.full_name && (
+              <p className="text-xs break-all text-gray-500">{item.email}</p>
+            )}
+          </div>
+          {item.can_rename && (
+            <RenameAdminDialog item={item} onUpdate={onUpdate} />
+          )}
+        </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className={statusBadgeVariants({ status: item.status })}>

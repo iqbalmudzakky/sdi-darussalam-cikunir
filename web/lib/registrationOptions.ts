@@ -80,3 +80,8 @@ function toOptions(labels: Record<string, string>) {
   }));
   return options;
 }
+
+export const REGISTRATION_SCOPE_OPTIONS = [
+  { value: "", label: "Semua" },
+  { value: "mine", label: "Tugas saya" },
+] as const;

@@ -9,7 +9,10 @@ import {
 } from "@/modules/email/email";
 import type { AdvanceStatusInput } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
-import { TEST_TIME_SLOT } from "@/modules/shared/constant/registration";
+import {
+  INTERVIEW_ROLE_LABEL,
+  TEST_TIME_SLOT,
+} from "@/modules/shared/constant/registration";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
 import { toStaffName } from "@/modules/shared/staffName";
 import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
@@ -25,6 +28,7 @@ import type {
   ScheduleViewResponse,
   TestDayResponse,
   TestReminderGroupResponse,
+  TestAssignmentResponse,
   TestReminderResponse,
 } from "./dto";
 import type {
@@ -190,6 +194,31 @@ export async function recordManualResult(
     await registrationService.advanceStatusWithin(tx, statusInput);
   });
   return null;
+}
+
+export async function listAssignments(
+  adminId: string,
+): Promise<TestAssignmentResponse[]> {
+  const rows = await withDbLogging("admissionTest.listByInterviewer", () =>
+    repository.listByInterviewer(adminId),
+  );
+  const assignments = rows.map((row) => {
+    const roles = (["child", "parent"] as const)
+      .filter((key) => row[`${key}_interviewer_id`] === adminId)
+      .map((key) => ({ key, label: INTERVIEW_ROLE_LABEL[key] }));
+    const weekday = formatDate(row.test_date, { weekday: "short" });
+    const dayMonth = formatDate(row.test_date, {
+      day: "numeric",
+      month: "short",
+    });
+    const assignment: TestAssignmentResponse = {
+      registration_id: row.registration_id,
+      roles,
+      schedule_label: `${weekday}, ${dayMonth} · ${row.test_time.replace(":", ".")}`,
+    };
+    return assignment;
+  });
+  return assignments;
 }
 
 export function canRecordResult(
@@ -373,7 +402,7 @@ function toInterviewers(accounts: AdminSummary[]): InterviewerResponse[] {
     )
     .map((account) => ({
       id: account.id,
-      name: toStaffName(account.email),
+      name: toStaffName(account),
     }))
     .sort((first, second) => first.name.localeCompare(second.name));
   return interviewers;

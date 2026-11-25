@@ -81,6 +81,7 @@ export default async function AdminDashboardPage() {
       academic_year: "",
       program: "",
       registration_type: "",
+      scope: "",
       sort: "desc",
       limit: 5,
       offset: 0,

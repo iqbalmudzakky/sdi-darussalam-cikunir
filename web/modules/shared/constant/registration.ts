@@ -21,6 +21,11 @@ export const DECIDABLE_STATUSES: PpdbRegistrationStatus[] = [
   "rejected",
 ];
 
+export const INTERVIEW_ROLE_LABEL = {
+  child: "Observer",
+  parent: "Wawancara ortu",
+} as const;
+
 export const REGISTRATION_TYPES = ["siswa_baru", "pindahan"] as const;
 export const REGISTRATION_PROGRAMS = ["tahfizh", "unggulan"] as const;
 export const TARGET_GRADES = [2, 3, 4, 5, 6] as const;
@@ -142,7 +147,7 @@ export const REGISTRATION_FAILURE = {
   forbidden_result: {
     status: 403,
     message:
-      "Hanya pewawancara anak, kepsek, atau wakepsek yang bisa mengisi hasil tes.",
+      "Hanya observer, kepsek, atau wakepsek yang bisa mengisi hasil tes.",
   },
   incomplete_observation: {
     status: 400,

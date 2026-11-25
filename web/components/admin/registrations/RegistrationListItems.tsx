@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { cva } from "class-variance-authority";
-import { FileText, Folder, MessageCircle, Wallet } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  Folder,
+  MessageCircle,
+  UserRound,
+  Wallet,
+} from "lucide-react";
+import { Chip } from "@/components/ui/display/chip";
 import { formatRegistrationSummary } from "@/lib/registrationOptions";
 import { buildWhatsAppLink } from "@/lib/social/whatsapp";
 import type { Registration } from "@/types/registration/Registration";
@@ -63,6 +71,8 @@ export function RegistrationCard({ item }: RegistrationItemProps) {
         {formatRegistrationSummary(item)}
       </p>
 
+      <AssignmentChips item={item} />
+
       <div className="flex items-center justify-between gap-3">
         <RegistrationMarkers item={item} />
         <RegistrationWhatsAppLink item={item} />
@@ -77,9 +87,12 @@ export function RegistrationRow({ item, rowNumber }: RegistrationRowProps) {
       <span className="text-sm text-gray-400 tabular-nums">{rowNumber}</span>
       <RegistrationName item={item} />
 
-      <p className="truncate text-sm text-gray-600">
-        {formatRegistrationSummary(item)}
-      </p>
+      <div className="min-w-0 space-y-1">
+        <p className="truncate text-sm text-gray-600">
+          {formatRegistrationSummary(item)}
+        </p>
+        <AssignmentChips item={item} />
+      </div>
 
       <div>
         <RegistrationStatusBadge status={item.status} />
@@ -122,6 +135,27 @@ function RegistrationMarkers({ item }: RegistrationItemProps) {
         <Folder className="h-4 w-4" />
         {received}/{required}
       </span>
+    </div>
+  );
+}
+
+function AssignmentChips({ item }: RegistrationItemProps) {
+  if (!item.assignment) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {item.assignment.roles.map((role) => (
+        <Chip
+          key={role.key}
+          tone={role.key === "child" ? "brand" : "blue"}
+          icon={<UserRound className="h-3 w-3" />}
+        >
+          {role.label}
+        </Chip>
+      ))}
+      <Chip tone="gray" icon={<CalendarDays className="h-3 w-3" />}>
+        {item.assignment.schedule_label}
+      </Chip>
     </div>
   );
 }

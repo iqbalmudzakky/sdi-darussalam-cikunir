@@ -35,6 +35,7 @@ const LIST_FILTER = `
   AND ($3 = '' OR pr.academic_year = $3)
   AND ($4 = '' OR pr.program = $4)
   AND ($5 = '' OR pr.registration_type = $5)
+  AND ($6::text IS NULL OR pr.id = ANY(string_to_array($6, ',')::uuid[]))
 `;
 
 const PROFILE_COLUMNS = `
@@ -278,14 +279,15 @@ export async function list(
      JOIN ppdb_registration_students ps ON ps.registration_id = pr.id
      WHERE ${LIST_FILTER}
      ORDER BY pr.created_at ${direction}
-     LIMIT $6
-     OFFSET $7`,
+     LIMIT $7
+     OFFSET $8`,
     [
       input.search,
       input.statuses.join(","),
       input.academicYear,
       input.program,
       input.registrationType,
+      input.registrationIds?.join(",") ?? null,
       input.limit,
       input.offset,
     ],
@@ -304,6 +306,7 @@ export async function count(filter: RegistrationFilter): Promise<number> {
       filter.academicYear,
       filter.program,
       filter.registrationType,
+      filter.registrationIds?.join(",") ?? null,
     ],
   );
   return rows[0].count;

@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     academic_year: searchParams.get("academic_year") ?? undefined,
     program: searchParams.get("program") ?? undefined,
     registration_type: searchParams.get("registration_type") ?? undefined,
+    scope: searchParams.get("scope") ?? undefined,
     sort: searchParams.get("sort") ?? undefined,
     limit: searchParams.get("limit") ?? undefined,
     offset: searchParams.get("offset") ?? undefined,
@@ -40,6 +41,7 @@ export async function GET(request: Request) {
   try {
     const registrations = await registrationAdminService.listRegistrations(
       parsed.data,
+      user,
     );
 
     return NextResponse.json(registrations);

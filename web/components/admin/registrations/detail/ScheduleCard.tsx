@@ -116,7 +116,7 @@ export function ScheduleCard({
 
 function ScheduleSummary({ schedule }: { schedule: RegistrationSchedule }) {
   const interviewers = [
-    { label: "Pewawancara anak", person: schedule.child_interviewer },
+    { label: "Observer", person: schedule.child_interviewer },
     { label: "Pewawancara orang tua", person: schedule.parent_interviewer },
   ];
 

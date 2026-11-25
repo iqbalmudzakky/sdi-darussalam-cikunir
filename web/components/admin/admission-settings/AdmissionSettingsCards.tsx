@@ -17,6 +17,7 @@ import {
 } from "@/components/sections/RegistrationForm/fields";
 import { Chip } from "@/components/ui/display/chip";
 import { Button } from "@/components/ui/form/button";
+import { formatAmount } from "@/lib/payment";
 import { PROGRAM_FEE_FIELDS } from "@/lib/shared/constant/admissionSettings";
 import type {
   MoneyKey,
@@ -36,8 +37,6 @@ const programBlockVariants = cva(
   "space-y-3 border-t border-gray-100 pt-4 first:border-t-0 first:pt-0",
 );
 
-const RUPIAH = new Intl.NumberFormat("id-ID");
-
 type SettingsState = ReturnType<typeof useAdmissionSettings>;
 
 type CardProps = {
@@ -56,7 +55,7 @@ export function FeeCard({ state }: CardProps) {
               <h3 className="text-sm font-semibold text-gray-900">
                 {program.name}
               </h3>
-              <Chip tone="brand">Total Rp {RUPIAH.format(total)}</Chip>
+              <Chip tone="brand">Total {formatAmount(total)}</Chip>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <MoneyField
@@ -223,7 +222,7 @@ type MoneyFieldProps = CardProps & {
 
 function MoneyField({ state, name, label }: MoneyFieldProps) {
   const digits = state.form[name];
-  const display = digits ? `Rp ${RUPIAH.format(Number(digits))}` : "";
+  const display = digits ? formatAmount(Number(digits)) : "";
 
   function handleChange(value: string) {
     const nextDigits = value.replace(/\D/g, "");

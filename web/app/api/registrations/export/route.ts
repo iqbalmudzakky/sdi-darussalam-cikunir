@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/session";
-import * as registrationAdminService from "@/modules/registration-admin/service";
-import { ExportRegistrationsQuerySchema } from "@/modules/registration-admin/dto";
+import { ExportRegistrationsQuerySchema } from "@/modules/registration-export/dto";
+import * as registrationExportService from "@/modules/registration-export/service";
 
 export const runtime = "nodejs";
 
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
   try {
     const { buffer, filename } =
-      await registrationAdminService.exportRegistrations(parsed.data);
+      await registrationExportService.exportRegistrations(parsed.data);
 
     return new Response(new Uint8Array(buffer), {
       status: 200,

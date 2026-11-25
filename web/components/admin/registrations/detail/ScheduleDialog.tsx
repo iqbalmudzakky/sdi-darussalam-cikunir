@@ -63,7 +63,7 @@ function ScheduleForm({
     label: interviewer.name,
   }));
   const roles = [
-    { key: "child", label: "Pewawancara anak" },
+    { key: "child", label: "Observer" },
     { key: "parent", label: "Pewawancara orang tua" },
   ] as const;
 
@@ -82,7 +82,7 @@ function ScheduleForm({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-4">
         <DateField
           id="schedule-date"
           label="Tanggal"

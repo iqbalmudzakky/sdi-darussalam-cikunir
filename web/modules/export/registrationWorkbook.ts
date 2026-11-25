@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { jakartaDateKey } from "@/modules/shared/jakartaDate";
-import type { RegistrationExportItem } from "@/modules/registration-admin/dto";
+import type { RegistrationExportItem } from "@/modules/registration-export/dto";
 import { REGISTRATION_STATUS_LABEL } from "@/modules/shared/constant/registration";
 
 const REGISTRATION_TYPE_LABELS: Record<string, string> = {

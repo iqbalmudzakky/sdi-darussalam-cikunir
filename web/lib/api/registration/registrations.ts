@@ -31,6 +31,7 @@ export async function listRegistrations(
   query.set("academic_year", params.academicYear);
   query.set("program", params.program);
   query.set("registration_type", params.registrationType);
+  query.set("scope", params.scope);
   query.set("sort", params.sort);
   query.set("limit", String(params.limit));
   query.set("offset", String(params.offset));

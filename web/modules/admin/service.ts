@@ -16,6 +16,7 @@ import {
 } from "@/modules/shared/constant/auth";
 import {
   ADMIN_ROLES,
+  LEADER_ROLES,
   ROLE_PERMISSIONS,
   type AdminRole,
 } from "@/modules/shared/constant/role";
@@ -52,11 +53,13 @@ function toAdminResponse(
   const response: AdminResponse = {
     id: admin.id,
     email: admin.email,
+    full_name: admin.full_name,
     role: admin.role,
     status: admin.status,
     created_at: admin.created_at,
     is_self: isSelf,
     can_manage: canManage,
+    can_rename: isSelf || canManage,
   };
   return response;
 }
@@ -64,11 +67,13 @@ function toAdminResponse(
 export function listAssignableRoles(actingRole: AdminRole): AdminRole[] {
   if (!ROLE_PERMISSIONS[actingRole].includes("manage_accounts")) return [];
 
-  const canManageDeveloper = ROLE_PERMISSIONS[actingRole].includes(
-    "manage_developer_accounts",
-  );
+  const permissions = ROLE_PERMISSIONS[actingRole];
+  const canManageDeveloper = permissions.includes("manage_developer_accounts");
+  const canAssignLeader = permissions.includes("assign_leader_roles");
   const roles = ADMIN_ROLES.filter(
-    (role) => role !== "developer" || canManageDeveloper,
+    (role) =>
+      (role !== "developer" || canManageDeveloper) &&
+      (!LEADER_ROLES.includes(role) || canAssignLeader),
   );
   return roles;
 }
@@ -129,7 +134,7 @@ export async function inviteAdmin(
       return {
         ok: false,
         reason: "forbidden_role",
-        message: "Peran Admin hanya bisa diberikan oleh akun Admin.",
+        message: "Anda tidak bisa memberi peran ini.",
       };
     }
 
@@ -142,7 +147,11 @@ export async function inviteAdmin(
       };
     }
 
-    const newAdmin = { email: request.email, role: request.role };
+    const newAdmin = {
+      email: request.email,
+      full_name: request.full_name,
+      role: request.role,
+    };
     const admin = await authService.createInvitedAccount(newAdmin);
 
     await issueAndSendInviteToken(admin);
@@ -313,7 +322,9 @@ export async function updateAdmin(
 ): Promise<AdminMutationResult> {
   const { actingUser, targetId, patch } = input;
   try {
-    if (targetId === actingUser.id) {
+    const isSelf = targetId === actingUser.id;
+    const isRenameOnly = !patch.role && !patch.status;
+    if (isSelf && !isRenameOnly) {
       return {
         ok: false,
         reason: "self",
@@ -329,6 +340,10 @@ export async function updateAdmin(
         message: "Akun tidak ditemukan.",
       };
     }
+    if (isSelf) {
+      const renamed = await authService.updateAccount(targetId, patch);
+      return { ok: true, admin: toAdminResponse(renamed, actingUser) };
+    }
 
     const assignableRoles = listAssignableRoles(actingUser.role);
     const allowedTarget = assignableRoles.includes(target.role);
@@ -337,16 +352,16 @@ export async function updateAdmin(
       return {
         ok: false,
         reason: "forbidden_role",
-        message: "Peran Admin hanya bisa diatur oleh akun Admin.",
+        message: "Anda tidak bisa mengatur akun dengan peran ini.",
       };
     }
 
     const isActiveManager =
       target.status === "active" &&
-      ROLE_PERMISSIONS[target.role].includes("manage_accounts");
+      ROLE_PERMISSIONS[target.role].includes("assign_leader_roles");
     const nextRole = patch.role ?? target.role;
     const losesManagement =
-      !ROLE_PERMISSIONS[nextRole].includes("manage_accounts") ||
+      !ROLE_PERMISSIONS[nextRole].includes("assign_leader_roles") ||
       patch.status === "deactivated";
     const remainingManagers =
       isActiveManager && losesManagement
@@ -398,13 +413,13 @@ export async function deleteAdmin(
       return {
         ok: false,
         reason: "forbidden_role",
-        message: "Akun Admin hanya bisa dihapus oleh akun Admin.",
+        message: "Anda tidak bisa menghapus akun dengan peran ini.",
       };
     }
 
     const isActiveManager =
       target.status === "active" &&
-      ROLE_PERMISSIONS[target.role].includes("manage_accounts");
+      ROLE_PERMISSIONS[target.role].includes("assign_leader_roles");
     const remainingManagers = isActiveManager
       ? await authService.countOtherActiveAccountManagers(targetId)
       : null;

@@ -19,16 +19,19 @@ import type { RegistrantRegion } from "@/modules/registration/dto";
 export async function listRegistrations(
   query: ListRegistrationsQuery,
 ): Promise<RegistrationListResponse> {
+  const user = await requireUser();
+  const emptyList: RegistrationListResponse = {
+    items: [],
+    total: 0,
+    has_more: false,
+    academic_years: [],
+  };
+  if (!user) return emptyList;
+
   try {
-    return await registrationAdminService.listRegistrations(query);
+    return await registrationAdminService.listRegistrations(query, user);
   } catch (error) {
     console.error("lib/actions/registrations.listRegistrations failed:", error);
-    const emptyList: RegistrationListResponse = {
-      items: [],
-      total: 0,
-      has_more: false,
-      academic_years: [],
-    };
     return emptyList;
   }
 }

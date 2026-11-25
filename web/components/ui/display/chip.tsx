@@ -12,6 +12,7 @@ const chipVariants = cva(
         brand: "border-brand-200 bg-brand-50 text-brand-700",
         amber: "border-amber-200 bg-amber-50 text-amber-700",
         red: "border-red-200 bg-red-50 text-red-700",
+        blue: "border-blue-200 bg-blue-50 text-blue-700",
         gray: "border-gray-200 bg-gray-100 text-gray-600",
       },
     },
@@ -19,7 +20,7 @@ const chipVariants = cva(
 );
 
 type ChipProps = {
-  tone: "brand" | "amber" | "red" | "gray";
+  tone: "brand" | "amber" | "red" | "blue" | "gray";
   icon?: ReactNode;
   children: ReactNode;
 };

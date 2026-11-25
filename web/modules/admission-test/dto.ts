@@ -51,6 +51,12 @@ export type RecordManualResultFailureReason =
   | "no_schedule"
   | "future_test_date";
 
+export type TestAssignmentResponse = {
+  registration_id: string;
+  roles: { key: "child" | "parent"; label: string }[];
+  schedule_label: string;
+};
+
 export type ManualResultResponse = {
   tested_on: string;
   notes: string | null;

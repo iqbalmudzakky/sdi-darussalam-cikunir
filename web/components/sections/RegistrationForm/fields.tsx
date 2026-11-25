@@ -368,7 +368,7 @@ export function DateField({
           />
         </PopoverTrigger>
 
-        <PopoverContent className="w-(--anchor-width) min-w-72 border-brand-200">
+        <PopoverContent className="w-(--anchor-width) border-brand-200">
           <Calendar
             classNames={STRETCHED_CALENDAR_CLASS_NAMES}
             mode="single"

@@ -88,6 +88,7 @@ export type Gender = "laki_laki" | "perempuan";
 export type RegistrationSortDirection = "asc" | "desc";
 
 export type RegistrationListFilters = {
+  scope: "" | "mine";
   status: RegistrationStatus | "";
   academicYear: string;
   program: RegistrationProgram | "";

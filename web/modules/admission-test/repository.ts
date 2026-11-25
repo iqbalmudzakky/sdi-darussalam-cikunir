@@ -37,6 +37,20 @@ export async function listUnremindedBetween(
   );
 }
 
+export async function listByInterviewer(
+  adminId: string,
+): Promise<AdmissionTestRow[]> {
+  return sql.unsafe<AdmissionTestRow[]>(
+    `SELECT registration_id, test_date::text AS test_date,
+            to_char(test_time, 'HH24:MI') AS test_time, child_interviewer_id,
+            parent_interviewer_id, reminded_at,
+            manual_tested_on::text AS manual_tested_on, manual_notes
+     FROM admission_tests
+     WHERE child_interviewer_id = $1 OR parent_interviewer_id = $1`,
+    [adminId],
+  );
+}
+
 export async function saveWithin(
   tx: TransactionSql,
   input: SaveAdmissionTestInput,

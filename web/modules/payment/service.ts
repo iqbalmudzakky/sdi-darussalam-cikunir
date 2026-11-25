@@ -202,7 +202,7 @@ export async function getPaymentView(
     amount_label: formatRupiah(isPaid ? latest.amount : registrationFee),
     method_label: isPaid ? methodLabel : null,
     receipt_number: isPaid ? latest.receipt_number : null,
-    recorded_by_name: isPaid && recorder ? toStaffName(recorder.email) : null,
+    recorded_by_name: isPaid && recorder ? toStaffName(recorder) : null,
     paid_at_label:
       isPaid && latest.paid_at ? formatDateTime(latest.paid_at) : null,
     can_manage: authService.hasPermission(actor.role, "manage_payments"),

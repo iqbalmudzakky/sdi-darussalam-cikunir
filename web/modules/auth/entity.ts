@@ -13,17 +13,20 @@ export type AdminCredentials = {
 };
 
 export type AdminSummary = Omit<AdminCredentials, "password_hash"> & {
+  full_name: string;
   created_at: string;
 };
 
 export type NewInvitedAdmin = {
   email: string;
+  full_name: string;
   role: AdminRole;
 };
 
 export type AdminPatch = {
   role?: AdminRole;
   status?: AdminStatus;
+  full_name?: string;
 };
 
 export type RefreshToken = {

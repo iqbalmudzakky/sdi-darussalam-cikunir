@@ -48,6 +48,7 @@ export function InviteAdminDialog({
   onSubmit,
 }: InviteAdminDialogProps) {
   const toast = useToast();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AdminRole>("teacher");
   const [error, setError] = useState("");
@@ -55,6 +56,7 @@ export function InviteAdminDialog({
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
+      setFullName("");
       setEmail("");
       setRole("teacher");
       setError("");
@@ -63,13 +65,18 @@ export function InviteAdminDialog({
   }
 
   async function handleSubmit() {
-    if (!email.trim()) {
-      setError("Email wajib diisi.");
+    if (!fullName.trim() || !email.trim()) {
+      setError("Nama dan email wajib diisi.");
       return;
     }
 
+    const input: InviteAdminInput = {
+      full_name: fullName.trim(),
+      email: email.trim(),
+      role,
+    };
     setIsSending(true);
-    const result = await onSubmit({ email: email.trim(), role });
+    const result = await onSubmit(input);
     setIsSending(false);
 
     if (!result.ok) {
@@ -89,6 +96,20 @@ export function InviteAdminDialog({
         </DialogHeader>
 
         <div className="space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="invite-name">Nama</Label>
+            <Input
+              id="invite-name"
+              value={fullName}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                setError("");
+              }}
+              maxLength={120}
+              className="rounded-xl"
+            />
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="invite-email">Email</Label>
             <Input

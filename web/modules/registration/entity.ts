@@ -73,6 +73,7 @@ export type RegistrationFilter = {
   academicYear: string;
   program: RegistrationProgram | "";
   registrationType: RegistrationType | "";
+  registrationIds: string[] | null;
 };
 
 export type ListRegistrationsInput = RegistrationFilter & {

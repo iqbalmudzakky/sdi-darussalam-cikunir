@@ -54,7 +54,7 @@ export async function getSummary(
     score_label: profile.score_label,
     ratio: profile.ratio,
     conclusion: profile.conclusion,
-    observer_name: observer ? toStaffName(observer.email) : null,
+    observer_name: observer ? toStaffName(observer) : null,
     observed_on: row?.observed_on ?? null,
   };
   return summary;
@@ -112,7 +112,7 @@ export async function getObservationView(
       ? `${entryAge.years} th ${entryAge.months} bln`
       : null,
     previous_school: registration.previous_school,
-    observer_name: observer ? toStaffName(observer.email) : null,
+    observer_name: observer ? toStaffName(observer) : null,
     observed_on: row?.observed_on ?? jakartaDateKey(new Date()),
     note: row?.note ?? null,
     recommendation: row?.recommendation ?? null,
