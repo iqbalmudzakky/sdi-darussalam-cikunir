@@ -19,6 +19,7 @@ import {
   Receipt,
   ShieldCheck,
   Wallet,
+  SlidersHorizontal,
   BarChart3,
   PartyPopper,
   Users,
@@ -104,6 +105,12 @@ const NAV_GROUPS: NavGroup[] = [
         label: "Pembayaran",
         icon: Wallet,
         permission: "view_admission_settings",
+      },
+      {
+        href: "/admission-settings",
+        label: "Pengaturan PMB",
+        icon: SlidersHorizontal,
+        permission: "manage_pmb_settings",
       },
       {
         href: "/admin-management",

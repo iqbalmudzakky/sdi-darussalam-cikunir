@@ -15,7 +15,7 @@ import type {
   UpdateRegistrationFormInput,
 } from "@/modules/registration/entity";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
-import * as schoolProfileService from "@/modules/school-profile/service";
+import * as admissionSettingsService from "@/modules/admission-settings/service";
 import { buildFlowSteps } from "@/modules/shared/registrationFlow";
 import {
   MINIMUM_ENTRY_AGE_YEARS,
@@ -98,7 +98,7 @@ export async function getShortFormOptions(
     const [open, academicYears, contactPhone] = await Promise.all([
       isRegistrationOpen(),
       listTargetAcademicYears(),
-      getAdmissionContactPhone(),
+      admissionSettingsService.getContactPhone(),
     ]);
 
     const isTransfer = query.registration_type === "pindahan";
@@ -167,7 +167,7 @@ export async function createShortRegistration(
     );
     const [registrationFee, contactPhone] = await Promise.all([
       getRegistrationFee(),
-      getAdmissionContactPhone(),
+      admissionSettingsService.getContactPhone(),
     ]);
 
     const registrationLines = [
@@ -348,7 +348,7 @@ async function buildDuplicateWhatsAppUrl(
   input: CreateShortRegistrationInput,
 ): Promise<string | null> {
   const { request } = input;
-  const contactPhone = await getAdmissionContactPhone();
+  const contactPhone = await admissionSettingsService.getContactPhone();
   if (!contactPhone) return null;
 
   const childLines = [
@@ -362,9 +362,4 @@ async function buildDuplicateWhatsAppUrl(
     "Mohon bantuannya untuk dicek.",
   ].join("\n\n");
   return buildWhatsAppLink(contactPhone, message);
-}
-
-async function getAdmissionContactPhone(): Promise<string> {
-  const profile = await schoolProfileService.getSchoolProfile();
-  return profile.whatsapp;
 }

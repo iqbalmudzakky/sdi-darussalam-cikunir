@@ -105,6 +105,7 @@ type TextFieldProps = {
   autoComplete?: string;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   maxLength?: number;
+  endIcon?: React.ReactNode;
 };
 
 export function TextField({
@@ -120,23 +121,34 @@ export function TextField({
   autoComplete,
   inputMode,
   maxLength,
+  endIcon,
 }: TextFieldProps) {
   return (
     <FieldWrapper id={id} label={label} required={required} error={error}>
-      <input
-        id={id}
-        type={type}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-error` : undefined}
-        className={fieldInputVariants({ invalid: Boolean(error) })}
-        placeholder={placeholder}
-        maxLength={maxLength}
-      />
+      <div className="relative">
+        <input
+          id={id}
+          type={type}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={cn(
+            fieldInputVariants({ invalid: Boolean(error) }),
+            endIcon && "pr-10",
+          )}
+          placeholder={placeholder}
+          maxLength={maxLength}
+        />
+        {endIcon && (
+          <span className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-ink-500">
+            {endIcon}
+          </span>
+        )}
+      </div>
     </FieldWrapper>
   );
 }

@@ -6,7 +6,7 @@ import { getRegistrationFee } from "@/modules/payment-settings/service";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
 import type { UpdateRegistrationFormInput } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
-import * as schoolProfileService from "@/modules/school-profile/service";
+import * as admissionSettingsService from "@/modules/admission-settings/service";
 import { buildFlowSteps } from "@/modules/shared/registrationFlow";
 import { getSiteUrl } from "@/modules/shared/siteUrl";
 import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
@@ -90,8 +90,7 @@ export async function getFullFormByToken(
     const isActive = isLinkActive(link, testDay);
 
     if (!registration || !isActive) {
-      const profile = await schoolProfileService.getSchoolProfile();
-      const contactPhone = profile.whatsapp;
+      const contactPhone = await admissionSettingsService.getContactPhone();
       const message = [
         "Assalamu'alaikum, link form lengkap pendaftaran SDI Darussalam Cikunir saya sudah tidak berlaku.",
         registration &&

@@ -69,16 +69,17 @@ export async function getObservationView(
     return null;
   }
 
-  const [row, scores, childInterviewerId, accounts] = await Promise.all([
+  const [row, scores, interviewerIds, accounts] = await Promise.all([
     withDbLogging("observation.findByRegistrationId", () =>
       repository.findByRegistrationId(registrationId),
     ),
     withDbLogging("observation.listScores", () =>
       repository.listScores(registrationId),
     ),
-    admissionTestService.findChildInterviewerId(registrationId),
+    admissionTestService.findInterviewerIds(registrationId),
     authService.listAccounts(),
   ]);
+  const { childInterviewerId } = interviewerIds;
   const observerId = row?.observer_id ?? childInterviewerId ?? actor.id;
   const observer = accounts.find((account) => account.id === observerId);
   const { dimensions, profile } = toReadiness(scores);
@@ -128,10 +129,11 @@ export async function saveObservation(
   input: SaveObservationRequestInput,
 ): Promise<SaveObservationResult> {
   const { registrationId, request, actor } = input;
-  const [registration, childInterviewerId] = await Promise.all([
+  const [registration, interviewerIds] = await Promise.all([
     registrationService.findFullById(registrationId),
-    admissionTestService.findChildInterviewerId(registrationId),
+    admissionTestService.findInterviewerIds(registrationId),
   ]);
+  const { childInterviewerId } = interviewerIds;
   const canRecord = admissionTestService.canRecordResult(
     actor,
     childInterviewerId,

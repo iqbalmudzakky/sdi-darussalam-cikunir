@@ -27,6 +27,11 @@ import type {
   SaveScheduleInput,
 } from "@/modules/admission-test/dto";
 import * as admissionTestService from "@/modules/admission-test/service";
+import type {
+  DecideInput,
+  ProgressInput,
+} from "@/modules/admission-decision/dto";
+import * as admissionDecisionService from "@/modules/admission-decision/service";
 import * as observationService from "@/modules/observation/service";
 import type { SessionUser } from "@/modules/auth/dto";
 import { withTransaction } from "@/modules/db/postgres";
@@ -50,7 +55,7 @@ import type {
   UpdateRegistrationInput,
   UpdateRegistrationResult,
 } from "./dto";
-import type { RegistrationDetailParts, TestStatus } from "./entity";
+import type { RegistrationDetailParts } from "./entity";
 
 export async function listRegistrations(
   query: ListRegistrationsQuery,
@@ -118,18 +123,13 @@ export async function getRegistrationDetail(
       : null,
   ]);
 
-  const schedule = scheduleView.schedule;
-  const childInterviewerId = schedule?.child_interviewer?.id ?? null;
-  const canRecord =
-    row.status !== "cancelled" &&
-    admissionTestService.canRecordResult(actor, childInterviewerId);
-  const isManual = row.registration_type === "pindahan";
-  const manualStatus: TestStatus = schedule?.manual_result
-    ? "tested"
-    : "not_tested";
-  const testStatus = isManual
-    ? manualStatus
-    : (observation?.state ?? "not_tested");
+  const progressInput: ProgressInput = {
+    status: row.status,
+    registrationType: row.registration_type,
+    schedule: scheduleView.schedule,
+    observationState: observation?.state ?? null,
+    actor,
+  };
   const payment = toPaymentSummary(id, payments);
   const fullForm =
     form && extras
@@ -141,10 +141,7 @@ export async function getRegistrationDetail(
     scheduleView,
     paymentView,
     observation,
-    testStatus,
-    canStartTest:
-      canRecord && testStatus !== "tested" && (!isManual || schedule !== null),
-    canEditTest: canRecord && isManual && testStatus === "tested",
+    progress: admissionDecisionService.getProgress(progressInput),
   };
   const detail = toDetail(row, payments, parts);
   return detail;
@@ -275,6 +272,15 @@ async function applyRegistrationUpdate(
       actor: input.actor,
     };
     return admissionTestService.recordManualResult(resultInput);
+  }
+
+  if (request.action === "decide") {
+    const decideInput: DecideInput = {
+      registrationId: id,
+      result: request.result,
+      actor: input.actor,
+    };
+    return admissionDecisionService.decide(decideInput);
   }
 
   if (request.action === "mark_reminded") {
@@ -444,9 +450,7 @@ function toDetail(
     schedule_options: parts.scheduleView.options,
     payment: parts.paymentView,
     observation: parts.observation,
-    test_status: parts.testStatus,
-    can_start_test: parts.canStartTest,
-    can_edit_test: parts.canEditTest,
+    ...parts.progress,
   };
   return detail;
 }

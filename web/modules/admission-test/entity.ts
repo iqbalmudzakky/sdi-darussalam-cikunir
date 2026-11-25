@@ -24,3 +24,8 @@ export type SaveManualResultInput = {
   notes: string | null;
   actorId: string;
 };
+
+export type InterviewerIds = {
+  childInterviewerId: string | null;
+  parentInterviewerId: string | null;
+};

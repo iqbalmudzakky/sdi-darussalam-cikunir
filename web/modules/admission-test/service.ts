@@ -29,6 +29,7 @@ import type {
 } from "./dto";
 import type {
   AdmissionTestRow,
+  InterviewerIds,
   SaveAdmissionTestInput,
   SaveManualResultInput,
 } from "./entity";
@@ -201,13 +202,17 @@ export function canRecordResult(
   );
 }
 
-export async function findChildInterviewerId(
+export async function findInterviewerIds(
   registrationId: string,
-): Promise<string | null> {
+): Promise<InterviewerIds> {
   const row = await withDbLogging("admissionTest.findByRegistrationId", () =>
     repository.findByRegistrationId(registrationId),
   );
-  return row?.child_interviewer_id ?? null;
+  const interviewerIds: InterviewerIds = {
+    childInterviewerId: row?.child_interviewer_id ?? null,
+    parentInterviewerId: row?.parent_interviewer_id ?? null,
+  };
+  return interviewerIds;
 }
 
 export async function markReminded(

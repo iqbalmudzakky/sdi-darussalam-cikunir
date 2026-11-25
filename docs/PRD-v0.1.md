@@ -1120,7 +1120,7 @@ diketik dua kali, tapi tetap bisa diubah.
 | K12 | Biaya pendaftaran dibayar di sekolah saat tes: tunai/transfer (ditandai lunas) atau DOKU                                                                                      |
 | K13 | Profil Kesiapan & Surat Keterangan Diterima hanya bisa diunduh/dikirim **setelah biaya pendaftaran lunas**                                                                    |
 | K14 | Dokumen dikirim ke orang tua sebagai **link PDF lewat WA**, bukan lampiran (lampiran butuh WhatsApp Business API berbayar). Tombol "Unduh PDF" untuk dicetak                  |
-| K15 | Nominal surat pernyataan diatur dari website, hanya oleh kepsek (dan admin dev)                                                                                               |
+| K15 | Nominal surat pernyataan diatur dari website di halaman **Pengaturan PMB** oleh kepsek, wakepsek, dan admin (wakepsek ditambahkan 25 Nov 2026)                              |
 | K16 | Pindahan: alur sama persis, **kecuali tes murid** — dikerjakan manual sesuai jenjang kelas, tanpa 56 indikator, jadi tanpa Profil Kesiapan                                    |
 | K17 | Angka pendaftar dihitung per **tahun ajaran target**. Landing page = TA yang sedang dibuka. Statistik = rincian per TA target                                                 |
 | K18 | Peran akun diganti: Kepsek, Wakepsek, TU, Guru, Admin (dev)                                                                                                                   |
@@ -1143,6 +1143,9 @@ diketik dua kali, tapi tetap bisa diubah.
 | K35 | Rilis production setelah **satu alur PMB lengkap** (PR 2–5). Sempat dipercepat ke PR 2 + F11 (23 Nov), dibatalkan 24 Nov setelah tenggat dilonggarkan sekolah                |
 | K36 | Panitia bisa **Ubah data** pendaftar dengan aturan K34 (program boleh kosong). Ganti TA = nomor baru di urutan TA itu. "Kirim form lengkap" hanya untuk pendaftar online   |
 | K37 | Jadwal tes **boleh diatur sebelum form lengkap diisi**. Link yang dikirim setelah ada jadwal berlaku sampai hari tes, dan pesan WA menyebut tanggal itu                       |
+| K38 | Surat pernyataan & Surat Keterangan **persis format Excel sekolah** (surat pernyataan memuat dua program lengkap); sistem hanya mengisi datanya (25 Nov 2026)            |
+| K39 | Tidak Diterima memakai format Surat Keterangan yang sama: "TIDAK LULUS / Tidak Diterima", Hal "Keterangan tidak diterima sekolah", tanpa bagian pembayaran, rekening, catatan & contact |
+| K40 | Surat pernyataan tidak dikunci lunas: dicetak & ditandatangani di sekolah. Yang dikunci lunas hanya dokumen yang dikirim lewat WA (Profil Kesiapan, Surat Keterangan)    |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1161,8 +1164,8 @@ Di Excel, "dimensi paling kuat" diambil dari skor mentah. Dimensi dengan indikat
 
 Saat surat pertama dibuat, isinya diambil dari data pendaftar. Setelah itu yang diubah di surat
 **hanya mengubah surat**. Alasannya: surat yang sudah dicetak dan ditandatangani tidak boleh
-berubah diam-diam saat biodata diperbaiki. Kalau biodata diperbaiki sesudahnya, ada tombol
-"Ambil ulang dari biodata".
+berubah diam-diam saat biodata atau Pengaturan PMB diubah. Kalau ingin ikut data terbaru, ada tombol
+**"Gunakan Update Terbaru"** (nama tombol diputuskan 25 Nov 2026).
 
 ---
 
@@ -1426,12 +1429,14 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 
 #### F16 — Hasil & Surat Keterangan Diterima
 
-- Tombol **Diterima / Tidak Diterima** → status.
+- Tombol **Diterima / Tidak Diterima** → status. Keduanya punya Surat Keterangan (K39).
+- Kartu **Keputusan** muncul setelah Sudah Tes. Yang boleh memutuskan: izin `decide_admissions` (kepsek,
+  wakepsek, admin) atau pewawancara anak/orang tua di jadwal. Domain `admission-decision` (tanpa tabel).
 - Diterima → Surat Keterangan Diterima terisi: nomor surat, nama, asal sekolah, kelas + program,
   usia, batas bayar, rekening, penanda tangan, CP surat. Bisa diubah.
 - Nomor surat otomatis (K22): nomor urut naik per tahun surat, bisa diubah. Kode unit `09` dan
   `PMB-SDI-DC` tetap di kode.
-- Usia: "6 Tahun 7 Bulan (Cukup)" bila ≥ 6 tahun per 1 Juli; di bawahnya
+- Usia ditulis rapi "6 Tahun 7 Bulan (Cukup)" (tanda ";" dan ",." di Excel dianggap salah ketik, 25 Nov 2026) bila ≥ 6 tahun per 1 Juli; di bawahnya
   "(Dengan persyaratan khusus)".
 
 #### F17 — Dokumen untuk orang tua
@@ -1440,11 +1445,15 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Keduanya terkunci sampai Lunas (K13). Penguncian dicek di backend, bukan hanya tombol disembunyikan.
 - Kirim ke WA → link `/dokumen/<token>` yang menampilkan tombol unduh kedua PDF.
 
-#### F18 — Pengaturan PMB (kepsek)
+#### F18 — Pengaturan PMB (kepsek, wakepsek)
 
 - Halaman baru: nominal per program (uang awal tahun, iuran Juli), diskon lulusan TK Darussalam /
   TK lain, batas pembayaran, rekening, nama penanda tangan, daftar CP.
 - Biaya pendaftaran tetap di halaman Pembayaran yang sekarang.
+- Dikode 25 Nov 2026: tabel `admission_settings` (domain `admission-settings`), izin `manage_pmb_settings`
+  (kepsek, wakepsek, admin), simpan lewat `PUT /api/admission-settings`. **CP PMB pindah** dari WhatsApp
+  Profil Sekolah ke sini dan dipakai semua WA pendaftaran (form pendek, info usia, data ganda, link
+  kedaluwarsa); saat migrasi diisi nomor Profil Sekolah. Nama penanda tangan dan CP surat diisi dari halaman.
 
 #### F19 — Statistik pendaftar
 

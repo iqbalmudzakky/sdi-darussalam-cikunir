@@ -1,0 +1,1 @@
+export const MAX_ADMISSION_FEE = 500_000_000;

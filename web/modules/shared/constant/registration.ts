@@ -1,3 +1,5 @@
+import type { PpdbRegistrationStatus } from "@/modules/registration/entity";
+
 export const MAX_PARENT_INCOME = 1_000_000_000;
 export const MAX_SIBLING_NUMBER = 30;
 export const MAX_HEIGHT_CM = 250;
@@ -12,6 +14,12 @@ export const REGISTRATION_STATUSES = [
   "rejected",
   "cancelled",
 ] as const;
+
+export const DECIDABLE_STATUSES: PpdbRegistrationStatus[] = [
+  "tested",
+  "accepted",
+  "rejected",
+];
 
 export const REGISTRATION_TYPES = ["siswa_baru", "pindahan"] as const;
 export const REGISTRATION_PROGRAMS = ["tahfizh", "unggulan"] as const;
@@ -139,6 +147,11 @@ export const REGISTRATION_FAILURE = {
   incomplete_observation: {
     status: 400,
     message: "Isi skor ke-56 indikator dulu.",
+  },
+  forbidden_decision: {
+    status: 403,
+    message:
+      "Hanya pewawancara, kepsek, atau wakepsek yang bisa memutuskan hasil.",
   },
   no_schedule: {
     status: 409,
