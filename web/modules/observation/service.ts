@@ -19,6 +19,7 @@ import { jakartaDateKey } from "@/modules/shared/jakartaDate";
 import { toStaffName } from "@/modules/shared/staffName";
 import * as repository from "./repository";
 import type {
+  MissingIndicatorResponse,
   ObservationDimensionResponse,
   ObservationIndicatorResponse,
   ObservationSummaryResponse,
@@ -88,6 +89,18 @@ export async function getObservationView(
     actor,
     childInterviewerId,
   );
+  const missingIndicators = dimensions.flatMap((dimension, index) => {
+    const numbers = dimension.indicators
+      .filter((indicator) => indicator.score === null)
+      .map((indicator) => indicator.number);
+    if (numbers.length === 0) return [];
+
+    const missing: MissingIndicatorResponse = {
+      step: index,
+      label: `${index + 1}. ${dimension.name} · no. ${numbers.join(", ")}`,
+    };
+    return [missing];
+  });
 
   const view: ObservationViewResponse = {
     registration_id: registration.id,
@@ -104,6 +117,7 @@ export async function getObservationView(
     recommendation: row?.recommendation ?? null,
     dimensions,
     profile,
+    missing_indicators: missingIndicators,
     can_complete: scores.length === OBSERVATION_INDICATOR_COUNT,
     can_edit: registration.status !== "cancelled" && canRecord,
   };
@@ -225,20 +239,26 @@ function toReadiness(scores: ObservationScoreRow[]): {
     label: READINESS_CONCLUSION_LABEL[level],
     tone: READINESS_TONE[level],
   };
-  const strongest = dimensions.reduce((best, item) =>
-    item.ratio > best.ratio ? item : best,
-  );
-  const weakest = dimensions.reduce((best, item) =>
-    item.ratio < best.ratio ? item : best,
-  );
+  const ratios = dimensions.map((dimension) => dimension.ratio);
+  const highestRatio = Math.max(...ratios);
+  const lowestRatio = Math.min(...ratios);
+  const strongest = dimensions
+    .filter((dimension) => dimension.ratio === highestRatio)
+    .map((dimension) => dimension.name)
+    .join(", ");
+  const weakest = dimensions
+    .filter((dimension) => dimension.ratio === lowestRatio)
+    .map((dimension) => dimension.name)
+    .join(", ");
   const hasScores = scores.length > 0;
+  const needsStrengthening = lowestRatio < READINESS_THRESHOLD.strong;
 
   const profile: ReadinessProfileResponse = {
     score_label: `${score} / ${maxScore} (${percent}%)`,
     ratio,
     conclusion: hasScores ? conclusion : null,
-    strongest: hasScores ? strongest.name : null,
-    weakest: hasScores ? weakest.name : null,
+    strongest: hasScores ? strongest : null,
+    weakest: hasScores && needsStrengthening ? weakest : null,
   };
   const readiness = { dimensions, profile };
   return readiness;

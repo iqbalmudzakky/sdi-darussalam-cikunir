@@ -9,6 +9,7 @@ export async function GET(request: Request) {
 
   try {
     const summary = await admissionTestService.sendTomorrowReminderEmails();
+    console.info("GET /api/cron/send-test-reminders done:", summary);
     return NextResponse.json(summary);
   } catch (error) {
     console.error("GET /api/cron/send-test-reminders failed:", error);

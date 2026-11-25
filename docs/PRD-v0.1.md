@@ -1154,7 +1154,8 @@ Ini juga membuat PMB dan Pindahan memakai tombol keputusan yang sama.
 
 Di Excel, "dimensi paling kuat" diambil dari skor mentah. Dimensi dengan indikator terbanyak
 (Kesiapan Belajar, maks. 32) hampir selalu menang. Di website dihitung dari **persentase**
-(skor ÷ skor maks.). Kalau persentase sama, ambil urutan dimensi paling atas.
+(skor ÷ skor maks.). Kalau persentase sama, **semua dimensi itu ditulis** (diubah 25 Nov 2026).
+"Dimensi yang perlu diperkuat" tampil **"-"** bila dimensi terendah sudah kategori Baik (≥ 75%).
 
 #### 11.2.3 Isi surat adalah salinan, bukan data induk
 
@@ -1398,7 +1399,8 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Header terisi dari biodata. Observer = pewawancara anak di jadwal; bila kosong, yang menyimpan.
   Yang boleh mengisi: kepsek, wakepsek, admin, guru yang ditugaskan sebagai pewawancara anak.
 - Skor **tersimpan otomatis tiap pindah dimensi** (bisa dilanjutkan). **Simpan observasi** baru
-  aktif setelah ke-56 indikator terisi.
+  aktif setelah ke-56 indikator terisi. Selama belum lengkap, kotak **Belum diisi** menampilkan
+  dimensi + nomor indikator yang kosong; klik membuka dimensi itu.
 - Profil Kesiapan dihitung di service dengan rumus Excel: per dimensi (skor, maks., kategori),
   total, kesimpulan umum, dimensi paling kuat & yang perlu diperkuat (persentase, 11.2.2),
   catatan/rekomendasi diketik observer.

@@ -72,6 +72,11 @@ export type ReadinessProfileResponse = {
   weakest: string | null;
 };
 
+export type MissingIndicatorResponse = {
+  step: number;
+  label: string;
+};
+
 export type ObservationViewResponse = {
   registration_id: string;
   full_name: string;
@@ -85,6 +90,7 @@ export type ObservationViewResponse = {
   recommendation: string | null;
   dimensions: ObservationDimensionResponse[];
   profile: ReadinessProfileResponse;
+  missing_indicators: MissingIndicatorResponse[];
   can_complete: boolean;
   can_edit: boolean;
 };

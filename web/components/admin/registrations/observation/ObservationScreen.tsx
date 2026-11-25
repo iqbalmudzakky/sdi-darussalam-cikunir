@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/form/button";
 import { useObservation } from "@/hooks/useObservation";
 import type { ObservationView } from "@/types/registration/Registration";
 import { DimensionCard } from "./DimensionCard";
+import { MissingIndicatorsNotice } from "./MissingIndicatorsNotice";
 import { ObservationGuideDialog } from "./ObservationGuideDialog";
 import { ObservationHeader } from "./ObservationHeader";
 import { ReadinessProfile } from "./ReadinessProfile";
@@ -42,6 +43,7 @@ export function ObservationScreen({
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const isProfile = step === profileStep;
   const dimension = view.dimensions[step];
+  const showMissing = view.can_edit && view.missing_indicators.length > 0;
   const previousStep = step - 1;
   const nextStep = step + 1;
   const saveIcon = isSaving ? (
@@ -82,6 +84,13 @@ export function ObservationScreen({
             recommendation={observation.recommendation}
             onRecommendationChange={observation.changeRecommendation}
           />
+          {showMissing && (
+            <MissingIndicatorsNotice
+              items={view.missing_indicators}
+              isSaving={isSaving}
+              onSelect={observation.goToStep}
+            />
+          )}
           <div className="flex gap-2 sm:justify-end">
             <Button
               type="button"

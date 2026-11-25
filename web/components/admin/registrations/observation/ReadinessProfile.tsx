@@ -6,7 +6,7 @@ import { ProgressBar } from "@/components/ui/display/progress-bar";
 
 const dimensionRowVariants = cva([
   "grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1.5 border-b border-gray-100 py-2.5",
-  "last:border-b-0 sm:grid-cols-[minmax(0,13rem)_1fr_auto] md:grid-cols-[minmax(0,16rem)_1fr_auto]",
+  "last:border-b-0 sm:grid-cols-[minmax(0,13rem)_1fr_9.5rem] md:grid-cols-[minmax(0,16rem)_1fr_9.5rem]",
 ]);
 
 const recommendationVariants = cva([
@@ -63,10 +63,10 @@ export function ReadinessProfile({
         <ProgressBar ratio={profile.ratio} tone={profile.conclusion?.tone} />
         <div className="space-y-1">
           {highlights.map(({ icon: Icon, label, value }) => (
-            <p key={label} className="flex items-center gap-2 text-sm">
-              <Icon className="h-4 w-4 shrink-0 text-brand-700" />
-              <span className="text-gray-500">{label}</span>
-              <span className="font-semibold text-gray-900">
+            <p key={label} className="flex items-start gap-2 text-sm">
+              <Icon className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
+              <span className="shrink-0 text-gray-500">{label}</span>
+              <span className="min-w-0 font-semibold text-gray-900">
                 {value ?? "-"}
               </span>
             </p>
@@ -94,7 +94,7 @@ export function ReadinessProfile({
                   tone={dimension.category?.tone}
                 />
               </div>
-              <span className="w-24 shrink-0 text-sm font-semibold text-gray-700 tabular-nums">
+              <span className="w-28 shrink-0 text-sm font-semibold whitespace-nowrap text-gray-700 tabular-nums">
                 {dimension.score_label}
               </span>
             </div>
