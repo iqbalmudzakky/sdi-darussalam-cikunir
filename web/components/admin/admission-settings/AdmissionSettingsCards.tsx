@@ -18,6 +18,7 @@ import {
 import { Chip } from "@/components/ui/display/chip";
 import { Button } from "@/components/ui/form/button";
 import { formatAmount } from "@/lib/payment";
+import { DATE_PICKER_YEARS_AHEAD } from "@/lib/shared/constant/datePicker";
 import { PROGRAM_FEE_FIELDS } from "@/lib/shared/constant/admissionSettings";
 import type {
   MoneyKey,
@@ -78,6 +79,11 @@ export function FeeCard({ state }: CardProps) {
 
 export function DiscountCard({ state }: CardProps) {
   const today = new Date();
+  const lastDay = new Date(
+    today.getFullYear() + DATE_PICKER_YEARS_AHEAD,
+    11,
+    31,
+  );
   return (
     <SettingsCard title="Diskon & batas bayar" icon={Wallet}>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -96,6 +102,7 @@ export function DiscountCard({ state }: CardProps) {
         id="payment-deadline"
         label="Batas pembayaran uang masuk"
         startMonth={today}
+        endMonth={lastDay}
         minDate={today}
         value={state.form.payment_deadline}
         onChange={(value) => state.setField("payment_deadline", value)}

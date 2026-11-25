@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireUser } from "@/lib/auth/session";
+import { requirePermission, requireUser } from "@/lib/auth/session";
 import * as registrationAdminService from "@/modules/registration-admin/service";
 import {
   UpdateRegistrationRequestSchema,
@@ -195,7 +195,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const user = await requireUser();
+  const user = await requirePermission("delete_registrations");
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/form/input";
 import { Label } from "@/components/ui/form/label";
 import { AdminFormSection } from "@/components/admin/shared/AdminFormSection";
 import { DateField } from "@/components/sections/RegistrationForm/fields";
+import { DATE_PICKER_YEARS_AHEAD } from "@/lib/shared/constant/datePicker";
 import { useToast } from "@/hooks/useToast";
 import {
   getPaymentSettings,
@@ -59,6 +60,13 @@ export function PaymentSettingsForm({
       clearTimeout(timer);
     };
   }, [parsedFee, isValidFee]);
+  const today = new Date();
+  const firstMonth = new Date(today.getFullYear() - 1, 0, 1);
+  const lastDay = new Date(
+    today.getFullYear() + DATE_PICKER_YEARS_AHEAD,
+    11,
+    31,
+  );
   const isValidWindow = !opensOn || !closesOn || closesOn >= opensOn;
 
   async function handleSave() {
@@ -132,6 +140,8 @@ export function PaymentSettingsForm({
               id="registration-opens-on"
               label="Tanggal buka"
               value={opensOn}
+              startMonth={firstMonth}
+              endMonth={lastDay}
               onChange={setOpensOn}
             />
           </div>
@@ -141,6 +151,8 @@ export function PaymentSettingsForm({
               id="registration-closes-on"
               label="Tanggal tutup"
               value={closesOn}
+              startMonth={firstMonth}
+              endMonth={lastDay}
               onChange={setClosesOn}
             />
           </div>

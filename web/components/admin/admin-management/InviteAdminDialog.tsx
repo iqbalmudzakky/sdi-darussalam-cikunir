@@ -51,7 +51,6 @@ export function InviteAdminDialog({
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<AdminRole>("teacher");
-  const [error, setError] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   function handleOpenChange(nextOpen: boolean) {
@@ -59,14 +58,13 @@ export function InviteAdminDialog({
       setFullName("");
       setEmail("");
       setRole("teacher");
-      setError("");
     }
     onOpenChange(nextOpen);
   }
 
   async function handleSubmit() {
     if (!fullName.trim() || !email.trim()) {
-      setError("Nama dan email wajib diisi.");
+      toast.error("Nama dan email wajib diisi.");
       return;
     }
 
@@ -101,10 +99,7 @@ export function InviteAdminDialog({
             <Input
               id="invite-name"
               value={fullName}
-              onChange={(e) => {
-                setFullName(e.target.value);
-                setError("");
-              }}
+              onChange={(e) => setFullName(e.target.value)}
               maxLength={120}
               className="rounded-xl"
             />
@@ -116,14 +111,10 @@ export function InviteAdminDialog({
               id="invite-email"
               type="email"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError("");
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@email.com"
               className="rounded-xl"
             />
-            {error && <p className="text-xs text-red-600">{error}</p>}
           </div>
 
           <div className="space-y-2">

@@ -8,6 +8,7 @@ import {
 } from "@/components/sections/RegistrationForm/fields";
 import { TimeField } from "@/components/sections/RegistrationForm/TimeField";
 import { Button } from "@/components/ui/form/button";
+import { DATE_PICKER_YEARS_AHEAD } from "@/lib/shared/constant/datePicker";
 import {
   Dialog,
   DialogContent,
@@ -52,6 +53,11 @@ function ScheduleForm({
   onSave,
 }: ScheduleFormProps) {
   const today = new Date();
+  const lastDay = new Date(
+    today.getFullYear() + DATE_PICKER_YEARS_AHEAD,
+    11,
+    31,
+  );
   const [testDate, setTestDate] = useState(schedule?.test_date ?? "");
   const [testTime, setTestTime] = useState(schedule?.test_time ?? "");
   const [interviewerIds, setInterviewerIds] = useState({
@@ -89,6 +95,7 @@ function ScheduleForm({
           value={testDate}
           onChange={setTestDate}
           startMonth={today}
+          endMonth={lastDay}
           defaultMonth={today}
           minDate={today}
           required
