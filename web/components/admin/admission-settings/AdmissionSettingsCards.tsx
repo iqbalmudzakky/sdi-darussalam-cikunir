@@ -36,6 +36,8 @@ const programBlockVariants = cva(
   "space-y-3 border-t border-gray-100 pt-4 first:border-t-0 first:pt-0",
 );
 
+const RUPIAH = new Intl.NumberFormat("id-ID");
+
 type SettingsState = ReturnType<typeof useAdmissionSettings>;
 
 type CardProps = {
@@ -45,29 +47,38 @@ type CardProps = {
 export function FeeCard({ state }: CardProps) {
   return (
     <SettingsCard title="Biaya masuk" icon={Wallet}>
-      {PROGRAM_FEE_FIELDS.map((program) => (
-        <div key={program.name} className={programBlockVariants()}>
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-gray-900">
-              {program.name}
-            </h3>
-            <Chip tone="brand">Total {state.settings[program.totalKey]}</Chip>
+      {PROGRAM_FEE_FIELDS.map((program) => {
+        const total =
+          Number(state.form[program.yearly]) + Number(state.form[program.july]);
+        return (
+          <div key={program.name} className={programBlockVariants()}>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-sm font-semibold text-gray-900">
+                {program.name}
+              </h3>
+              <Chip tone="brand">Total Rp {RUPIAH.format(total)}</Chip>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <MoneyField
+                state={state}
+                name={program.yearly}
+                label="Uang Awal Tahun"
+              />
+              <MoneyField
+                state={state}
+                name={program.july}
+                label="Iuran Juli"
+              />
+            </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <MoneyField
-              state={state}
-              name={program.yearly}
-              label="Uang Awal Tahun"
-            />
-            <MoneyField state={state} name={program.july} label="Iuran Juli" />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </SettingsCard>
   );
 }
 
 export function DiscountCard({ state }: CardProps) {
+  const today = new Date();
   return (
     <SettingsCard title="Diskon & batas bayar" icon={Wallet}>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -85,6 +96,8 @@ export function DiscountCard({ state }: CardProps) {
       <DateField
         id="payment-deadline"
         label="Batas pembayaran uang masuk"
+        startMonth={today}
+        minDate={today}
         value={state.form.payment_deadline}
         onChange={(value) => state.setField("payment_deadline", value)}
         required
@@ -210,9 +223,7 @@ type MoneyFieldProps = CardProps & {
 
 function MoneyField({ state, name, label }: MoneyFieldProps) {
   const digits = state.form[name];
-  const display = digits
-    ? `Rp ${new Intl.NumberFormat("id-ID").format(Number(digits))}`
-    : "";
+  const display = digits ? `Rp ${RUPIAH.format(Number(digits))}` : "";
 
   function handleChange(value: string) {
     const nextDigits = value.replace(/\D/g, "");

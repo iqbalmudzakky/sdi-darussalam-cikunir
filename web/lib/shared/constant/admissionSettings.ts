@@ -13,13 +13,11 @@ export const BANK_FIELDS = [
 export const PROGRAM_FEE_FIELDS = [
   {
     name: "Tahfizh",
-    totalKey: "tahfizh_total_label",
     yearly: "tahfizh_yearly_fee",
     july: "tahfizh_july_fee",
   },
   {
     name: "Unggulan",
-    totalKey: "unggulan_total_label",
     yearly: "unggulan_yearly_fee",
     july: "unggulan_july_fee",
   },

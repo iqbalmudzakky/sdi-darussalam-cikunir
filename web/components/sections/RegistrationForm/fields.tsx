@@ -295,6 +295,14 @@ export function SearchSelectField({
   );
 }
 
+const STRETCHED_CALENDAR_CLASS_NAMES = {
+  root: "w-full",
+  weekday: "flex-1 text-[11px] font-medium text-ink-500",
+  day: "h-9 flex-1 p-0 text-center",
+  day_button:
+    "flex h-9 w-full cursor-pointer items-center justify-center rounded-lg text-sm text-ink-900 transition-colors hover:bg-brand-50",
+};
+
 type DateFieldProps = {
   id: string;
   label: string;
@@ -360,8 +368,9 @@ export function DateField({
           />
         </PopoverTrigger>
 
-        <PopoverContent className="border-brand-200">
+        <PopoverContent className="w-(--anchor-width) min-w-72 border-brand-200">
           <Calendar
+            classNames={STRETCHED_CALENDAR_CLASS_NAMES}
             mode="single"
             captionLayout="dropdown"
             selected={selected}

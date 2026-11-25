@@ -34,7 +34,6 @@ type SettingsForm = Record<MoneyKey | TextKey, string> & {
 
 export function useAdmissionSettings(initial: AdmissionSettings) {
   const toast = useToast();
-  const [settings, setSettings] = useState(initial);
   const [form, setForm] = useState<SettingsForm>(() => ({
     tahfizh_yearly_fee: String(initial.tahfizh_yearly_fee),
     tahfizh_july_fee: String(initial.tahfizh_july_fee),
@@ -101,7 +100,6 @@ export function useAdmissionSettings(initial: AdmissionSettings) {
         toast.error(result.error);
         return;
       }
-      setSettings(result.settings);
       toast.success("Pengaturan PMB tersimpan");
     } catch (error) {
       console.error("Failed to save admission settings:", error);
@@ -112,7 +110,6 @@ export function useAdmissionSettings(initial: AdmissionSettings) {
   }
 
   return {
-    settings,
     form,
     isSaving,
     setField,

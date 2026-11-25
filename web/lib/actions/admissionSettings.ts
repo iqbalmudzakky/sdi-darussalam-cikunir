@@ -9,7 +9,7 @@ export async function getAdmissionSettings(): Promise<AdmissionSettingsResponse 
   if (!user) return null;
 
   try {
-    return await admissionSettingsService.getSettingsView();
+    return await admissionSettingsService.getSettings();
   } catch (error) {
     console.error(
       "lib/actions/admissionSettings.getAdmissionSettings failed:",

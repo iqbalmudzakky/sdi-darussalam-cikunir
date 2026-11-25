@@ -48,7 +48,4 @@ export type SaveAdmissionSettingsRequest = z.infer<
 export type AdmissionSettingsResponse = Omit<
   AdmissionSettingsRow,
   "updated_at"
-> & {
-  tahfizh_total_label: string;
-  unggulan_total_label: string;
-};
+>;

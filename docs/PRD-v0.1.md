@@ -1200,7 +1200,7 @@ Tiga penanda lain tampil sebagai chip ikon, terpisah dari status:
 | Hak                                  | Kepsek | Wakepsek | TU  | Guru                | Admin (dev) |
 | ------------------------------------ | ------ | -------- | --- | ------------------- | ----------- |
 | Lihat Akun & Pembayaran (Read Only)  | ✓      | ✓        |     |                     | ✓           |
-| Undang & ubah akun                   | ✓      |          |     |                     | ✓           |
+| Undang & ubah akun                   | ✓      | Guru/TU  |     |                     | ✓           |
 | Atur nominal & isi tetap surat       | ✓      |          |     |                     | ✓           |
 | Tandai lunas biaya pendaftaran       | ✓      | ✓        |     |                     | ✓           |
 | Jadwal tes, "Ambil" pendaftar        | ✓      | ✓        | ✓   | ✓                   | ✓           |
@@ -1445,6 +1445,15 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Keduanya terkunci sampai Lunas (K13). Penguncian dicek di backend, bukan hanya tombol disembunyikan.
 - Kirim ke WA → link `/dokumen/<token>` yang menampilkan tombol unduh kedua PDF.
 
+#### F18a — Nama akun & tugas pewawancara (25 Nov 2026)
+
+- Akun PMB punya kolom **Nama**, diisi di halaman Akun. Semua tempat yang menampilkan pewawancara/observer
+  memakai nama ini; bila kosong, bagian depan email. Bila endpoint SSO siap, nama diambil dari SSO.
+- **Wakepsek** boleh mengundang & mengubah akun, **hanya peran Guru dan TU**.
+- Daftar Pendaftar punya saringan untuk pendaftar yang dipegang akun yang login (pewawancara anak atau
+  orang tua), dengan chip peran. Nama saringan menunggu keputusan user.
+- Didesain di FigCraft dulu.
+
 #### F18 — Pengaturan PMB (kepsek, wakepsek)
 
 - Halaman baru: nominal per program (uang awal tahun, iuran Juli), diskon lulusan TK Darussalam /
@@ -1582,6 +1591,10 @@ Dicatat supaya tidak diselundupkan ke pekerjaan yang sedang berjalan.
   Kepsek/wakepsek memilih orang dari daftar guru & staf SSO lalu memberi peran PMB; yang dipilih
   masuk dengan akun sekolah yang sama dengan LMS, tanpa email aktivasi. Butuh dari pemilik SSO:
   PMB terdaftar sebagai aplikasi login SSO dan endpoint daftar guru & staf. Akun panitia lama
-  dicocokkan lewat email. Pesan ke SSO disiapkan saat mulai dikerjakan
+  dicocokkan lewat email. Pesan ke SSO disiapkan saat mulai dikerjakan.
+  **Keputusan 25 Nov 2026:** sampai launching tetap akun PMB terpisah; dibahas dulu dengan sekolah.
+  Untuk memudahkan peralihan, guru diminta memakai **email & password yang sama dengan SSO**.
+- **Guru mengubah profil (nama) sendiri** (diminta 25 Nov 2026). Sementara nama diisi kepsek/wakepsek di
+  halaman Akun
 - QR pembayaran DOKU di layar
 - Daftar indikator observasi bisa diubah dari website
