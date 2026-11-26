@@ -21,6 +21,13 @@ export function useStatementForm(initial: StatementView) {
   const [isSaving, setIsSaving] = useState(false);
   const form = useStatementContent(initial.content);
   const { content } = form;
+  const statement: SaveStatementPayload["statement"] = {
+    letter_date: content.letter_date,
+    father: content.father,
+    mother: content.mother,
+    child: content.child,
+    signers: content.signers,
+  };
 
   async function submit(payload: SaveStatementPayload): Promise<boolean> {
     setIsSaving(true);
@@ -45,13 +52,7 @@ export function useStatementForm(initial: StatementView) {
   async function save(): Promise<boolean> {
     const payload: SaveStatementPayload = {
       action: "save_statement",
-      statement: {
-        letter_date: content.letter_date,
-        father: content.father,
-        mother: content.mother,
-        child: content.child,
-        signers: content.signers,
-      },
+      statement,
     };
     const saved = await submit(payload);
     if (saved) toast.success("Surat pernyataan tersimpan");
@@ -59,9 +60,12 @@ export function useStatementForm(initial: StatementView) {
   }
 
   async function applyLatest() {
-    const payload: SaveStatementPayload = { action: "refresh_statement" };
+    const payload: SaveStatementPayload = {
+      action: "refresh_statement",
+      statement,
+    };
     const saved = await submit(payload);
-    if (saved) toast.success("Data terbaru dipakai");
+    if (saved) toast.success("Biaya terbaru dipakai");
   }
 
   async function download() {

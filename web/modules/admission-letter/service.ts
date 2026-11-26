@@ -1,4 +1,5 @@
 import * as admissionDecisionService from "@/modules/admission-decision/service";
+import type { AdmissionSettingsRow } from "@/modules/admission-settings/entity";
 import * as admissionSettingsService from "@/modules/admission-settings/service";
 import * as admissionTestService from "@/modules/admission-test/service";
 import type { SessionUser } from "@/modules/auth/dto";
@@ -22,6 +23,7 @@ import type {
   SaveStatementInput,
   StatementAddress,
   StatementContent,
+  StatementFees,
   StatementParent,
   StatementRow,
 } from "./entity";
@@ -98,13 +100,9 @@ export async function saveStatement(
     return rejected;
   }
 
-  let content: StatementContent;
-  if (request.action === "refresh_statement") {
-    content = await buildDraft(registrationId);
-  } else {
-    const fees = row?.content.fees ?? (await buildDraft(registrationId)).fees;
-    content = { ...request.statement, fees };
-  }
+  const useLatestFees = request.action === "refresh_statement" || !row;
+  const fees = useLatestFees ? await getLatestFees() : row.content.fees;
+  const content: StatementContent = { ...request.statement, fees };
   const saveInput: SaveStatementInput = {
     registrationId,
     content,
@@ -162,21 +160,31 @@ async function buildDraft(registrationId: string): Promise<StatementContent> {
       grade_label: `${targetGrade} (${NUMBER_WORDS[targetGrade].toUpperCase()})`,
       academic_year: form?.academic_year ?? "",
     },
-    fees: {
-      tahfizh_yearly_fee: settings.tahfizh_yearly_fee,
-      tahfizh_july_fee: settings.tahfizh_july_fee,
-      unggulan_yearly_fee: settings.unggulan_yearly_fee,
-      unggulan_july_fee: settings.unggulan_july_fee,
-      darussalam_discount: settings.darussalam_discount,
-      other_discount: settings.other_discount,
-      payment_deadline: settings.payment_deadline,
-    },
+    fees: toStatementFees(settings),
     signers: {
       principal_name: settings.principal_name,
       director_name: settings.director_name,
     },
   };
   return draft;
+}
+
+async function getLatestFees(): Promise<StatementFees> {
+  const settings = await admissionSettingsService.getSettings();
+  return toStatementFees(settings);
+}
+
+function toStatementFees(settings: AdmissionSettingsRow): StatementFees {
+  const fees: StatementFees = {
+    tahfizh_yearly_fee: settings.tahfizh_yearly_fee,
+    tahfizh_july_fee: settings.tahfizh_july_fee,
+    unggulan_yearly_fee: settings.unggulan_yearly_fee,
+    unggulan_july_fee: settings.unggulan_july_fee,
+    darussalam_discount: settings.darussalam_discount,
+    other_discount: settings.other_discount,
+    payment_deadline: settings.payment_deadline,
+  };
+  return fees;
 }
 
 function toStatementParent(

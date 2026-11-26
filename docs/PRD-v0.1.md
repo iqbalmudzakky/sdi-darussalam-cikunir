@@ -1166,7 +1166,8 @@ Di Excel, "dimensi paling kuat" diambil dari skor mentah. Dimensi dengan indikat
 Saat surat pertama dibuat, isinya diambil dari data pendaftar. Setelah itu yang diubah di surat
 **hanya mengubah surat**. Alasannya: surat yang sudah dicetak dan ditandatangani tidak boleh
 berubah diam-diam saat biodata atau Pengaturan PMB diubah. Kalau ingin ikut data terbaru, ada tombol
-**"Gunakan Update Terbaru"** (nama tombol diputuskan 25 Nov 2026).
+**"Gunakan Update Terbaru"** (nama tombol diputuskan 25 Nov 2026). Tombol ini hanya mengambil biaya & batas
+bayar terbaru dari Pengaturan PMB; isian lain yang sudah diubah tetap (diputuskan 26 Nov 2026).
 
 ---
 

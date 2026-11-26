@@ -23,28 +23,27 @@ const ParentSchema = z.object({
   address: AddressSchema,
 });
 
-export const SaveStatementRequestSchema = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("save_statement"),
-    statement: z.object({
-      letter_date: z.iso.date("Tanggal surat wajib diisi."),
-      father: ParentSchema,
-      mother: ParentSchema.extend({ same_address: z.boolean() }),
-      child: z.object({
-        full_name: TextSchema.min(1, "Nama anak wajib diisi."),
-        place_of_birth: TextSchema,
-        date_of_birth: TextSchema,
-        grade_label: TextSchema,
-        academic_year: TextSchema,
-      }),
-      signers: z.object({
-        principal_name: TextSchema,
-        director_name: TextSchema,
-      }),
-    }),
+const StatementSchema = z.object({
+  letter_date: z.iso.date("Tanggal surat wajib diisi."),
+  father: ParentSchema,
+  mother: ParentSchema.extend({ same_address: z.boolean() }),
+  child: z.object({
+    full_name: TextSchema.min(1, "Nama anak wajib diisi."),
+    place_of_birth: TextSchema,
+    date_of_birth: TextSchema,
+    grade_label: TextSchema,
+    academic_year: TextSchema,
   }),
-  z.object({ action: z.literal("refresh_statement") }),
-]);
+  signers: z.object({
+    principal_name: TextSchema,
+    director_name: TextSchema,
+  }),
+});
+
+export const SaveStatementRequestSchema = z.object({
+  action: z.enum(["save_statement", "refresh_statement"]),
+  statement: StatementSchema,
+});
 
 export type SaveStatementRequest = z.infer<typeof SaveStatementRequestSchema>;
 

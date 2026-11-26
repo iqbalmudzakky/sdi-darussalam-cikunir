@@ -26,6 +26,8 @@ const feeRowVariants = cva([
   "sm:flex-row sm:items-center sm:justify-between",
 ]);
 
+const fullRowVariants = cva("md:col-span-2 md:grid md:grid-cols-2 md:gap-4");
+
 type StatementState = ReturnType<typeof useStatementForm>;
 
 type SectionProps = {
@@ -85,13 +87,15 @@ export function ParentSection({ state, parent }: ParentSectionProps) {
           />
         ))}
         {isMother && (
-          <ChoiceField
-            id="statement-mother-address"
-            label="Alamat"
-            value={state.content.mother.same_address ? "same" : "other"}
-            options={MOTHER_ADDRESS_OPTIONS}
-            onChange={(value) => state.setSameAddress(value === "same")}
-          />
+          <div className={fullRowVariants()}>
+            <ChoiceField
+              id="statement-mother-address"
+              label="Alamat"
+              value={state.content.mother.same_address ? "same" : "other"}
+              options={MOTHER_ADDRESS_OPTIONS}
+              onChange={(value) => state.setSameAddress(value === "same")}
+            />
+          </div>
         )}
         {showAddress &&
           STATEMENT_ADDRESS_FIELDS.map((field) => (
