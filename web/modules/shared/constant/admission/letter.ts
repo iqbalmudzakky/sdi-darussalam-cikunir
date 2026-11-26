@@ -14,3 +14,8 @@ export const NUMBER_WORDS = [
 ] as const;
 
 export const SCHOOL_CITY = "Bekasi";
+
+export const ADMISSION_LETTER_KIND = {
+  statement: "statement",
+  decision: "decision",
+} as const;

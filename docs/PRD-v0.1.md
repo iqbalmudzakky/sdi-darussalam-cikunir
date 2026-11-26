@@ -615,20 +615,20 @@ istilah untuk Next.js + TypeScript:
 
 **Pemilik tabel:**
 
-| Fitur (`modules/…`)                              | Tabel                                                                                                        |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `auth`                                           | `admin_users`, `refresh_tokens`, `login_attempts`                                                            |
-| `admin`                                          | `admin_action_tokens` — memanggil service `auth` untuk akun & sesi, tidak sebaliknya                         |
-| `registration`                                   | `ppdb_registrations`, `ppdb_registration_students`                                                           |
-| `registration-biodata`                           | `ppdb_registration_parents`, `ppdb_registration_details`, `ppdb_registration_achievements`                   |
-| `registration-link`                              | `registration_form_links` — juga alur form lengkap (kirim link, buka, simpan)                                |
-| `payment`                                        | `registration_payments`, `doku_notification_events`                                                          |
-| `payment-settings`                               | `payment_settings`                                                                                           |
-| `registration-stats`                             | `registration_stats`                                                                                         |
-| `school-profile`                                 | `school_profiles`                                                                                            |
-| `analytics`                                      | `site_visits`                                                                                                |
-| `event`                                          | `events`                                                                                                     |
-| `activity`, `achievement`, `facility`, `program` | tabel senamanya (`activities`, `achievements`, `facilities`, `programs`)                                     |
+| Fitur (`modules/…`)                              | Tabel                                                                                      |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `auth`                                           | `admin_users`, `refresh_tokens`, `login_attempts`                                          |
+| `admin`                                          | `admin_action_tokens` — memanggil service `auth` untuk akun & sesi, tidak sebaliknya       |
+| `registration`                                   | `ppdb_registrations`, `ppdb_registration_students`                                         |
+| `registration-biodata`                           | `ppdb_registration_parents`, `ppdb_registration_details`, `ppdb_registration_achievements` |
+| `registration-link`                              | `registration_form_links` — juga alur form lengkap (kirim link, buka, simpan)              |
+| `payment`                                        | `registration_payments`, `doku_notification_events`                                        |
+| `payment-settings`                               | `payment_settings`                                                                         |
+| `registration-stats`                             | `registration_stats`                                                                       |
+| `school-profile`                                 | `school_profiles`                                                                          |
+| `analytics`                                      | `site_visits`                                                                              |
+| `event`                                          | `events`                                                                                   |
+| `activity`, `achievement`, `facility`, `program` | tabel senamanya (`activities`, `achievements`, `facilities`, `programs`)                   |
 
 Tabel `registrations` (bentuk pendaftaran lama, kosong) tidak dipakai kode mana pun.
 
@@ -1104,49 +1104,49 @@ diketik dua kali, tapi tetap bisa diubah.
 
 ### 11.2 Keputusan yang Sudah Diambil
 
-| #   | Keputusan                                                                                                                                                                     |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| K1  | Tidak ada pembayaran sebelum form terkirim                                                                                                                                    |
-| K2  | Klik "Daftar" → pilih **PMB** atau **Siswa Pindahan**                                                                                                                         |
-| K3  | Form pendek: nama anak, jenis kelamin, tanggal lahir, asal sekolah, program, tahun masuk, nama & no. WA orang tua, email (opsional). Pindahan ditambah **kelas tujuan** (2–6) |
-| K4  | Program **Tahfizh / Unggulan** dipilih orang tua                                                                                                                              |
-| K5  | Label di form: **Masuk tahun ajaran**. Pilihannya TA yang sedang dibuka sampai +5 (contoh sekarang: 2027/2028 – 2032/2033)                                                    |
-| K6  | Setelah kirim form pendek → langsung ke WhatsApp CP dengan pesan terisi                                                                                                       |
-| K7  | Form lengkap lewat link khusus dari CP. Isian form pendek sudah terisi dan bisa diubah. Email wajib di sini                                                                   |
-| K8  | Tidak ada unggah berkas. Panitia mencentang berkas kertas yang sudah diterima (akta, KK, KTP ayah & ibu; rapor & NISN untuk pindahan)                                         |
-| K9  | Jadwal tes cukup tanggal + jam yang dicatat CP. Tanpa sistem slot                                                                                                             |
-| K10 | Pengingat: email otomatis H-1 ke orang tua + daftar "Jadwal hari ini & besok" di dashboard dengan tombol WA manual. Tanpa WA otomatis                                         |
-| K11 | Pewawancara anak & pewawancara orang tua dipilih dari akun PMB. Guru boleh "Ambil" sendiri; kepsek/wakepsek boleh menugaskan siapa saja                                       |
-| K12 | Biaya pendaftaran dibayar di sekolah saat tes: tunai/transfer (ditandai lunas) atau DOKU                                                                                      |
-| K13 | Profil Kesiapan & Surat Keterangan Diterima hanya bisa diunduh/dikirim **setelah biaya pendaftaran lunas**                                                                    |
-| K14 | Dokumen dikirim ke orang tua sebagai **link PDF lewat WA**, bukan lampiran (lampiran butuh WhatsApp Business API berbayar). Tombol "Unduh PDF" untuk dicetak                  |
-| K15 | Nominal surat pernyataan diatur dari website di halaman **Pengaturan PMB** oleh kepsek, wakepsek, dan admin (wakepsek ditambahkan 25 Nov 2026)                              |
-| K16 | Pindahan: alur sama persis, **kecuali tes murid** — dikerjakan manual sesuai jenjang kelas, tanpa 56 indikator, jadi tanpa Profil Kesiapan                                    |
-| K17 | Angka pendaftar dihitung per **tahun ajaran target**. Landing page = TA yang sedang dibuka. Statistik = rincian per TA target                                                 |
-| K18 | Peran akun diganti: Kepsek, Wakepsek, TU, Guru, Admin (dev)                                                                                                                   |
-| K19 | Nomor pendaftaran: urut per TA target, mis. `2728-001`                                                                                                                        |
-| K20 | WA setelah form pendek ke **satu nomor CP PMB**. CP di Surat Diterima (bagian pembayaran uang masuk) berbeda dan di luar alur website — keduanya diatur kepsek                |
-| K21 | Usia per 1 Juli: ≥ 6 tahun = Cukup. Di bawah 6 tahun = dengan persyaratan khusus; form menampilkan info dengan tombol WA ke CP PMB, form tetap bisa dikirim                   |
-| K22 | Nomor surat: `<urut>.09/PMB-SDI-DC/<bulan Romawi>/<tahun>`. `09` = nomor unit SDI Darussalam Cikunir di yayasan                                                               |
-| K23 | PDF dibuat dengan `@react-pdf/renderer`                                                                                                                                       |
-| K24 | Input Pendaftar Manual tetap ada, diisi guru dengan **form lengkap** langsung                                                                                                 |
-| K25 | Nomor urut surat mulai dari 001 lagi tiap tahun kalender surat                                                                                                                |
-| K26 | Nomor urut pendaftaran mulai dari 001 lagi untuk tiap TA target                                                                                                               |
-| K27 | Terhitung **pendaftar** sejak **form pendek** masuk, semua status termasuk Batal (diubah kepsek 17 Nov 2026; sebelumnya: setelah form lengkap)                                |
-| K28 | Hasil Diterima/Tidak Diterima bisa saling diganti selama Surat Keterangan Diterima belum dibuat. Setelah surat dibuat, hanya Kepsek, Wakepsek, dan Admin yang bisa mengubah   |
-| K29 | Batal bisa dibatalkan lewat **Aktifkan lagi**; status kembali ke posisi sebelum Batal                                                                                         |
-| K30 | Isian form lengkap mengikuti sheet FORM BIODATA. Isian form lama di luar sheet tidak ditanyakan lagi (datanya tetap)                                                          |
-| K31 | Ayah, ibu, wali cukup **tahun lahir**. Penghasilan dipilih dari **rentang** (Dapodik), bukan diketik                                                                          |
-| K32 | NIS, no. seri ijazah, SKHUN, no. UN tidak ditanyakan (anak TK belum punya)                                                                                                    |
-| K33 | Link form lengkap berlaku **14 hari** sejak dikirim sampai PR 3, lalu sampai hari tes. Kirim ulang mematikan link lama                                                        |
-| K34 | Input manual (K24): orang tua datang langsung, panitia isi form lengkap saat itu. Yang wajib hanya isian form pendek (K3); sisanya dan email boleh kosong, dilengkapi guru nanti |
-| K35 | Rilis production setelah **satu alur PMB lengkap** (PR 2–5). Sempat dipercepat ke PR 2 + F11 (23 Nov), dibatalkan 24 Nov setelah tenggat dilonggarkan sekolah                |
-| K36 | Panitia bisa **Ubah data** pendaftar dengan aturan K34 (program boleh kosong). Ganti TA = nomor baru di urutan TA itu. "Kirim form lengkap" hanya untuk pendaftar online   |
-| K37 | Jadwal tes **boleh diatur sebelum form lengkap diisi**. Link yang dikirim setelah ada jadwal berlaku sampai hari tes, dan pesan WA menyebut tanggal itu                       |
-| K38 | Surat pernyataan & Surat Keterangan **persis format Excel sekolah** (surat pernyataan memuat dua program lengkap); sistem hanya mengisi datanya (25 Nov 2026)            |
+| #   | Keputusan                                                                                                                                                                               |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| K1  | Tidak ada pembayaran sebelum form terkirim                                                                                                                                              |
+| K2  | Klik "Daftar" → pilih **PMB** atau **Siswa Pindahan**                                                                                                                                   |
+| K3  | Form pendek: nama anak, jenis kelamin, tanggal lahir, asal sekolah, program, tahun masuk, nama & no. WA orang tua, email (opsional). Pindahan ditambah **kelas tujuan** (2–6)           |
+| K4  | Program **Tahfizh / Unggulan** dipilih orang tua                                                                                                                                        |
+| K5  | Label di form: **Masuk tahun ajaran**. Pilihannya TA yang sedang dibuka sampai +5 (contoh sekarang: 2027/2028 – 2032/2033)                                                              |
+| K6  | Setelah kirim form pendek → langsung ke WhatsApp CP dengan pesan terisi                                                                                                                 |
+| K7  | Form lengkap lewat link khusus dari CP. Isian form pendek sudah terisi dan bisa diubah. Email wajib di sini                                                                             |
+| K8  | Tidak ada unggah berkas. Panitia mencentang berkas kertas yang sudah diterima (akta, KK, KTP ayah & ibu; rapor & NISN untuk pindahan)                                                   |
+| K9  | Jadwal tes cukup tanggal + jam yang dicatat CP. Tanpa sistem slot                                                                                                                       |
+| K10 | Pengingat: email otomatis H-1 ke orang tua + daftar "Jadwal hari ini & besok" di dashboard dengan tombol WA manual. Tanpa WA otomatis                                                   |
+| K11 | Pewawancara anak & pewawancara orang tua dipilih dari akun PMB. Guru boleh "Ambil" sendiri; kepsek/wakepsek boleh menugaskan siapa saja                                                 |
+| K12 | Biaya pendaftaran dibayar di sekolah saat tes: tunai/transfer (ditandai lunas) atau DOKU                                                                                                |
+| K13 | Profil Kesiapan & Surat Keterangan Diterima hanya bisa diunduh/dikirim **setelah biaya pendaftaran lunas**                                                                              |
+| K14 | Dokumen dikirim ke orang tua sebagai **link PDF lewat WA**, bukan lampiran (lampiran butuh WhatsApp Business API berbayar). Tombol "Unduh PDF" untuk dicetak                            |
+| K15 | Nominal surat pernyataan diatur dari website di halaman **Pengaturan PMB** oleh kepsek, wakepsek, dan admin (wakepsek ditambahkan 25 Nov 2026)                                          |
+| K16 | Pindahan: alur sama persis, **kecuali tes murid** — dikerjakan manual sesuai jenjang kelas, tanpa 56 indikator, jadi tanpa Profil Kesiapan                                              |
+| K17 | Angka pendaftar dihitung per **tahun ajaran target**. Landing page = TA yang sedang dibuka. Statistik = rincian per TA target                                                           |
+| K18 | Peran akun diganti: Kepsek, Wakepsek, TU, Guru, Admin (dev)                                                                                                                             |
+| K19 | Nomor pendaftaran: urut per TA target, mis. `2728-001`                                                                                                                                  |
+| K20 | WA setelah form pendek ke **satu nomor CP PMB**. CP di Surat Diterima (bagian pembayaran uang masuk) berbeda dan di luar alur website — keduanya diatur kepsek                          |
+| K21 | Usia per 1 Juli: ≥ 6 tahun = Cukup. Di bawah 6 tahun = dengan persyaratan khusus; form menampilkan info dengan tombol WA ke CP PMB, form tetap bisa dikirim                             |
+| K22 | Nomor surat: `<urut>.09/PMB-SDI-DC/<bulan Romawi>/<tahun>`. `09` = nomor unit SDI Darussalam Cikunir di yayasan                                                                         |
+| K23 | PDF dibuat dengan `@react-pdf/renderer`                                                                                                                                                 |
+| K24 | Input Pendaftar Manual tetap ada, diisi guru dengan **form lengkap** langsung                                                                                                           |
+| K25 | Nomor urut surat mulai dari 001 lagi tiap tahun kalender surat                                                                                                                          |
+| K26 | Nomor urut pendaftaran mulai dari 001 lagi untuk tiap TA target                                                                                                                         |
+| K27 | Terhitung **pendaftar** sejak **form pendek** masuk, semua status termasuk Batal (diubah kepsek 17 Nov 2026; sebelumnya: setelah form lengkap)                                          |
+| K28 | Hasil Diterima/Tidak Diterima bisa saling diganti selama Surat Keterangan Diterima belum dibuat. Setelah surat dibuat, hanya Kepsek, Wakepsek, dan Admin yang bisa mengubah             |
+| K29 | Batal bisa dibatalkan lewat **Aktifkan lagi**; status kembali ke posisi sebelum Batal                                                                                                   |
+| K30 | Isian form lengkap mengikuti sheet FORM BIODATA. Isian form lama di luar sheet tidak ditanyakan lagi (datanya tetap)                                                                    |
+| K31 | Ayah, ibu, wali cukup **tahun lahir**. Penghasilan dipilih dari **rentang** (Dapodik), bukan diketik                                                                                    |
+| K32 | NIS, no. seri ijazah, SKHUN, no. UN tidak ditanyakan (anak TK belum punya)                                                                                                              |
+| K33 | Link form lengkap berlaku **14 hari** sejak dikirim sampai PR 3, lalu sampai hari tes. Kirim ulang mematikan link lama                                                                  |
+| K34 | Input manual (K24): orang tua datang langsung, panitia isi form lengkap saat itu. Yang wajib hanya isian form pendek (K3); sisanya dan email boleh kosong, dilengkapi guru nanti        |
+| K35 | Rilis production setelah **satu alur PMB lengkap** (PR 2–5). Sempat dipercepat ke PR 2 + F11 (23 Nov), dibatalkan 24 Nov setelah tenggat dilonggarkan sekolah                           |
+| K36 | Panitia bisa **Ubah data** pendaftar dengan aturan K34 (program boleh kosong). Ganti TA = nomor baru di urutan TA itu. "Kirim form lengkap" hanya untuk pendaftar online                |
+| K37 | Jadwal tes **boleh diatur sebelum form lengkap diisi**. Link yang dikirim setelah ada jadwal berlaku sampai hari tes, dan pesan WA menyebut tanggal itu                                 |
+| K38 | Surat pernyataan & Surat Keterangan **persis format Excel sekolah** (surat pernyataan memuat dua program lengkap); sistem hanya mengisi datanya (25 Nov 2026)                           |
 | K39 | Tidak Diterima memakai format Surat Keterangan yang sama: "TIDAK LULUS / Tidak Diterima", Hal "Keterangan tidak diterima sekolah", tanpa bagian pembayaran, rekening, catatan & contact |
-| K40 | Surat pernyataan tidak dikunci lunas: dicetak & ditandatangani di sekolah. Yang dikunci lunas hanya dokumen yang dikirim lewat WA (Profil Kesiapan, Surat Keterangan)    |
-| K41 | Pendaftar bisa **dihapus permanen** (untuk data latihan guru), termasuk yang sudah lunas; peringatan "tidak bisa dikembalikan". Beda dengan Batal: hilang dari statistik (25 Nov 2026) |
+| K40 | Surat pernyataan tidak dikunci lunas: dicetak & ditandatangani di sekolah. Yang dikunci lunas hanya dokumen yang dikirim lewat WA (Profil Kesiapan, Surat Keterangan)                   |
+| K41 | Pendaftar bisa **dihapus permanen** (untuk data latihan guru), termasuk yang sudah lunas; peringatan "tidak bisa dikembalikan". Beda dengan Batal: hilang dari statistik (25 Nov 2026)  |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1289,16 +1289,15 @@ pendaftar sudah ada lebih dulu. Kolom baru `recorded_by` (akun yang menandai lun
 
 #### 11.5.2 Tabel baru
 
-| Tabel                     | Domain                | Isi                                                                                              |
-| ------------------------- | --------------------- | ------------------------------------------------------------------------------------------------ |
-| `registration_form_links` | `registration-link`   | Token link form lengkap (hash), kedaluwarsa, dibuat oleh                                         |
-| `admission_tests`         | `admission-test`      | Jadwal tes, pewawancara anak & ortu, pengingat terkirim, tanggal + catatan tes manual (pindahan) |
-| `observations`            | `observation`         | Tanggal, observer, catatan awal, rekomendasi                                                     |
-| `observation_scores`      | `observation`         | 56 baris: nomor indikator, skor 1–4, catatan                                                     |
-| `admission_settings`      | `admission-settings`  | Satu baris: nominal per program, diskon, batas bayar, rekening, penanda tangan, CP PMB, CP surat |
-| `financial_statements`    | `financial-statement` | Salinan isi surat pernyataan (jsonb) + tanggal tanda tangan                                      |
-| `acceptance_letters`      | `acceptance-letter`   | Nomor surat, tanggal, salinan isi surat (jsonb)                                                  |
-| `document_links`          | `acceptance-letter`   | Token link PDF untuk orang tua (hash), kedaluwarsa                                               |
+| Tabel                     | Domain               | Isi                                                                                              |
+| ------------------------- | -------------------- | ------------------------------------------------------------------------------------------------ |
+| `registration_form_links` | `registration-link`  | Token link form lengkap (hash), kedaluwarsa, dibuat oleh                                         |
+| `admission_tests`         | `admission-test`     | Jadwal tes, pewawancara anak & ortu, pengingat terkirim, tanggal + catatan tes manual (pindahan) |
+| `observations`            | `observation`        | Tanggal, observer, catatan awal, rekomendasi                                                     |
+| `observation_scores`      | `observation`        | 56 baris: nomor indikator, skor 1–4, catatan                                                     |
+| `admission_settings`      | `admission-settings` | Satu baris: nominal per program, diskon, batas bayar, rekening, penanda tangan, CP PMB, CP surat |
+| `admission_letters`       | `admission-letter`   | Satu baris per pendaftar per jenis (`statement`, `decision`): salinan isi surat (jsonb)          |
+| `document_links`          | `admission-letter`   | Token link PDF untuk orang tua (hash), kedaluwarsa                                               |
 
 - **Daftar 56 indikator dan 9 dimensi disimpan di kode** (`modules/shared/constant`), bukan di
   tabel. Isinya tetap dan berubah paling sekali setahun lewat rilis. Skor menyimpan nomor
@@ -1428,8 +1427,8 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Terisi dari biodata (ayah, ibu, alamat, anak, kelas, TA) dan `admission_settings` (nominal
   program pilihan, diskon sesuai asal TK).
 - Bisa diubah (11.2.3). Cetak PDF untuk ditandatangani.
-- Dikode 26 Nov 2026 (tahap 2a): halaman `/registrations/[id]/statement`, tabel `financial_statements`
-  (salinan jsonb), simpan lewat action `save_statement`/`refresh_statement` di PATCH pendaftar. Yang boleh:
+- Dikode 26 Nov 2026 (tahap 2a): halaman `/registrations/[id]/statement`, tabel `admission_letters`
+  (`kind = statement`, salinan jsonb; tadinya `financial_statements`, diganti lewat migrasi 20261201), simpan lewat action `save_statement`/`refresh_statement` di PATCH pendaftar. Yang boleh:
   izin `decide_admissions` atau pewawancara di jadwal. PDF dua program persis Excel (K38), nama penanda
   tangan dicetak sesuai isian Pengaturan PMB.
 

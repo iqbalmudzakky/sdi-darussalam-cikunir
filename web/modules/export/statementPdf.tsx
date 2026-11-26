@@ -15,7 +15,7 @@ import type {
   StatementContent,
   StatementFees,
   StatementParent,
-} from "@/modules/financial-statement/entity";
+} from "@/modules/admission-letter/entity";
 import { SCHOOL_CITY } from "@/modules/shared/constant/admission/letter";
 import { toLetterDate } from "@/modules/shared/date/letterDate";
 import { formatRupiah } from "@/modules/shared/format/rupiah";

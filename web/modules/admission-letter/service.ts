@@ -32,8 +32,8 @@ export async function getStatementView(
 ): Promise<StatementViewResponse | null> {
   const [registration, row, interviewerIds] = await Promise.all([
     registrationService.findFullById(registrationId),
-    withDbLogging("financialStatement.findByRegistrationId", () =>
-      repository.findByRegistrationId(registrationId),
+    withDbLogging("admissionLetter.findStatement", () =>
+      repository.findStatement(registrationId),
     ),
     admissionTestService.findInterviewerIds(registrationId),
   ]);
@@ -81,8 +81,8 @@ export async function saveStatement(
   const { registrationId, request, actor } = input;
   const [registration, row, interviewerIds] = await Promise.all([
     registrationService.findFullById(registrationId),
-    withDbLogging("financialStatement.findByRegistrationId", () =>
-      repository.findByRegistrationId(registrationId),
+    withDbLogging("admissionLetter.findStatement", () =>
+      repository.findStatement(registrationId),
     ),
     admissionTestService.findInterviewerIds(registrationId),
   ]);
@@ -110,8 +110,8 @@ export async function saveStatement(
     content,
     actorId: actor.id,
   };
-  await withDbLogging("financialStatement.save", () =>
-    repository.save(saveInput),
+  await withDbLogging("admissionLetter.saveStatement", () =>
+    repository.saveStatement(saveInput),
   );
 
   const statement = await getStatementView(registrationId, actor);
@@ -124,8 +124,8 @@ export async function saveStatement(
 export async function findStatement(
   registrationId: string,
 ): Promise<StatementRow | null> {
-  return withDbLogging("financialStatement.findByRegistrationId", () =>
-    repository.findByRegistrationId(registrationId),
+  return withDbLogging("admissionLetter.findStatement", () =>
+    repository.findStatement(registrationId),
   );
 }
 

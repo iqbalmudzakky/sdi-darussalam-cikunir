@@ -13,8 +13,8 @@ import * as observationService from "@/modules/observation/service";
 import {
   SaveStatementRequestSchema,
   type SaveStatementRequestInput,
-} from "@/modules/financial-statement/dto";
-import * as financialStatementService from "@/modules/financial-statement/service";
+} from "@/modules/admission-letter/dto";
+import * as admissionLetterService from "@/modules/admission-letter/service";
 import * as paymentService from "@/modules/payment/service";
 import * as registrationLinkService from "@/modules/registration-link/service";
 import * as registrationService from "@/modules/registration/service";
@@ -174,7 +174,7 @@ export async function PATCH(
         request: parsedStatement.data,
         actor: user,
       };
-      const result = await financialStatementService.saveStatement(input);
+      const result = await admissionLetterService.saveStatement(input);
       if (!result.ok) {
         const failure = REGISTRATION_FAILURE[result.reason];
         return NextResponse.json(

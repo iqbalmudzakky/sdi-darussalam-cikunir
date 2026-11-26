@@ -19,7 +19,7 @@ import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
 import type {
   SaveStatementRequest,
   StatementViewResponse,
-} from "@/modules/financial-statement/dto";
+} from "@/modules/admission-letter/dto";
 import type { useFullRegistrationForm } from "@/hooks/useFullRegistrationForm";
 import type {
   FullFormLinkResult,

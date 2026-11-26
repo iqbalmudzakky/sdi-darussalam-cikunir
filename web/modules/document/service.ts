@@ -1,4 +1,4 @@
-import * as financialStatementService from "@/modules/financial-statement/service";
+import * as admissionLetterService from "@/modules/admission-letter/service";
 import { renderReadinessProfilePdf } from "@/modules/export/readinessProfilePdf";
 import { renderStatementPdf } from "@/modules/export/statementPdf";
 import * as observationService from "@/modules/observation/service";
@@ -16,8 +16,7 @@ export async function getLetters(
   input: LettersInput,
 ): Promise<LetterRowResponse[]> {
   const { registrationId, isPaid } = input;
-  const statement =
-    await financialStatementService.findStatement(registrationId);
+  const statement = await admissionLetterService.findStatement(registrationId);
   const statementUrl = `/registrations/${registrationId}/statement`;
   const downloadBase = `/api/documents?registration=${registrationId}&kind=`;
 
@@ -69,7 +68,7 @@ export async function getDocument(
 
   if (kind === "statement") {
     const statement =
-      await financialStatementService.findStatement(registrationId);
+      await admissionLetterService.findStatement(registrationId);
     if (!statement) return missing;
 
     const buffer = await renderStatementPdf(statement.content);
