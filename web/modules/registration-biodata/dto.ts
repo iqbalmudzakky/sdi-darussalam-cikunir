@@ -4,7 +4,7 @@ import type { FormBiodata } from "./entity";
 import {
   MAX_HEIGHT_CM,
   MAX_WEIGHT_KG,
-} from "@/modules/shared/constant/registration";
+} from "@/modules/shared/constant/admission/registration";
 import {
   ACHIEVEMENT_CATEGORY_LABEL,
   ACHIEVEMENT_LEVEL_LABEL,
@@ -18,7 +18,7 @@ import {
   PARENT_OCCUPATION_LABEL,
   SPECIAL_NEEDS_LABEL,
   TRANSPORTATION_LABEL,
-} from "@/modules/shared/constant/registrationForm";
+} from "@/modules/shared/constant/admission/registrationForm";
 import {
   blankable,
   personName,

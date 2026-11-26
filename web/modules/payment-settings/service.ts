@@ -1,11 +1,11 @@
 import { withDbLogging } from "@/modules/db/errors";
-import { jakartaDateKey } from "@/modules/shared/jakartaDate";
+import { jakartaDateKey } from "@/modules/shared/date/jakartaDate";
 import {
   DOKU_MDR_METHODS,
   DOKU_PPN_RATE,
-} from "@/modules/shared/constant/doku";
+} from "@/modules/shared/constant/integration/doku";
 import * as authService from "@/modules/auth/service";
-import type { AdminRole } from "@/modules/shared/constant/role";
+import type { AdminRole } from "@/modules/shared/constant/account/role";
 import * as repository from "./repository";
 import type { PaymentSettings, PaymentSettingsUpdateInput } from "./entity";
 import type { DokuEstimate, PaymentSettingsResponse } from "./dto";

@@ -1,7 +1,7 @@
 import type { TransactionSql } from "postgres";
 import * as repository from "./repository";
 import { withDbLogging } from "@/modules/db/errors";
-import type { ReceivedDocument } from "@/modules/shared/constant/registration";
+import type { ReceivedDocument } from "@/modules/shared/constant/admission/registration";
 import type {
   AdvanceStatusInput,
   InsertFullRegistrationInput,

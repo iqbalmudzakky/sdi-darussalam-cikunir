@@ -1,9 +1,11 @@
+import type { InterviewerIds } from "@/modules/admission-test/entity";
 import * as admissionTestService from "@/modules/admission-test/service";
+import type { SessionUser } from "@/modules/auth/dto";
 import * as authService from "@/modules/auth/service";
 import { withTransaction } from "@/modules/db/postgres";
 import type { AdvanceStatusInput } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
-import { DECIDABLE_STATUSES } from "@/modules/shared/constant/registration";
+import { DECIDABLE_STATUSES } from "@/modules/shared/constant/admission/registration";
 import type {
   AdmissionProgressResponse,
   DecideFailureReason,
@@ -27,10 +29,11 @@ export function getProgress(input: ProgressInput): AdmissionProgressResponse {
     ? manualStatus
     : (input.observationState ?? "not_tested");
   const isDecided = status === "accepted" || status === "rejected";
-  const isInterviewer =
-    actor.id === childInterviewerId || actor.id === parentInterviewerId;
-  const canDecide =
-    authService.hasPermission(actor.role, "decide_admissions") || isInterviewer;
+  const interviewerIds: InterviewerIds = {
+    childInterviewerId,
+    parentInterviewerId,
+  };
+  const canDecide = canDecideFor(actor, interviewerIds);
 
   const progress: AdmissionProgressResponse = {
     test_status: testStatus,
@@ -39,8 +42,20 @@ export function getProgress(input: ProgressInput): AdmissionProgressResponse {
     can_edit_test: canRecord && isManual && testStatus === "tested",
     decision: isDecided ? status : null,
     can_decide: DECIDABLE_STATUSES.includes(status) && canDecide,
+    can_write_statement: status !== "cancelled" && canDecide,
   };
   return progress;
+}
+
+export function canDecideFor(
+  actor: SessionUser,
+  interviewerIds: InterviewerIds,
+): boolean {
+  return (
+    authService.hasPermission(actor.role, "decide_admissions") ||
+    actor.id === interviewerIds.childInterviewerId ||
+    actor.id === interviewerIds.parentInterviewerId
+  );
 }
 
 export async function decide(
@@ -55,12 +70,7 @@ export async function decide(
   if (!DECIDABLE_STATUSES.includes(registration.status)) {
     return "invalid_state";
   }
-  const isInterviewer =
-    actor.id === interviewerIds.childInterviewerId ||
-    actor.id === interviewerIds.parentInterviewerId;
-  const canDecide =
-    authService.hasPermission(actor.role, "decide_admissions") || isInterviewer;
-  if (!canDecide) return "forbidden_decision";
+  if (!canDecideFor(actor, interviewerIds)) return "forbidden_decision";
 
   const statusInput: AdvanceStatusInput = {
     id: registrationId,

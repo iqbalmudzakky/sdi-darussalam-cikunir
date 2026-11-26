@@ -4,7 +4,7 @@ import type {
   REGISTRATION_PROGRAMS,
   REGISTRATION_STATUSES,
   REGISTRATION_TYPES,
-} from "@/modules/shared/constant/registration";
+} from "@/modules/shared/constant/admission/registration";
 
 export type PpdbRegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
 

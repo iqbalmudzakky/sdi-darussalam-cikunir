@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
-import { jakartaDateKey } from "@/modules/shared/jakartaDate";
+import { jakartaDateKey } from "@/modules/shared/date/jakartaDate";
 import type { RegistrationExportItem } from "@/modules/registration-export/dto";
-import { REGISTRATION_STATUS_LABEL } from "@/modules/shared/constant/registration";
+import { REGISTRATION_STATUS_LABEL } from "@/modules/shared/constant/admission/registration";
 
 const REGISTRATION_TYPE_LABELS: Record<string, string> = {
   siswa_baru: "Siswa Baru",

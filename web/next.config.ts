@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { getLiteracySiteUrl } from "./modules/shared/literacyUrl";
+import { getLiteracySiteUrl } from "./modules/shared/web/literacyUrl";
 
 const nextConfig: NextConfig = {
   output: "standalone",

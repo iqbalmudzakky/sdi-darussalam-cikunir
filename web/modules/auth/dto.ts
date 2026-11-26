@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { AdminRole } from "@/modules/shared/constant/role";
+import type { AdminRole } from "@/modules/shared/constant/account/role";
 
 export const LoginRequestSchema = z.object({
   email: z

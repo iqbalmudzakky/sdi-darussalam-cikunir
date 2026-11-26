@@ -1,4 +1,4 @@
-import type { AdminRole } from "./role";
+import type { AdminRole } from "@/modules/shared/constant/account/role";
 
 export const SCHOOL_NAME = "SD Islam Darussalam Cikunir";
 

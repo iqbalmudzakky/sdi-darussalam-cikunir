@@ -28,6 +28,7 @@ export type AdmissionProgressResponse = {
   can_edit_test: boolean;
   decision: DecisionResult | null;
   can_decide: boolean;
+  can_write_statement: boolean;
 };
 
 export type DecideInput = {

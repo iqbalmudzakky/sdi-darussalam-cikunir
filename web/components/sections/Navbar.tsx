@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { getLiteracySiteUrl } from "@/modules/shared/literacyUrl";
+import { getLiteracySiteUrl } from "@/modules/shared/web/literacyUrl";
 import {
   RegistrationFormDialog,
   RegistrationTrigger,

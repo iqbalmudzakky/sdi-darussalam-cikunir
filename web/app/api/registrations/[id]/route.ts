@@ -10,10 +10,15 @@ import {
   type SaveObservationRequestInput,
 } from "@/modules/observation/dto";
 import * as observationService from "@/modules/observation/service";
+import {
+  SaveStatementRequestSchema,
+  type SaveStatementRequestInput,
+} from "@/modules/financial-statement/dto";
+import * as financialStatementService from "@/modules/financial-statement/service";
 import * as paymentService from "@/modules/payment/service";
 import * as registrationLinkService from "@/modules/registration-link/service";
 import * as registrationService from "@/modules/registration/service";
-import { REGISTRATION_FAILURE } from "@/modules/shared/constant/registration";
+import { REGISTRATION_FAILURE } from "@/modules/shared/constant/admission/registration";
 
 export async function GET(
   _request: Request,
@@ -146,6 +151,45 @@ export async function PATCH(
       );
       return NextResponse.json(
         { error: "Gagal menyimpan observasi." },
+        { status: 500 },
+      );
+    }
+  }
+
+  if (body.action === "save_statement" || body.action === "refresh_statement") {
+    const parsedStatement = SaveStatementRequestSchema.safeParse(body);
+    if (!parsedStatement.success) {
+      return NextResponse.json(
+        {
+          error:
+            parsedStatement.error.issues[0]?.message ?? "Data tidak valid.",
+        },
+        { status: 400 },
+      );
+    }
+
+    try {
+      const input: SaveStatementRequestInput = {
+        registrationId: id,
+        request: parsedStatement.data,
+        actor: user,
+      };
+      const result = await financialStatementService.saveStatement(input);
+      if (!result.ok) {
+        const failure = REGISTRATION_FAILURE[result.reason];
+        return NextResponse.json(
+          { error: failure.message },
+          { status: failure.status },
+        );
+      }
+      return NextResponse.json(result.statement);
+    } catch (error) {
+      console.error(
+        `PATCH /api/registrations/${id} ${body.action} failed:`,
+        error,
+      );
+      return NextResponse.json(
+        { error: "Gagal menyimpan surat pernyataan." },
         { status: 500 },
       );
     }

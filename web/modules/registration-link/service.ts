@@ -7,9 +7,9 @@ import * as registrationBiodataService from "@/modules/registration-biodata/serv
 import type { UpdateRegistrationFormInput } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
 import * as admissionSettingsService from "@/modules/admission-settings/service";
-import { buildFlowSteps } from "@/modules/shared/registrationFlow";
-import { getSiteUrl } from "@/modules/shared/siteUrl";
-import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
+import { buildFlowSteps } from "@/modules/shared/registration/registrationFlow";
+import { getSiteUrl } from "@/modules/shared/web/siteUrl";
+import { buildWhatsAppLink } from "@/modules/shared/web/whatsapp";
 import {
   generateRefreshToken,
   hashRefreshToken,
@@ -18,7 +18,7 @@ import { withDbLogging } from "@/modules/db/errors";
 import {
   FORM_LINK_TTL_DAYS,
   FULL_FORM_FLOW_STEP,
-} from "@/modules/shared/constant/registration";
+} from "@/modules/shared/constant/admission/registration";
 import type {
   FullFormLinkResult,
   FullFormResponse,

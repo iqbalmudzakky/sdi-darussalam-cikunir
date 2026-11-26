@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import * as analyticsService from "@/modules/analytics/service";
 import { TrackVisitRequestSchema } from "@/modules/analytics/dto";
-import { getClientIp } from "@/modules/shared/clientIp";
+import { getClientIp } from "@/modules/shared/web/clientIp";
 
 function hostOf(value: string | null): string | null {
   if (!value) return null;

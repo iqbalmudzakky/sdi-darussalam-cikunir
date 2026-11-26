@@ -32,7 +32,7 @@ import {
 } from "@/lib/adminRoles";
 import { logout } from "@/lib/api/account/auth";
 import { getPendingFollowUpCount } from "@/lib/api/registration/registrations";
-import type { AdminRole, Permission } from "@/modules/shared/constant/role";
+import type { AdminRole, Permission } from "@/modules/shared/constant/account/role";
 
 const sidebarNavLinkVariants = cva(
   [

@@ -9,9 +9,9 @@ import type { SessionUser } from "@/modules/auth/dto";
 import * as authService from "@/modules/auth/service";
 import { getRegistrationFee } from "@/modules/payment-settings/service";
 import { sendPaymentReceiptEmail } from "@/modules/email/email";
-import { buildAdminUrl } from "@/modules/shared/siteUrl";
-import { toStaffName } from "@/modules/shared/staffName";
-import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
+import { buildAdminUrl } from "@/modules/shared/web/siteUrl";
+import { toStaffName } from "@/modules/shared/format/staffName";
+import { buildWhatsAppLink } from "@/modules/shared/web/whatsapp";
 import type {
   DokuNotification,
   FeePaymentRow,

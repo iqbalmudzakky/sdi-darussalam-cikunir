@@ -5,7 +5,7 @@ import {
   REGISTRATION_STATUSES,
   REGISTRATION_TYPE_LABEL,
   REGISTRATION_TYPES,
-} from "@/modules/shared/constant/registration";
+} from "@/modules/shared/constant/admission/registration";
 import {
   ACHIEVEMENT_CATEGORY_LABEL,
   ACHIEVEMENT_LEVEL_LABEL,
@@ -16,11 +16,11 @@ import {
   PARENT_OCCUPATION_LABEL,
   SPECIAL_NEEDS_LABEL,
   TRANSPORTATION_LABEL,
-} from "@/modules/shared/constant/registrationForm";
+} from "@/modules/shared/constant/admission/registrationForm";
 import type { Registration } from "@/types/registration/Registration";
 
 export { REGISTRATION_STATUS_LABEL };
-export { PHONE_COUNTRIES } from "@/modules/shared/constant/phoneCountry";
+export { PHONE_COUNTRIES } from "@/modules/shared/constant/admission/phoneCountry";
 
 export const REGISTRATION_STATUS_OPTIONS = REGISTRATION_STATUSES.map(
   (value) => ({ value, label: REGISTRATION_STATUS_LABEL[value] }),

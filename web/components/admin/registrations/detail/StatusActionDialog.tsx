@@ -1,5 +1,5 @@
 import { cva } from "class-variance-authority";
-import { Ban, Loader2, RotateCcw } from "lucide-react";
+import { Ban, CircleAlert, Loader2, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/form/button";
 import {
   Dialog,
@@ -15,6 +15,7 @@ const actionIconVariants = cva(
       action: {
         cancel: "bg-red-50 text-red-600",
         reactivate: "bg-brand-50 text-brand-700",
+        delete: "bg-red-50 text-red-600",
       },
     },
   },
@@ -25,6 +26,7 @@ const confirmButtonVariants = cva("h-10 flex-1 text-white", {
     action: {
       cancel: "bg-red-600 hover:bg-red-700",
       reactivate: "bg-brand-600 hover:bg-brand-700",
+      delete: "bg-red-600 hover:bg-red-700",
     },
   },
 });
@@ -32,6 +34,11 @@ const confirmButtonVariants = cva("h-10 flex-1 text-white", {
 const namePillVariants = cva([
   "max-w-full truncate rounded-full border border-gray-200 bg-gray-50 px-3",
   "py-1 text-sm font-semibold text-gray-700",
+]);
+
+const warningVariants = cva([
+  "flex w-full items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5",
+  "text-left text-sm text-red-700",
 ]);
 
 type StatusActionDialogProps = {
@@ -60,6 +67,11 @@ export function StatusActionDialog({
       confirmLabel: "Aktifkan",
       icon: RotateCcw,
     },
+    delete: {
+      title: "Hapus pendaftar?",
+      confirmLabel: "Hapus permanen",
+      icon: Trash2,
+    },
   };
   const content = action && actionContent[action];
 
@@ -74,6 +86,12 @@ export function StatusActionDialog({
               </span>
               <DialogTitle>{content.title}</DialogTitle>
               <p className={namePillVariants()}>{name}</p>
+              {action === "delete" && (
+                <p className={warningVariants()}>
+                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                  Data yang dihapus tidak bisa dikembalikan.
+                </p>
+              )}
             </div>
 
             <div className="mt-6 flex gap-2.5">

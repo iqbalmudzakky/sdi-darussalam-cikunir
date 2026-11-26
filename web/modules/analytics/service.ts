@@ -3,7 +3,7 @@ import * as repository from "./repository";
 import { buildStableVisitorHash, isBot } from "@/modules/visitor/visitor";
 import { detectDevice, detectSystem } from "@/modules/visitor/device";
 import { lookupLocation } from "@/modules/visitor/location";
-import { jakartaDateKey } from "@/modules/shared/jakartaDate";
+import { jakartaDateKey } from "@/modules/shared/date/jakartaDate";
 import type { TrackVisitRequest, VisitSummary } from "./dto";
 
 type TrackContext = {

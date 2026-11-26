@@ -9,6 +9,8 @@ import type {
 } from "@/modules/registration-admin/dto";
 import type { ObservationViewResponse } from "@/modules/observation/dto";
 import * as observationService from "@/modules/observation/service";
+import type { StatementViewResponse } from "@/modules/financial-statement/dto";
+import * as financialStatementService from "@/modules/financial-statement/service";
 import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
 import * as admissionTestService from "@/modules/admission-test/service";
 import type { FullFormLinkResult } from "@/modules/registration-link/dto";
@@ -63,6 +65,20 @@ export async function getObservation(
     return await observationService.getObservationView(id, user);
   } catch (error) {
     console.error("lib/actions/registrations.getObservation failed:", error);
+    return null;
+  }
+}
+
+export async function getStatement(
+  id: string,
+): Promise<StatementViewResponse | null> {
+  const user = await requireUser();
+  if (!user) return null;
+
+  try {
+    return await financialStatementService.getStatementView(id, user);
+  } catch (error) {
+    console.error("lib/actions/registrations.getStatement failed:", error);
     return null;
   }
 }

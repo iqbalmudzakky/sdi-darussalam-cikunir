@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MAX_ADMISSION_FEE } from "@/modules/shared/constant/admissionSettings";
+import { MAX_ADMISSION_FEE } from "@/modules/shared/constant/admission/admissionSettings";
 import { phoneNumber } from "@/modules/validation/validators";
 import type { AdmissionSettingsRow } from "./entity";
 

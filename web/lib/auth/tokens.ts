@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import { ADMIN_ROLES } from "@/modules/shared/constant/role";
+import { ADMIN_ROLES } from "@/modules/shared/constant/account/role";
 import { randomBytes, createHash } from "crypto";
 import type { SessionUser } from "@/types/account/Auth";
 

@@ -9,17 +9,17 @@ import {
 } from "@/modules/crypto/tokens";
 import { hashPassword } from "@/modules/crypto/hash";
 import { sendInviteEmail, sendPasswordResetEmail } from "@/modules/email/email";
-import { buildAdminUrl } from "@/modules/shared/siteUrl";
+import { buildAdminUrl } from "@/modules/shared/web/siteUrl";
 import {
   FORGOT_PASSWORD_RATE_LIMIT_MAX,
   FORGOT_PASSWORD_RATE_LIMIT_WINDOW_MINUTES,
-} from "@/modules/shared/constant/auth";
+} from "@/modules/shared/constant/account/auth";
 import {
   ADMIN_ROLES,
   LEADER_ROLES,
   ROLE_PERMISSIONS,
   type AdminRole,
-} from "@/modules/shared/constant/role";
+} from "@/modules/shared/constant/account/role";
 import type { AdminSummary } from "@/modules/auth/entity";
 import type { SessionUser } from "@/modules/auth/dto";
 import type {

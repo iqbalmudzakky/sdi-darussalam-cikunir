@@ -3,7 +3,7 @@ import { getVisitSummary } from "@/lib/actions/analytics";
 import ContactSocialLinks from "@/components/sections/ContactSocialLinks";
 import Reveal from "@/components/sections/Reveal";
 import { VisitorCounter } from "@/components/sections/VisitorCounter";
-import { getLiteracySiteUrl } from "@/modules/shared/literacyUrl";
+import { getLiteracySiteUrl } from "@/modules/shared/web/literacyUrl";
 
 const literacySiteUrl = getLiteracySiteUrl();
 const NAV_LINKS = [

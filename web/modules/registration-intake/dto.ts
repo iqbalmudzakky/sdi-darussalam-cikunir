@@ -9,7 +9,7 @@ import {
   REGISTRATION_PROGRAMS,
   REGISTRATION_TYPES,
   TARGET_GRADES,
-} from "@/modules/shared/constant/registration";
+} from "@/modules/shared/constant/admission/registration";
 import {
   birthDate,
   optionalEmail,

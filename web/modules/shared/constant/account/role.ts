@@ -59,7 +59,7 @@ export const ROLE_PERMISSIONS: Record<AdminRole, readonly Permission[]> = {
     "delete_registrations",
   ],
   administration_staff: [],
-  teacher: [],
+  teacher: ["delete_registrations"],
   developer: [
     "view_accounts",
     "manage_accounts",

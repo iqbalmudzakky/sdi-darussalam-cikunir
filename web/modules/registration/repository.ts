@@ -1,6 +1,6 @@
 import { sql } from "@/modules/db/postgres";
 import type { TransactionSql } from "postgres";
-import type { ReceivedDocument } from "@/modules/shared/constant/registration";
+import type { ReceivedDocument } from "@/modules/shared/constant/admission/registration";
 import type {
   AdvanceStatusInput,
   InsertFullRegistrationInput,

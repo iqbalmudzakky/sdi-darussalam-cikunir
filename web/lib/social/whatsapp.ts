@@ -1,4 +1,4 @@
 export {
   buildWhatsAppLink,
   normalizeWhatsAppNumber,
-} from "@/modules/shared/whatsapp";
+} from "@/modules/shared/web/whatsapp";

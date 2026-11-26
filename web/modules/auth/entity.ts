@@ -1,4 +1,4 @@
-import type { AdminRole } from "@/modules/shared/constant/role";
+import type { AdminRole } from "@/modules/shared/constant/account/role";
 
 export type { AdminRole };
 

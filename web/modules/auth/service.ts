@@ -11,13 +11,13 @@ import {
   LOGIN_RATE_LIMIT_MAX_PER_EMAIL,
   LOGIN_RATE_LIMIT_MAX_PER_IP,
   LOGIN_RATE_LIMIT_WINDOW_MINUTES,
-} from "@/modules/shared/constant/auth";
+} from "@/modules/shared/constant/account/auth";
 import {
   ADMIN_ROLES,
   ROLE_PERMISSIONS,
   type AdminRole,
   type Permission,
-} from "@/modules/shared/constant/role";
+} from "@/modules/shared/constant/account/role";
 import type {
   AdminCredentials,
   AdminPatch,

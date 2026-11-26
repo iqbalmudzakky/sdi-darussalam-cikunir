@@ -22,6 +22,9 @@ import type {
   TestAssignmentResponse,
 } from "@/modules/admission-test/dto";
 import * as admissionTestService from "@/modules/admission-test/service";
+import * as authService from "@/modules/auth/service";
+import type { LettersInput } from "@/modules/document/dto";
+import * as documentService from "@/modules/document/service";
 import type {
   DecideInput,
   ProgressInput,
@@ -33,9 +36,9 @@ import { withTransaction } from "@/modules/db/postgres";
 import {
   RECEIVED_DOCUMENT_LABEL,
   RECEIVED_DOCUMENTS_BY_TYPE,
-} from "@/modules/shared/constant/registration";
-import { calculateEntryAge } from "@/modules/shared/entryAge";
-import { buildRegistrationFullForm } from "@/modules/shared/registrationFullForm";
+} from "@/modules/shared/constant/admission/registration";
+import { calculateEntryAge } from "@/modules/shared/date/entryAge";
+import { buildRegistrationFullForm } from "@/modules/shared/registration/registrationFullForm";
 import type {
   EditRegistrationForm,
   ListRegistrationsQuery,
@@ -134,12 +137,23 @@ export async function getRegistrationDetail(
       ? buildRegistrationFullForm(row, form, parents, extras, payment)
       : null;
 
+  const progress = admissionDecisionService.getProgress(progressInput);
+  const lettersInput: LettersInput = {
+    registrationId: id,
+    registrationType: row.registration_type,
+    isTested: observation?.state === "tested",
+    isPaid: paymentView.state === "paid",
+    canWriteStatement: progress.can_write_statement,
+  };
+  const letters = await documentService.getLetters(lettersInput);
   const parts: RegistrationDetailParts = {
     fullForm,
     scheduleView,
     paymentView,
     observation,
-    progress: admissionDecisionService.getProgress(progressInput),
+    progress,
+    letters,
+    canDelete: authService.hasPermission(actor.role, "delete_registrations"),
   };
   const detail = toDetail(row, payments, parts);
   return detail;
@@ -416,6 +430,8 @@ function toDetail(
     ),
     can_cancel: row.status !== "cancelled",
     can_reactivate: row.status === "cancelled",
+    can_delete: parts.canDelete,
+    letters: parts.letters,
     can_send_form_link: row.source === "online" && Boolean(row.contact_phone),
     full_form: parts.fullForm,
     schedule: parts.scheduleView.schedule,

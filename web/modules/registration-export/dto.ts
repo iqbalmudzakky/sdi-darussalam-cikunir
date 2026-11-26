@@ -4,7 +4,7 @@ import type {
   ParentRelationshipStatus,
   PpdbRegistrationExportRow,
 } from "@/modules/registration/entity";
-import { REGISTRATION_STATUSES } from "@/modules/shared/constant/registration";
+import { REGISTRATION_STATUSES } from "@/modules/shared/constant/admission/registration";
 
 export const ExportRegistrationsQuerySchema = z.object({
   statuses: z.array(z.enum(REGISTRATION_STATUSES)).default([]),

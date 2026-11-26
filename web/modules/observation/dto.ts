@@ -3,7 +3,7 @@ import type { SessionUser } from "@/modules/auth/dto";
 import {
   OBSERVATION_INDICATOR_COUNT,
   OBSERVATION_MAX_SCORE,
-} from "@/modules/shared/constant/observation";
+} from "@/modules/shared/constant/admission/observation";
 import { blankable } from "@/modules/validation/validators";
 
 const ObservationScoreSchema = z.object({
@@ -59,12 +59,16 @@ export type ObservationIndicatorResponse = {
 export type ObservationDimensionResponse = {
   name: string;
   indicators: ObservationIndicatorResponse[];
+  score: number;
+  max_score: number;
   score_label: string;
   ratio: number;
   category: ReadinessCategoryResponse | null;
 };
 
 export type ReadinessProfileResponse = {
+  score: number;
+  max_score: number;
   score_label: string;
   ratio: number;
   conclusion: ReadinessCategoryResponse | null;
@@ -83,6 +87,8 @@ export type ObservationViewResponse = {
   registration_number: string | null;
   date_of_birth: string;
   entry_age_label: string | null;
+  entry_age_text: string | null;
+  academic_year: string | null;
   previous_school: string;
   observer_name: string | null;
   observed_on: string;
@@ -92,6 +98,7 @@ export type ObservationViewResponse = {
   profile: ReadinessProfileResponse;
   missing_indicators: MissingIndicatorResponse[];
   can_complete: boolean;
+  is_completed: boolean;
   can_edit: boolean;
 };
 

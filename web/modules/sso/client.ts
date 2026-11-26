@@ -1,7 +1,7 @@
 import {
   SCHOOL_NPSN,
   SSO_REQUEST_TIMEOUT_MS,
-} from "@/modules/shared/constant/sso";
+} from "@/modules/shared/constant/account/sso";
 import type { SchoolProfileStatsInput } from "@/modules/school-profile/entity";
 
 export type FetchSchoolStatsResult =

@@ -7,8 +7,8 @@ import {
   ManualRegistrationRequestSchema,
   type CreateManualRegistrationInput,
 } from "@/modules/registration-intake/dto";
-import { REGISTRATION_FAILURE } from "@/modules/shared/constant/registration";
-import { getClientIp } from "@/modules/shared/clientIp";
+import { REGISTRATION_FAILURE } from "@/modules/shared/constant/admission/registration";
+import { getClientIp } from "@/modules/shared/web/clientIp";
 
 export async function GET(request: Request) {
   const user = await requireUser();

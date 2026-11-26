@@ -5,12 +5,12 @@ import {
   BRAND_700,
   EMAIL_ROLE_CHIP,
   SCHOOL_NAME,
-} from "@/modules/shared/constant/email";
+} from "@/modules/shared/constant/integration/email";
 import {
   ADMIN_ROLE_LABEL,
   type AdminRole,
-} from "@/modules/shared/constant/role";
-import { getSiteUrl } from "@/modules/shared/siteUrl";
+} from "@/modules/shared/constant/account/role";
+import { getSiteUrl } from "@/modules/shared/web/siteUrl";
 
 const EMAIL_FROM = `${SCHOOL_NAME} <${process.env.EMAIL_FROM!}>`;
 

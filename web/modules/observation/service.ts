@@ -13,10 +13,10 @@ import {
   READINESS_CONCLUSION_LABEL,
   READINESS_THRESHOLD,
   READINESS_TONE,
-} from "@/modules/shared/constant/observation";
-import { calculateEntryAge } from "@/modules/shared/entryAge";
-import { jakartaDateKey } from "@/modules/shared/jakartaDate";
-import { toStaffName } from "@/modules/shared/staffName";
+} from "@/modules/shared/constant/admission/observation";
+import { calculateEntryAge } from "@/modules/shared/date/entryAge";
+import { jakartaDateKey } from "@/modules/shared/date/jakartaDate";
+import { toStaffName } from "@/modules/shared/format/staffName";
 import * as repository from "./repository";
 import type {
   MissingIndicatorResponse,
@@ -111,6 +111,10 @@ export async function getObservationView(
     entry_age_label: entryAge
       ? `${entryAge.years} th ${entryAge.months} bln`
       : null,
+    entry_age_text: entryAge
+      ? `${entryAge.years} Tahun ${entryAge.months} Bulan`
+      : null,
+    academic_year: registration.academic_year,
     previous_school: registration.previous_school,
     observer_name: observer ? toStaffName(observer) : null,
     observed_on: row?.observed_on ?? jakartaDateKey(new Date()),
@@ -120,6 +124,7 @@ export async function getObservationView(
     profile,
     missing_indicators: missingIndicators,
     can_complete: scores.length === OBSERVATION_INDICATOR_COUNT,
+    is_completed: Boolean(row?.completed_at),
     can_edit: registration.status !== "cancelled" && canRecord,
   };
   return view;
@@ -222,6 +227,8 @@ function toReadiness(scores: ObservationScoreRow[]): {
     const response: ObservationDimensionResponse = {
       name: dimension.name,
       indicators,
+      score,
+      max_score: maxScore,
       score_label: `${score}/${maxScore} (${percent}%)`,
       ratio,
       category: filled.length > 0 ? category : null,
@@ -256,6 +263,8 @@ function toReadiness(scores: ObservationScoreRow[]): {
   const needsStrengthening = lowestRatio < READINESS_THRESHOLD.strong;
 
   const profile: ReadinessProfileResponse = {
+    score,
+    max_score: maxScore,
     score_label: `${score} / ${maxScore} (${percent}%)`,
     ratio,
     conclusion: hasScores ? conclusion : null,

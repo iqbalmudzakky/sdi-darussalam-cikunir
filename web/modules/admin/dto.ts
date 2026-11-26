@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { SessionUser, TokenPair } from "@/modules/auth/dto";
 import type { AdminSummary } from "@/modules/auth/entity";
 import type { AdminActionToken } from "./entity";
-import { ADMIN_ROLES, type AdminRole } from "@/modules/shared/constant/role";
+import { ADMIN_ROLES, type AdminRole } from "@/modules/shared/constant/account/role";
 
 export type AdminStatus = "invited" | "active" | "deactivated";
 

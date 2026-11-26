@@ -4,7 +4,7 @@ import {
   FullFormRequestSchema,
   type SubmitFullFormInput,
 } from "@/modules/registration-link/dto";
-import { REGISTRATION_FAILURE } from "@/modules/shared/constant/registration";
+import { REGISTRATION_FAILURE } from "@/modules/shared/constant/admission/registration";
 
 export async function PUT(
   request: Request,

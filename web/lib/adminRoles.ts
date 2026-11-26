@@ -1,6 +1,6 @@
 import type { AdminRole } from "@/types/account/Admin";
 
-export { ADMIN_ROLE_LABEL } from "@/modules/shared/constant/role";
+export { ADMIN_ROLE_LABEL } from "@/modules/shared/constant/account/role";
 
 export const ADMIN_ROLE_DOT_CLASS: Record<AdminRole, string> = {
   principal: "bg-brand-600",

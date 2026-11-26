@@ -11,6 +11,7 @@ import {
   DecisionResultSchema,
   type AdmissionProgressResponse,
 } from "@/modules/admission-decision/dto";
+import type { LetterRowResponse } from "@/modules/document/dto";
 import type { ObservationSummaryResponse } from "@/modules/observation/dto";
 import {
   MarkPaidRequestSchema,
@@ -43,7 +44,7 @@ import {
   REGISTRATION_STATUSES,
   REGISTRATION_TYPES,
   type ReceivedDocument,
-} from "@/modules/shared/constant/registration";
+} from "@/modules/shared/constant/admission/registration";
 
 const RECEIVED_DOCUMENT_VALUES = Object.keys(RECEIVED_DOCUMENT_LABEL) as [
   ReceivedDocument,
@@ -232,6 +233,8 @@ export type RegistrationDetailResponse = RegistrationListItemResponse & {
   documents: RegistrationDocumentResponse[];
   can_cancel: boolean;
   can_reactivate: boolean;
+  can_delete: boolean;
+  letters: LetterRowResponse[];
   can_send_form_link: boolean;
   schedule: ScheduleResponse | null;
   schedule_options: ScheduleOptionsResponse;

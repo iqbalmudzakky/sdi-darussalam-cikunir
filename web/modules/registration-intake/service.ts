@@ -16,7 +16,7 @@ import type {
 } from "@/modules/registration/entity";
 import * as registrationBiodataService from "@/modules/registration-biodata/service";
 import * as admissionSettingsService from "@/modules/admission-settings/service";
-import { buildFlowSteps } from "@/modules/shared/registrationFlow";
+import { buildFlowSteps } from "@/modules/shared/registration/registrationFlow";
 import {
   MINIMUM_ENTRY_AGE_YEARS,
   SHORT_FORM_FLOW_STEP,
@@ -25,9 +25,9 @@ import {
   SHORT_FORM_MAX_PER_IP_PER_HOUR,
   TARGET_ACADEMIC_YEAR_SPAN,
   TARGET_GRADES,
-} from "@/modules/shared/constant/registration";
-import { calculateEntryAge } from "@/modules/shared/entryAge";
-import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
+} from "@/modules/shared/constant/admission/registration";
+import { calculateEntryAge } from "@/modules/shared/date/entryAge";
+import { buildWhatsAppLink } from "@/modules/shared/web/whatsapp";
 import type {
   CreateManualRegistrationInput,
   CreateManualRegistrationResult,

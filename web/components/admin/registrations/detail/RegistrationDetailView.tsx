@@ -1,23 +1,14 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cva } from "class-variance-authority";
-import {
-  ArrowLeft,
-  Ban,
-  Check,
-  FileText,
-  Loader2,
-  MessageCircle,
-  Pencil,
-  RotateCcw,
-  SearchX,
-} from "lucide-react";
+import { Check, FileText, Loader2, MessageCircle, SearchX } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { Button } from "@/components/ui/form/button";
 import { useToast } from "@/hooks/useToast";
 import {
+  deleteRegistration,
   getRegistration,
   sendFormLink,
   sendPaymentLink,
@@ -37,8 +28,10 @@ import { RegistrationStatusBadge } from "../RegistrationStatusBadge";
 import { PaymentCard } from "./PaymentCard";
 import { ScheduleCard } from "./ScheduleCard";
 import { StatusActionDialog } from "./StatusActionDialog";
-import { TestResultCard } from "./TestResultCard";
+import { TestResultCard } from "../outcome/TestResultCard";
+import { DetailHeader } from "./DetailHeader";
 import { DecisionCard } from "../outcome/DecisionCard";
+import { LettersCard } from "../outcome/LettersCard";
 
 const cardVariants = cva(
   "rounded-xl border border-gray-200 bg-white p-4 shadow-(--admin-card-shadow)",
@@ -85,6 +78,7 @@ type RegistrationDetailViewProps = {
 
 export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
   const toast = useToast();
+  const router = useRouter();
   const [registration, setRegistration] = useState<RegistrationDetail | null>(
     null,
   );
@@ -163,11 +157,29 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
   }
 
   async function handleStatusAction(action: RegistrationStatusAction) {
+    if (action === "delete") {
+      await handleDelete();
+      return;
+    }
     const input: UpdateRegistrationInput = { action };
     const saved = await saveChange(input);
     if (!saved) return;
     setPendingAction(null);
     window.dispatchEvent(new Event("registrations-updated"));
+  }
+
+  async function handleDelete() {
+    setIsSaving(true);
+    try {
+      await deleteRegistration(id);
+      toast.success("Pendaftar dihapus");
+      window.dispatchEvent(new Event("registrations-updated"));
+      router.push("/registrations");
+    } catch (error) {
+      console.error("Failed to delete registration:", error);
+      toast.error("Gagal menghapus pendaftar");
+      setIsSaving(false);
+    }
   }
 
   function handleToggleDocument(document: RegistrationDocument["code"]) {
@@ -197,53 +209,7 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-3">
-      <div className="flex items-center gap-2.5">
-        <Link
-          href="/registrations"
-          aria-label="Kembali ke daftar pendaftar"
-          className="text-gray-700 transition-colors hover:text-gray-900"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="flex-1 font-semibold text-gray-900">Pendaftar</h1>
-
-        <Button
-          variant="outline"
-          size="icon"
-          nativeButton={false}
-          render={<Link href={`/registrations/${registration.id}/edit`} />}
-          aria-label="Ubah data"
-          title="Ubah data"
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-
-        {registration.can_cancel && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={() => setPendingAction("cancel")}
-            aria-label="Batalkan pendaftar"
-            title="Batalkan"
-          >
-            <Ban className="h-4 w-4" />
-          </Button>
-        )}
-
-        {registration.can_reactivate && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={() => setPendingAction("reactivate")}
-            aria-label="Aktifkan lagi"
-            title="Aktifkan lagi"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+      <DetailHeader registration={registration} onAction={setPendingAction} />
 
       <SummaryCard
         registration={registration}
@@ -278,28 +244,9 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
         onSendLink={() => handleSendLink("payment")}
       />
 
-      <div className="grid items-start gap-3 md:grid-cols-2">
-        <section className={cardVariants()}>
-          <h2 className="mb-1 text-sm font-semibold text-gray-900">Anak</h2>
-          <DataRow
-            label="Tanggal lahir"
-            value={formatNumericDateOnly(registration.date_of_birth)}
-          />
-          <DataRow
-            label="Usia per 1 Juli"
-            value={registration.entry_age_label}
-          />
-          <DataRow label="Asal sekolah" value={registration.previous_school} />
-        </section>
+      <LettersCard registration={registration} />
 
-        <section className={cardVariants()}>
-          <h2 className="mb-1 text-sm font-semibold text-gray-900">
-            Orang tua
-          </h2>
-          <DataRow label="Nama" value={registration.contact_name} />
-          <DataRow label="WhatsApp" value={registration.contact_phone} />
-        </section>
-      </div>
+      <PeopleCards registration={registration} />
 
       <DocumentsCard
         registration={registration}
@@ -319,6 +266,28 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
         registration={isFullFormOpen ? registration : null}
         onOpenChange={(open) => !open && setIsFullFormOpen(false)}
       />
+    </div>
+  );
+}
+
+function PeopleCards({ registration }: { registration: RegistrationDetail }) {
+  return (
+    <div className="grid items-start gap-3 md:grid-cols-2">
+      <section className={cardVariants()}>
+        <h2 className="mb-1 text-sm font-semibold text-gray-900">Anak</h2>
+        <DataRow
+          label="Tanggal lahir"
+          value={formatNumericDateOnly(registration.date_of_birth)}
+        />
+        <DataRow label="Usia per 1 Juli" value={registration.entry_age_label} />
+        <DataRow label="Asal sekolah" value={registration.previous_school} />
+      </section>
+
+      <section className={cardVariants()}>
+        <h2 className="mb-1 text-sm font-semibold text-gray-900">Orang tua</h2>
+        <DataRow label="Nama" value={registration.contact_name} />
+        <DataRow label="WhatsApp" value={registration.contact_phone} />
+      </section>
     </div>
   );
 }

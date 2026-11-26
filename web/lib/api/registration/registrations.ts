@@ -11,6 +11,8 @@ import type {
   RegistrationStatus,
   SaveObservationPayload,
   SaveObservationResult,
+  SaveStatementPayload,
+  SaveStatementResult,
   ShortRegistrationInput,
   ShortRegistrationResult,
   UpdateRegistrationInput,
@@ -244,5 +246,22 @@ export async function saveObservation(
   const result: SaveObservationResult = res.ok
     ? { ok: true, observation: data }
     : { ok: false, error: data.error ?? "Gagal menyimpan observasi." };
+  return result;
+}
+
+export async function saveStatement(
+  id: string,
+  payload: SaveStatementPayload,
+): Promise<SaveStatementResult> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  const result: SaveStatementResult = res.ok
+    ? { ok: true, statement: data }
+    : { ok: false, error: data.error ?? "Gagal menyimpan surat pernyataan." };
   return result;
 }

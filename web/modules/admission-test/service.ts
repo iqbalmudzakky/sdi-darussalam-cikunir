@@ -12,10 +12,10 @@ import * as registrationService from "@/modules/registration/service";
 import {
   INTERVIEW_ROLE_LABEL,
   TEST_TIME_SLOT,
-} from "@/modules/shared/constant/registration";
-import { jakartaDateKey } from "@/modules/shared/jakartaDate";
-import { toStaffName } from "@/modules/shared/staffName";
-import { buildWhatsAppLink } from "@/modules/shared/whatsapp";
+} from "@/modules/shared/constant/admission/registration";
+import { jakartaDateKey } from "@/modules/shared/date/jakartaDate";
+import { toStaffName } from "@/modules/shared/format/staffName";
+import { buildWhatsAppLink } from "@/modules/shared/web/whatsapp";
 import * as repository from "./repository";
 import type {
   InterviewerResponse,

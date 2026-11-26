@@ -3,7 +3,7 @@ import { getAccessTokenCookie } from "./cookies";
 import { hasPermission } from "@/modules/auth/service";
 
 export { listPermissions } from "@/modules/auth/service";
-import type { Permission } from "@/modules/shared/constant/role";
+import type { Permission } from "@/modules/shared/constant/account/role";
 import type { SessionUser } from "@/types/account/Auth";
 
 export async function getSession(): Promise<SessionUser | null> {

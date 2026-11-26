@@ -153,6 +153,11 @@ export const REGISTRATION_FAILURE = {
     status: 400,
     message: "Isi skor ke-56 indikator dulu.",
   },
+  forbidden_statement: {
+    status: 403,
+    message:
+      "Hanya pewawancara, kepsek, atau wakepsek yang bisa mengisi surat pernyataan.",
+  },
   forbidden_decision: {
     status: 403,
     message:

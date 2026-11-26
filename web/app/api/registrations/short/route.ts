@@ -5,8 +5,8 @@ import {
   type CreateShortRegistrationInput,
   type CreateShortRegistrationResult,
 } from "@/modules/registration-intake/dto";
-import { getClientIp } from "@/modules/shared/clientIp";
-import { REGISTRATION_FAILURE } from "@/modules/shared/constant/registration";
+import { getClientIp } from "@/modules/shared/web/clientIp";
+import { REGISTRATION_FAILURE } from "@/modules/shared/constant/admission/registration";
 
 export async function POST(request: Request) {
   const body = await request.json();

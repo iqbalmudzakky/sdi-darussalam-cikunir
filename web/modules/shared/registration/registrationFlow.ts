@@ -1,4 +1,4 @@
-import { REGISTRATION_FLOW_STEPS } from "@/modules/shared/constant/registration";
+import { REGISTRATION_FLOW_STEPS } from "@/modules/shared/constant/admission/registration";
 import type { RegistrationFlowStepResponse } from "@/modules/registration-intake/dto";
 
 export function buildFlowSteps(

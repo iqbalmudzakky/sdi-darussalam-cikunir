@@ -1,4 +1,4 @@
-import { getSiteUrl as siteUrl } from "@/modules/shared/siteUrl";
+import { getSiteUrl as siteUrl } from "@/modules/shared/web/siteUrl";
 
 /* Dibaca di dalam fungsi supaya variabel yang hilang muncul sebagai error
  * pada request yang membutuhkannya, bukan menggagalkan build. */

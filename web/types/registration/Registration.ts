@@ -16,6 +16,10 @@ import type {
   SaveObservationRequest,
 } from "@/modules/observation/dto";
 import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
+import type {
+  SaveStatementRequest,
+  StatementViewResponse,
+} from "@/modules/financial-statement/dto";
 import type { useFullRegistrationForm } from "@/hooks/useFullRegistrationForm";
 import type {
   FullFormLinkResult,
@@ -43,6 +47,17 @@ export type RegistrationScheduleOptions =
   RegistrationDetail["schedule_options"];
 
 export type RegistrationPaymentView = RegistrationDetail["payment"];
+
+export type StatementView = StatementViewResponse;
+
+export type StatementContent = StatementView["content"];
+
+export type SaveStatementPayload = SaveStatementRequest;
+
+export type SaveStatementResult =
+  { ok: true; statement: StatementView } | { ok: false; error: string };
+
+export type RegistrationLetter = RegistrationDetail["letters"][number];
 
 export type RegistrationManualResult = NonNullable<
   RegistrationSchedule["manual_result"]
@@ -77,7 +92,7 @@ export type UpdateRegistrationInput = UpdateRegistrationRequest;
 
 export type RegistrationStatus = Registration["status"];
 
-export type RegistrationStatusAction = "cancel" | "reactivate";
+export type RegistrationStatusAction = "cancel" | "reactivate" | "delete";
 
 export type RegistrationProgram = NonNullable<Registration["program"]>;
 

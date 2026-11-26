@@ -25,7 +25,7 @@ import {
   RELIGION_LABEL,
   SPECIAL_NEEDS_LABEL,
   TRANSPORTATION_LABEL,
-} from "@/modules/shared/constant/registrationForm";
+} from "@/modules/shared/constant/admission/registrationForm";
 
 export function buildRegistrationFullForm(
   row: PpdbRegistrationFullRow,

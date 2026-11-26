@@ -13,11 +13,11 @@ import {
   MAX_SIBLING_NUMBER,
   MAX_WEIGHT_KG,
   REGISTRATION_TYPES,
-} from "@/modules/shared/constant/registration";
+} from "@/modules/shared/constant/admission/registration";
 import {
   RELIGION_LABEL,
   SPECIAL_NEEDS_LABEL,
-} from "@/modules/shared/constant/registrationForm";
+} from "@/modules/shared/constant/admission/registrationForm";
 
 const REGISTRATION_TYPE_VALUES = REGISTRATION_TYPES;
 

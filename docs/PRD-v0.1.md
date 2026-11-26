@@ -1146,6 +1146,7 @@ diketik dua kali, tapi tetap bisa diubah.
 | K38 | Surat pernyataan & Surat Keterangan **persis format Excel sekolah** (surat pernyataan memuat dua program lengkap); sistem hanya mengisi datanya (25 Nov 2026)            |
 | K39 | Tidak Diterima memakai format Surat Keterangan yang sama: "TIDAK LULUS / Tidak Diterima", Hal "Keterangan tidak diterima sekolah", tanpa bagian pembayaran, rekening, catatan & contact |
 | K40 | Surat pernyataan tidak dikunci lunas: dicetak & ditandatangani di sekolah. Yang dikunci lunas hanya dokumen yang dikirim lewat WA (Profil Kesiapan, Surat Keterangan)    |
+| K41 | Pendaftar bisa **dihapus permanen** (untuk data latihan guru), termasuk yang sudah lunas; peringatan "tidak bisa dikembalikan". Beda dengan Batal: hilang dari statistik (25 Nov 2026) |
 
 #### 11.2.1 Hasil observasi bukan penentu otomatis
 
@@ -1208,6 +1209,7 @@ Tiga penanda lain tampil sebagai chip ikon, terpisah dari status:
 | Isi observasi & surat pernyataan     | ✓      | ✓        |     | ✓ (yang ditugaskan) | ✓           |
 | Putuskan hasil & buat surat diterima | ✓      | ✓        |     | ✓ (yang ditugaskan) | ✓           |
 | Konten website                       | ✓      | ✓        | ✓   | ✓                   | ✓           |
+| Hapus pendaftar permanen (latihan)   | ✓      | ✓        |     | ✓                   | ✓           |
 
 - Kode peran (Inggris): `principal`, `vice_principal`, `administration_staff`, `teacher`,
   `developer`. Label di layar: Kepsek, Wakepsek, TU, Guru, Admin.
@@ -1426,6 +1428,10 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Terisi dari biodata (ayah, ibu, alamat, anak, kelas, TA) dan `admission_settings` (nominal
   program pilihan, diskon sesuai asal TK).
 - Bisa diubah (11.2.3). Cetak PDF untuk ditandatangani.
+- Dikode 26 Nov 2026 (tahap 2a): halaman `/registrations/[id]/statement`, tabel `financial_statements`
+  (salinan jsonb), simpan lewat action `save_statement`/`refresh_statement` di PATCH pendaftar. Yang boleh:
+  izin `decide_admissions` atau pewawancara di jadwal. PDF dua program persis Excel (K38), nama penanda
+  tangan dicetak sesuai isian Pengaturan PMB.
 
 #### F16 — Hasil & Surat Keterangan Diterima
 
@@ -1444,6 +1450,9 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Tombol **Unduh PDF** dan **Kirim ke WA** untuk Profil Kesiapan (PMB) dan Surat Diterima.
 - Keduanya terkunci sampai Lunas (K13). Penguncian dicek di backend, bukan hanya tombol disembunyikan.
 - Kirim ke WA → link `/dokumen/<token>` yang menampilkan tombol unduh kedua PDF.
+- Satu endpoint PDF `GET /api/documents?kind=…&registration=…` (statement, readiness-profile), domain
+  `document`. PDF dibuat di server dengan `@react-pdf/renderer` (template di `modules/export`).
+  Kartu **Dokumen** di detail pendaftar; Profil Kesiapan terkunci sampai lunas (dicek di backend).
 
 #### F18a — Nama akun & tugas pewawancara (25 Nov 2026)
 

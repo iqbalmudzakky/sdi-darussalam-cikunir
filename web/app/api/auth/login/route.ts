@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import * as authService from "@/modules/auth/service";
 import { LoginRequestSchema } from "@/modules/auth/dto";
-import { getClientIp } from "@/modules/shared/clientIp";
-import { LOGIN_RATE_LIMIT_WINDOW_MINUTES } from "@/modules/shared/constant/auth";
+import { getClientIp } from "@/modules/shared/web/clientIp";
+import { LOGIN_RATE_LIMIT_WINDOW_MINUTES } from "@/modules/shared/constant/account/auth";
 import { setAuthCookies } from "@/lib/auth/cookies";
 
 export async function POST(request: Request) {
