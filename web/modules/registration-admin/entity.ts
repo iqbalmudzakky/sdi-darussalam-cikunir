@@ -1,5 +1,5 @@
 import type { AdmissionProgressResponse } from "@/modules/admission-decision/dto";
-import type { LetterRowResponse } from "@/modules/document/dto";
+import type { LettersResponse } from "@/modules/document/dto";
 import type { ScheduleViewResponse } from "@/modules/admission-test/dto";
 import type { ObservationSummaryResponse } from "@/modules/observation/dto";
 import type { PaymentViewResponse } from "@/modules/payment/dto";
@@ -12,5 +12,5 @@ export type RegistrationDetailParts = {
   observation: ObservationSummaryResponse | null;
   progress: AdmissionProgressResponse;
   canDelete: boolean;
-  letters: LetterRowResponse[];
+  letters: LettersResponse;
 };

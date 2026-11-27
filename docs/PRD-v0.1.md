@@ -1298,7 +1298,7 @@ pendaftar sudah ada lebih dulu. Kolom baru `recorded_by` (akun yang menandai lun
 | `observation_scores`      | `observation`        | 56 baris: nomor indikator, skor 1–4, catatan                                                     |
 | `admission_settings`      | `admission-settings` | Satu baris: nominal per program, diskon, batas bayar, rekening, penanda tangan, CP PMB, CP surat |
 | `admission_letters`       | `admission-letter`   | Satu baris per pendaftar per jenis (`statement`, `decision`): salinan isi surat (jsonb)          |
-| `document_links`          | `admission-letter`   | Token link PDF untuk orang tua (hash), kedaluwarsa                                               |
+| `document_links`          | `document`           | Token link PDF untuk orang tua (hash), kedaluwarsa 30 hari; satu link aktif per pendaftar        |
 
 - **Daftar 56 indikator dan 9 dimensi disimpan di kode** (`modules/shared/constant`), bukan di
   tabel. Isinya tetap dan berubah paling sekali setahun lewat rilis. Skor menyimpan nomor
@@ -1444,6 +1444,11 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
   `PMB-SDI-DC` tetap di kode.
 - Usia ditulis rapi "6 Tahun 7 Bulan (Cukup)" (tanda ";" dan ",." di Excel dianggap salah ketik, 25 Nov 2026) bila ≥ 6 tahun per 1 Juli; di bawahnya
   "(Dengan persyaratan khusus)".
+- Dikode 27 Nov 2026 (tahap 2b): halaman `/registrations/[id]/decision-letter`, baris `admission_letters`
+  `kind = decision` + kolom `letter_year`/`letter_sequence` (nomor dobel di tahun yang sama ditolak). Diterima dan
+  Tidak Diterima satu form; "Dinyatakan", Hal, dan bagian pembayaran mengikuti status saat PDF dibuat. "Gunakan Update
+  Terbaru" hanya mengambil batas bayar, rekening, dan CP surat dari Pengaturan PMB. K28: setelah surat dibuat, hasil hanya
+  bisa diubah akun berizin `decide_admissions` (kepsek, wakepsek, admin).
 
 #### F17 — Dokumen untuk orang tua
 
@@ -1453,6 +1458,10 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
 - Satu endpoint PDF `GET /api/documents?kind=…&registration=…` (statement, readiness-profile), domain
   `document`. PDF dibuat di server dengan `@react-pdf/renderer` (template di `modules/export`).
   Kartu **Dokumen** di detail pendaftar; Profil Kesiapan terkunci sampai lunas (dicek di backend).
+- Dikode 27 Nov 2026 (tahap 2b): **Kirim ke WA** (action `send_documents` di PATCH pendaftar) membuat link 30 hari
+  di `document_links` (domain `document`); kirim ulang mematikan link lama. Halaman `/dokumen/<token>` tanpa login,
+  PDF lewat endpoint yang sama `GET /api/documents?token=…&kind=…`. Link dianggap tidak berlaku bila pembayaran
+  dibatalkan atau belum ada dokumen.
 
 #### F18a — Nama akun & tugas pewawancara (25 Nov 2026)
 

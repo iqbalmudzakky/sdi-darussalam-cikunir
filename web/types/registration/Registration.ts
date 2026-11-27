@@ -17,9 +17,12 @@ import type {
 } from "@/modules/observation/dto";
 import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
 import type {
+  DecisionLetterViewResponse,
+  SaveDecisionLetterRequest,
   SaveStatementRequest,
   StatementViewResponse,
 } from "@/modules/admission-letter/dto";
+import type { SharedDocumentsResult } from "@/modules/document/dto";
 import type { useFullRegistrationForm } from "@/hooks/useFullRegistrationForm";
 import type {
   FullFormLinkResult,
@@ -58,6 +61,17 @@ export type SaveStatementResult =
   { ok: true; statement: StatementView } | { ok: false; error: string };
 
 export type RegistrationLetter = RegistrationDetail["letters"][number];
+
+export type DecisionLetterView = DecisionLetterViewResponse;
+
+export type DecisionLetterContent = DecisionLetterView["content"];
+
+export type SaveDecisionLetterPayload = SaveDecisionLetterRequest;
+
+export type SaveDecisionLetterResult =
+  { ok: true; letter: DecisionLetterView } | { ok: false; error: string };
+
+export type SharedDocuments = SharedDocumentsResult;
 
 export type RegistrationManualResult = NonNullable<
   RegistrationSchedule["manual_result"]

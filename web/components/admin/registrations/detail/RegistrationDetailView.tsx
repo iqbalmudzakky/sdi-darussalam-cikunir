@@ -6,12 +6,11 @@ import { cva } from "class-variance-authority";
 import { Check, FileText, Loader2, MessageCircle, SearchX } from "lucide-react";
 import { AdminEmptyState } from "@/components/admin/shared/AdminEmptyState";
 import { Button } from "@/components/ui/form/button";
+import { useSendLink } from "@/hooks/useSendLink";
 import { useToast } from "@/hooks/useToast";
 import {
   deleteRegistration,
   getRegistration,
-  sendFormLink,
-  sendPaymentLink,
   updateRegistration,
 } from "@/lib/api/registration/registrations";
 import { formatNumericDateOnly } from "@/lib/date";
@@ -88,9 +87,7 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
   const [pendingAction, setPendingAction] =
     useState<RegistrationStatusAction | null>(null);
   const [isFullFormOpen, setIsFullFormOpen] = useState(false);
-  const [sendingLink, setSendingLink] = useState<"form" | "payment" | null>(
-    null,
-  );
+  const { sendingLink, sendLink } = useSendLink(id, refreshRegistration);
 
   useEffect(() => {
     let cancelled = false;
@@ -133,27 +130,9 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
     }
   }
 
-  async function handleSendLink(kind: "form" | "payment") {
-    const whatsappWindow = window.open("", "_blank");
-    setSendingLink(kind);
-    try {
-      const result =
-        kind === "form" ? await sendFormLink(id) : await sendPaymentLink(id);
-      if (!result.ok) {
-        whatsappWindow?.close();
-        toast.error(result.error);
-        return;
-      }
-      if (whatsappWindow) whatsappWindow.location.href = result.whatsappUrl;
-      else window.location.href = result.whatsappUrl;
-      if (kind === "payment") setRegistration(await getRegistration(id));
-    } catch (error) {
-      console.error(`Failed to send ${kind} link:`, error);
-      whatsappWindow?.close();
-      toast.error("Gagal membuat link");
-    } finally {
-      setSendingLink(null);
-    }
+  async function refreshRegistration() {
+    const latest = await getRegistration(id);
+    setRegistration(latest);
   }
 
   async function handleStatusAction(action: RegistrationStatusAction) {
@@ -214,7 +193,7 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
       <SummaryCard
         registration={registration}
         isSendingLink={sendingLink === "form"}
-        onSendFormLink={() => handleSendLink("form")}
+        onSendFormLink={() => sendLink("form")}
         onOpenFullForm={() => setIsFullFormOpen(true)}
       />
 
@@ -241,10 +220,14 @@ export function RegistrationDetailView({ id }: RegistrationDetailViewProps) {
         isSaving={isSaving}
         isSendingLink={sendingLink === "payment"}
         onSave={saveChange}
-        onSendLink={() => handleSendLink("payment")}
+        onSendLink={() => sendLink("payment")}
       />
 
-      <LettersCard registration={registration} />
+      <LettersCard
+        registration={registration}
+        isSending={sendingLink === "documents"}
+        onSend={() => sendLink("documents")}
+      />
 
       <PeopleCards registration={registration} />
 

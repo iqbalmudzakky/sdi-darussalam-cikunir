@@ -55,3 +55,50 @@ export type SaveStatementInput = {
   content: StatementContent;
   actorId: string;
 };
+
+export type DecisionLetterContact = {
+  name: string;
+  phone: string;
+};
+
+export type DecisionLetterContent = {
+  letter_number: string;
+  letter_date: string;
+  entry_year: string;
+  child: {
+    full_name: string;
+    previous_school: string;
+    grade_label: string;
+    age_label: string;
+  };
+  payment: {
+    deadline: string;
+    bank_name: string;
+    bank_account_number: string;
+    bank_account_name: string;
+  };
+  signers: {
+    principal_name: string;
+    committee_chair_name: string;
+  };
+  contacts: DecisionLetterContact[];
+};
+
+export type DecisionLetterRow = {
+  registration_id: string;
+  content: DecisionLetterContent;
+};
+
+export type SaveDecisionLetterInput = {
+  registrationId: string;
+  content: DecisionLetterContent;
+  letterYear: number;
+  letterSequence: number | null;
+  actorId: string;
+};
+
+export type LetterSequenceInput = {
+  registrationId: string;
+  letterYear: number;
+  letterSequence: number;
+};

@@ -11,6 +11,8 @@ import type {
   RegistrationStatus,
   SaveObservationPayload,
   SaveObservationResult,
+  SaveDecisionLetterPayload,
+  SaveDecisionLetterResult,
   SaveStatementPayload,
   SaveStatementResult,
   ShortRegistrationInput,
@@ -232,6 +234,20 @@ export async function sendPaymentLink(id: string): Promise<SendFormLinkResult> {
   return result;
 }
 
+export async function sendDocuments(id: string): Promise<SendFormLinkResult> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "send_documents" }),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  const result: SendFormLinkResult = res.ok
+    ? { ok: true, whatsappUrl: data.whatsapp_url }
+    : { ok: false, error: data.error ?? "Gagal membuat link dokumen." };
+  return result;
+}
+
 export async function saveObservation(
   id: string,
   payload: SaveObservationPayload,
@@ -263,5 +279,22 @@ export async function saveStatement(
   const result: SaveStatementResult = res.ok
     ? { ok: true, statement: data }
     : { ok: false, error: data.error ?? "Gagal menyimpan surat pernyataan." };
+  return result;
+}
+
+export async function saveDecisionLetter(
+  id: string,
+  payload: SaveDecisionLetterPayload,
+): Promise<SaveDecisionLetterResult> {
+  const res = await fetch(`/api/registrations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  const result: SaveDecisionLetterResult = res.ok
+    ? { ok: true, letter: data }
+    : { ok: false, error: data.error ?? "Gagal menyimpan Surat Keterangan." };
   return result;
 }

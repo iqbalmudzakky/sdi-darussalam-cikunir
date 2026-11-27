@@ -11,7 +11,10 @@ import {
   DecisionResultSchema,
   type AdmissionProgressResponse,
 } from "@/modules/admission-decision/dto";
-import type { LetterRowResponse } from "@/modules/document/dto";
+import type {
+  DocumentSendState,
+  LetterRowResponse,
+} from "@/modules/document/dto";
 import type { ObservationSummaryResponse } from "@/modules/observation/dto";
 import {
   MarkPaidRequestSchema,
@@ -136,7 +139,8 @@ export type UpdateRegistrationFailureReason =
   | "forbidden_result"
   | "no_schedule"
   | "future_test_date"
-  | "forbidden_decision";
+  | "forbidden_decision"
+  | "locked_decision";
 
 export type UpdateRegistrationResult =
   | { ok: true; registration: RegistrationDetailResponse }
@@ -235,6 +239,7 @@ export type RegistrationDetailResponse = RegistrationListItemResponse & {
   can_reactivate: boolean;
   can_delete: boolean;
   letters: LetterRowResponse[];
+  documents_send_state: DocumentSendState;
   can_send_form_link: boolean;
   schedule: ScheduleResponse | null;
   schedule_options: ScheduleOptionsResponse;

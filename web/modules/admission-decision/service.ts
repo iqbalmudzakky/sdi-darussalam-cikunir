@@ -5,7 +5,10 @@ import * as authService from "@/modules/auth/service";
 import { withTransaction } from "@/modules/db/postgres";
 import type { AdvanceStatusInput } from "@/modules/registration/entity";
 import * as registrationService from "@/modules/registration/service";
-import { DECIDABLE_STATUSES } from "@/modules/shared/constant/admission/registration";
+import {
+  DECIDABLE_STATUSES,
+  DECIDED_STATUSES,
+} from "@/modules/shared/constant/admission/registration";
 import type {
   AdmissionProgressResponse,
   DecideFailureReason,
@@ -34,6 +37,9 @@ export function getProgress(input: ProgressInput): AdmissionProgressResponse {
     parentInterviewerId,
   };
   const canDecide = canDecideFor(actor, interviewerIds);
+  const isLocked =
+    input.hasDecisionLetter &&
+    !authService.hasPermission(actor.role, "decide_admissions");
 
   const progress: AdmissionProgressResponse = {
     test_status: testStatus,
@@ -41,8 +47,9 @@ export function getProgress(input: ProgressInput): AdmissionProgressResponse {
       canRecord && testStatus !== "tested" && (!isManual || schedule !== null),
     can_edit_test: canRecord && isManual && testStatus === "tested",
     decision: isDecided ? status : null,
-    can_decide: DECIDABLE_STATUSES.includes(status) && canDecide,
+    can_decide: DECIDABLE_STATUSES.includes(status) && canDecide && !isLocked,
     can_write_statement: status !== "cancelled" && canDecide,
+    can_write_decision_letter: DECIDED_STATUSES.includes(status) && canDecide,
   };
   return progress;
 }
@@ -71,6 +78,10 @@ export async function decide(
     return "invalid_state";
   }
   if (!canDecideFor(actor, interviewerIds)) return "forbidden_decision";
+  const isLocked =
+    input.hasDecisionLetter &&
+    !authService.hasPermission(actor.role, "decide_admissions");
+  if (isLocked) return "locked_decision";
 
   const statusInput: AdvanceStatusInput = {
     id: registrationId,

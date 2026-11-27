@@ -5,7 +5,9 @@ import {
   FilePlus,
   FileText,
   Folder,
+  Loader2,
   Lock,
+  MessageCircle,
   Pencil,
 } from "lucide-react";
 import { Chip } from "@/components/ui/display/chip";
@@ -23,16 +25,50 @@ const rowVariants = cva(
   "flex items-center gap-3 border-b border-gray-100 py-2.5 last:border-b-0",
 );
 
+const sendButtonVariants = cva(
+  [
+    "mt-2 flex h-10 w-full items-center justify-center gap-2 rounded-lg px-4 sm:w-fit",
+    "text-sm font-semibold transition-colors",
+  ],
+  {
+    variants: {
+      locked: {
+        true: "cursor-not-allowed bg-gray-100 text-gray-400",
+        false: "bg-green-600 text-white hover:bg-green-700",
+      },
+    },
+  },
+);
+
 const fileIconVariants = cva(
   "flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500",
 );
 
 type LettersCardProps = {
   registration: RegistrationDetail;
+  isSending: boolean;
+  onSend: () => void;
 };
 
-export function LettersCard({ registration }: LettersCardProps) {
+export function LettersCard({
+  registration,
+  isSending,
+  onSend,
+}: LettersCardProps) {
   if (registration.letters.length === 0) return null;
+
+  const sendState = registration.documents_send_state;
+  const isLocked = sendState === "locked";
+  const sendIcon = isLocked ? (
+    <Lock className="h-4 w-4" />
+  ) : (
+    <MessageCircle className="h-4 w-4" />
+  );
+  const buttonIcon = isSending ? (
+    <Loader2 className="h-4 w-4 animate-spin" />
+  ) : (
+    sendIcon
+  );
 
   return (
     <section className={cardVariants()}>
@@ -46,6 +82,19 @@ export function LettersCard({ registration }: LettersCardProps) {
       {registration.letters.map((letter) => (
         <LetterRow key={letter.kind} letter={letter} />
       ))}
+
+      {sendState !== "hidden" && (
+        <button
+          type="button"
+          onClick={onSend}
+          disabled={isLocked || isSending}
+          title={isLocked ? "Tunggu lunas" : undefined}
+          className={sendButtonVariants({ locked: isLocked })}
+        >
+          {buttonIcon}
+          Kirim ke WA
+        </button>
+      )}
     </section>
   );
 }
@@ -54,6 +103,7 @@ function LetterRow({ letter }: { letter: RegistrationLetter }) {
   const isLocked = letter.state === "locked";
   const lockIcon = isLocked ? <Lock className="h-3 w-3" /> : undefined;
   const editUrl = letter.edit_url;
+  const isCreated = letter.state === "ready" || letter.state === "locked";
 
   return (
     <div className={rowVariants()}>
@@ -84,7 +134,7 @@ function LetterRow({ letter }: { letter: RegistrationLetter }) {
         </Button>
       )}
 
-      {letter.state === "ready" && editUrl && (
+      {isCreated && editUrl && (
         <Button
           variant="outline"
           size="icon"

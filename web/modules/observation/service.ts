@@ -62,7 +62,7 @@ export async function getSummary(
 
 export async function getObservationView(
   registrationId: string,
-  actor: SessionUser,
+  actor: SessionUser | null,
 ): Promise<ObservationViewResponse | null> {
   const registration = await registrationService.findFullById(registrationId);
   if (!registration || registration.registration_type !== "siswa_baru") {
@@ -80,16 +80,15 @@ export async function getObservationView(
     authService.listAccounts(),
   ]);
   const { childInterviewerId } = interviewerIds;
-  const observerId = row?.observer_id ?? childInterviewerId ?? actor.id;
+  const observerId = row?.observer_id ?? childInterviewerId ?? actor?.id;
   const observer = accounts.find((account) => account.id === observerId);
   const { dimensions, profile } = toReadiness(scores);
   const entryAge = registration.academic_year
     ? calculateEntryAge(registration.date_of_birth, registration.academic_year)
     : null;
-  const canRecord = admissionTestService.canRecordResult(
-    actor,
-    childInterviewerId,
-  );
+  const canRecord =
+    actor !== null &&
+    admissionTestService.canRecordResult(actor, childInterviewerId);
   const missingIndicators = dimensions.flatMap((dimension, index) => {
     const numbers = dimension.indicators
       .filter((indicator) => indicator.score === null)

@@ -21,6 +21,11 @@ export const DECIDABLE_STATUSES: PpdbRegistrationStatus[] = [
   "rejected",
 ];
 
+export const DECIDED_STATUSES: PpdbRegistrationStatus[] = [
+  "accepted",
+  "rejected",
+];
+
 export const INTERVIEW_ROLE_LABEL = {
   child: "Observer",
   parent: "Wawancara ortu",
@@ -170,5 +175,31 @@ export const REGISTRATION_FAILURE = {
   future_test_date: {
     status: 400,
     message: "Tanggal tes tidak boleh melewati hari ini.",
+  },
+  locked_decision: {
+    status: 403,
+    message:
+      "Surat Keterangan sudah dibuat. Hanya kepsek atau wakepsek yang bisa mengubah hasil.",
+  },
+  forbidden_letter: {
+    status: 403,
+    message:
+      "Hanya pewawancara, kepsek, atau wakepsek yang bisa mengisi Surat Keterangan.",
+  },
+  duplicate_letter_number: {
+    status: 409,
+    message: "Nomor surat sudah dipakai. Ganti nomor urutnya.",
+  },
+  not_paid: {
+    status: 403,
+    message: "Dokumen bisa dikirim setelah biaya pendaftaran lunas.",
+  },
+  no_documents: {
+    status: 409,
+    message: "Belum ada dokumen yang bisa dikirim.",
+  },
+  no_contact: {
+    status: 409,
+    message: "Nomor WA orang tua belum ada.",
   },
 } as const;

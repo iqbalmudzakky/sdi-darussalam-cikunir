@@ -12,3 +12,12 @@ export const PROFILE_STATUS_LABEL = {
   empty: null,
   ready: null,
 } as const;
+
+export const DOCUMENT_LINK_TTL_DAYS = 30;
+
+export const DECISION_LETTER_STATUS_LABEL = {
+  waiting: "Setelah diterima",
+  locked: "Tunggu lunas",
+  empty: null,
+  ready: null,
+} as const;

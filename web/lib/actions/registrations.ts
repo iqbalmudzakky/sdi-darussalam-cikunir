@@ -9,9 +9,14 @@ import type {
 } from "@/modules/registration-admin/dto";
 import type { ObservationViewResponse } from "@/modules/observation/dto";
 import * as observationService from "@/modules/observation/service";
-import type { StatementViewResponse } from "@/modules/admission-letter/dto";
+import type {
+  DecisionLetterViewResponse,
+  StatementViewResponse,
+} from "@/modules/admission-letter/dto";
 import * as admissionLetterService from "@/modules/admission-letter/service";
 import type { TestReminderGroupResponse } from "@/modules/admission-test/dto";
+import type { SharedDocumentsResult } from "@/modules/document/dto";
+import * as documentService from "@/modules/document/service";
 import * as admissionTestService from "@/modules/admission-test/service";
 import type { FullFormLinkResult } from "@/modules/registration-link/dto";
 import * as registrationLinkService from "@/modules/registration-link/service";
@@ -80,6 +85,38 @@ export async function getStatement(
   } catch (error) {
     console.error("lib/actions/registrations.getStatement failed:", error);
     return null;
+  }
+}
+
+export async function getDecisionLetter(
+  id: string,
+): Promise<DecisionLetterViewResponse | null> {
+  const user = await requireUser();
+  if (!user) return null;
+
+  try {
+    return await admissionLetterService.getDecisionLetterView(id, user);
+  } catch (error) {
+    console.error("lib/actions/registrations.getDecisionLetter failed:", error);
+    return null;
+  }
+}
+
+export async function getSharedDocuments(
+  token: string,
+): Promise<SharedDocumentsResult> {
+  try {
+    return await documentService.getSharedDocuments(token);
+  } catch (error) {
+    console.error(
+      "lib/actions/registrations.getSharedDocuments failed:",
+      error,
+    );
+    const unavailable: SharedDocumentsResult = {
+      status: "expired",
+      whatsapp_url: null,
+    };
+    return unavailable;
   }
 }
 

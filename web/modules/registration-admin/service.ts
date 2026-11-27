@@ -30,6 +30,7 @@ import type {
   ProgressInput,
 } from "@/modules/admission-decision/dto";
 import * as admissionDecisionService from "@/modules/admission-decision/service";
+import * as admissionLetterService from "@/modules/admission-letter/service";
 import * as observationService from "@/modules/observation/service";
 import type { SessionUser } from "@/modules/auth/dto";
 import { withTransaction } from "@/modules/db/postgres";
@@ -110,6 +111,7 @@ export async function getRegistrationDetail(
     scheduleView,
     paymentView,
     observation,
+    decisionLetter,
   ] = await Promise.all([
     paymentService.getSummariesByRegistrationIds(registrationIds),
     registrationBiodataService.listParentsByRegistrationIds(registrationIds),
@@ -122,6 +124,7 @@ export async function getRegistrationDetail(
     row.registration_type === "siswa_baru"
       ? observationService.getSummary(id)
       : null,
+    admissionLetterService.findDecisionLetter(id),
   ]);
 
   const progressInput: ProgressInput = {
@@ -129,6 +132,7 @@ export async function getRegistrationDetail(
     registrationType: row.registration_type,
     schedule: scheduleView.schedule,
     observationState: observation?.state ?? null,
+    hasDecisionLetter: decisionLetter !== null,
     actor,
   };
   const payment = toPaymentSummary(id, payments);
@@ -141,9 +145,12 @@ export async function getRegistrationDetail(
   const lettersInput: LettersInput = {
     registrationId: id,
     registrationType: row.registration_type,
+    decision: progress.decision,
+    decisionLetter,
     isTested: observation?.state === "tested",
     isPaid: paymentView.state === "paid",
     canWriteStatement: progress.can_write_statement,
+    canWriteDecisionLetter: progress.can_write_decision_letter,
   };
   const letters = await documentService.getLetters(lettersInput);
   const parts: RegistrationDetailParts = {
@@ -258,9 +265,11 @@ async function applyRegistrationUpdate(
   }
 
   if (request.action === "decide") {
+    const decisionLetter = await admissionLetterService.findDecisionLetter(id);
     const decideInput: DecideInput = {
       registrationId: id,
       result: request.result,
+      hasDecisionLetter: decisionLetter !== null,
       actor: input.actor,
     };
     return admissionDecisionService.decide(decideInput);
@@ -431,7 +440,8 @@ function toDetail(
     can_cancel: row.status !== "cancelled",
     can_reactivate: row.status === "cancelled",
     can_delete: parts.canDelete,
-    letters: parts.letters,
+    letters: parts.letters.rows,
+    documents_send_state: parts.letters.send_state,
     can_send_form_link: row.source === "online" && Boolean(row.contact_phone),
     full_form: parts.fullForm,
     schedule: parts.scheduleView.schedule,

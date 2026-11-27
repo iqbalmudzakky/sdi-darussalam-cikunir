@@ -19,6 +19,7 @@ export type ProgressInput = {
   registrationType: RegistrationType;
   schedule: ScheduleResponse | null;
   observationState: TestStatus | null;
+  hasDecisionLetter: boolean;
   actor: SessionUser;
 };
 
@@ -29,13 +30,15 @@ export type AdmissionProgressResponse = {
   decision: DecisionResult | null;
   can_decide: boolean;
   can_write_statement: boolean;
+  can_write_decision_letter: boolean;
 };
 
 export type DecideInput = {
   registrationId: string;
   result: DecisionResult;
+  hasDecisionLetter: boolean;
   actor: SessionUser;
 };
 
 export type DecideFailureReason =
-  "not_found" | "invalid_state" | "forbidden_decision";
+  "not_found" | "invalid_state" | "forbidden_decision" | "locked_decision";
