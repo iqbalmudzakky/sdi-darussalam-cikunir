@@ -2,17 +2,17 @@ import type { DecisionLetterRow } from "@/modules/admission-letter/entity";
 import * as admissionLetterService from "@/modules/admission-letter/service";
 import * as admissionSettingsService from "@/modules/admission-settings/service";
 import type { SessionUser } from "@/modules/auth/dto";
-import {
-  generateRefreshToken,
-  hashRefreshToken,
-} from "@/modules/crypto/tokens";
-import { withDbLogging } from "@/modules/db/errors";
 import { renderDecisionLetterPdf } from "@/modules/export/decisionLetterPdf";
 import { renderReadinessProfilePdf } from "@/modules/export/readinessProfilePdf";
 import { renderStatementPdf } from "@/modules/export/statementPdf";
 import * as observationService from "@/modules/observation/service";
 import * as paymentService from "@/modules/payment/service";
 import type { PpdbRegistrationFullRow } from "@/modules/registration/entity";
+import type {
+  CreateLinkInput,
+  RegistrationLink,
+} from "@/modules/registration-link/entity";
+import * as registrationLinkService from "@/modules/registration-link/service";
 import * as registrationService from "@/modules/registration/service";
 import {
   DECISION_LETTER_STATUS_LABEL,
@@ -23,7 +23,6 @@ import { DECISION_LETTER_TEXT } from "@/modules/shared/constant/admission/letter
 import { DECIDED_STATUSES } from "@/modules/shared/constant/admission/registration";
 import { getSiteUrl } from "@/modules/shared/web/siteUrl";
 import { buildWhatsAppLink } from "@/modules/shared/web/whatsapp";
-import * as repository from "./repository";
 import type {
   DocumentKind,
   DocumentRequestInput,
@@ -39,7 +38,6 @@ import type {
   SharedDocumentResponse,
   SharedDocumentsResult,
 } from "./dto";
-import type { DocumentLink, NewDocumentLink } from "./entity";
 
 type SharedSource = {
   registration: PpdbRegistrationFullRow;
@@ -194,16 +192,12 @@ export async function sendDocuments(
     return rejected;
   }
 
-  const token = generateRefreshToken();
-  const ttlMilliseconds = DOCUMENT_LINK_TTL_DAYS * 24 * 60 * 60 * 1000;
-  const expiresAtMilliseconds = Date.now() + ttlMilliseconds;
-  const link: NewDocumentLink = {
+  const linkInput: CreateLinkInput = {
     registrationId,
-    tokenHash: hashRefreshToken(token),
-    expiresAt: new Date(expiresAtMilliseconds),
+    kind: "documents",
     createdBy: actorId,
   };
-  await withDbLogging("document.upsertLink", () => repository.upsertLink(link));
+  const token = await registrationLinkService.createLink(linkInput);
 
   const message = [
     "Assalamu'alaikum, berikut dokumen PMB SDI Darussalam Cikunir.",
@@ -342,9 +336,8 @@ function listSharedKinds(source: SharedSource): DocumentKind[] {
   return kinds;
 }
 
-async function findLink(token: string): Promise<DocumentLink | null> {
-  const tokenHash = hashRefreshToken(token);
-  return withDbLogging("document.findActiveLink", () =>
-    repository.findActiveLink(tokenHash),
-  );
+async function findLink(token: string): Promise<RegistrationLink | null> {
+  const link = await registrationLinkService.findLink(token, "documents");
+  const isActive = link !== null && new Date(link.expires_at) > new Date();
+  return isActive ? link : null;
 }

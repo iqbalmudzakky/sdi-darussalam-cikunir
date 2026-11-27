@@ -621,7 +621,7 @@ istilah untuk Next.js + TypeScript:
 | `admin`                                          | `admin_action_tokens` — memanggil service `auth` untuk akun & sesi, tidak sebaliknya       |
 | `registration`                                   | `ppdb_registrations`, `ppdb_registration_students`                                         |
 | `registration-biodata`                           | `ppdb_registration_parents`, `ppdb_registration_details`, `ppdb_registration_achievements` |
-| `registration-link`                              | `registration_form_links` — juga alur form lengkap (kirim link, buka, simpan)              |
+| `registration-link`                              | `registration_links` — juga alur form lengkap (kirim link, buka, simpan)                   |
 | `payment`                                        | `registration_payments`, `doku_notification_events`                                        |
 | `payment-settings`                               | `payment_settings`                                                                         |
 | `registration-stats`                             | `registration_stats`                                                                       |
@@ -1292,13 +1292,12 @@ pendaftar sudah ada lebih dulu. Kolom baru `recorded_by` (akun yang menandai lun
 
 | Tabel                     | Domain               | Isi                                                                                              |
 | ------------------------- | -------------------- | ------------------------------------------------------------------------------------------------ |
-| `registration_form_links` | `registration-link`  | Token link form lengkap (hash), kedaluwarsa, dibuat oleh                                         |
+| `registration_links`      | `registration-link`  | Token link ortu (hash), kedaluwarsa; `kind` `form` (form lengkap) / `documents` (PDF)            |
 | `admission_tests`         | `admission-test`     | Jadwal tes, pewawancara anak & ortu, pengingat terkirim, tanggal + catatan tes manual (pindahan) |
 | `observations`            | `observation`        | Tanggal, observer, catatan awal, rekomendasi                                                     |
 | `observation_scores`      | `observation`        | 56 baris: nomor indikator, skor 1–4, catatan                                                     |
 | `admission_settings`      | `admission-settings` | Satu baris: nominal per program, diskon, batas bayar, rekening, penanda tangan, CP PMB, CP surat |
 | `admission_letters`       | `admission-letter`   | Satu baris per pendaftar per jenis (`statement`, `decision`): salinan isi surat (jsonb)          |
-| `document_links`          | `document`           | Token link PDF untuk orang tua (hash), kedaluwarsa 30 hari; satu link aktif per pendaftar        |
 
 - **Daftar 56 indikator dan 9 dimensi disimpan di kode** (`modules/shared/constant`), bukan di
   tabel. Isinya tetap dan berubah paling sekali setahun lewat rilis. Skor menyimpan nomor
@@ -1459,7 +1458,8 @@ hitungan. Penyaringan data iseng cukup di Statistik admin (F19).
   `document`. PDF dibuat di server dengan `@react-pdf/renderer` (template di `modules/export`).
   Kartu **Dokumen** di detail pendaftar; Profil Kesiapan terkunci sampai lunas (dicek di backend).
 - Dikode 27 Nov 2026 (tahap 2b): **Kirim ke WA** (action `send_documents` di PATCH pendaftar) membuat link 30 hari
-  di `document_links` (domain `document`); kirim ulang mematikan link lama. Halaman `/dokumen/<token>` tanpa login,
+  di `registration_links` kind `documents` (dibuat lewat service `registration-link`); kirim ulang mematikan link lama.
+  Halaman `/dokumen/<token>` tanpa login,
   PDF lewat endpoint yang sama `GET /api/documents?token=…&kind=…`. Link dianggap tidak berlaku bila pembayaran
   dibatalkan atau belum ada dokumen.
 

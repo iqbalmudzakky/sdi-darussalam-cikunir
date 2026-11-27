@@ -15,6 +15,7 @@ import {
   hashRefreshToken,
 } from "@/modules/crypto/tokens";
 import { withDbLogging } from "@/modules/db/errors";
+import { DOCUMENT_LINK_TTL_DAYS } from "@/modules/shared/constant/admission/document";
 import {
   FORM_LINK_TTL_DAYS,
   FULL_FORM_FLOW_STEP,
@@ -25,20 +26,25 @@ import type {
   SubmitFullFormInput,
   SubmitFullFormResult,
 } from "./dto";
-import type { NewRegistrationFormLink, RegistrationFormLink } from "./entity";
+import type {
+  CreateLinkInput,
+  NewRegistrationLink,
+  RegistrationLink,
+  RegistrationLinkKind,
+} from "./entity";
 
-export async function createLink(
-  registrationId: string,
-  createdBy: string | null,
-): Promise<string> {
+export async function createLink(input: CreateLinkInput): Promise<string> {
   const token = generateRefreshToken();
-  const ttlMilliseconds = FORM_LINK_TTL_DAYS * 24 * 60 * 60 * 1000;
+  const ttlDays =
+    input.kind === "form" ? FORM_LINK_TTL_DAYS : DOCUMENT_LINK_TTL_DAYS;
+  const expiresAtMilliseconds = Date.now() + ttlDays * 24 * 60 * 60 * 1000;
 
-  const link: NewRegistrationFormLink = {
-    registrationId,
+  const link: NewRegistrationLink = {
+    registrationId: input.registrationId,
+    kind: input.kind,
     tokenHash: hashRefreshToken(token),
-    expiresAt: new Date(Date.now() + ttlMilliseconds),
-    createdBy,
+    expiresAt: new Date(expiresAtMilliseconds),
+    createdBy: input.createdBy,
   };
   await withDbLogging("registrationLink.upsert", () => repository.upsert(link));
   return token;
@@ -46,10 +52,11 @@ export async function createLink(
 
 export async function findLink(
   token: string,
-): Promise<RegistrationFormLink | null> {
+  kind: RegistrationLinkKind,
+): Promise<RegistrationLink | null> {
   const tokenHash = hashRefreshToken(token);
   return withDbLogging("registrationLink.findByTokenHash", () =>
-    repository.findByTokenHash(tokenHash),
+    repository.findByTokenHash(tokenHash, kind),
   );
 }
 
@@ -63,7 +70,12 @@ export async function sendFormLink(
   ]);
   if (!registration?.contact_phone) return null;
 
-  const token = await createLink(registrationId, adminId);
+  const linkInput: CreateLinkInput = {
+    registrationId,
+    kind: "form",
+    createdBy: adminId,
+  };
+  const token = await createLink(linkInput);
   const formUrl = `${getSiteUrl()}/pendaftaran/${token}`;
   const message = [
     "Assalamu'alaikum, berikut link form lengkap pendaftaran SDI Darussalam Cikunir.",
@@ -80,7 +92,7 @@ export async function getFullFormByToken(
   token: string,
 ): Promise<FullFormLinkResult> {
   try {
-    const link = await findLink(token);
+    const link = await findLink(token, "form");
     const [registration, testDay] = link
       ? await Promise.all([
           registrationService.findFormById(link.registration_id),
@@ -133,7 +145,7 @@ export async function submitFullForm(
 ): Promise<SubmitFullFormResult> {
   const { token, request } = input;
   try {
-    const link = await findLink(token);
+    const link = await findLink(token, "form");
     const testDay = link
       ? await admissionTestService.findTestDay(link.registration_id)
       : null;
@@ -189,7 +201,7 @@ export async function submitFullForm(
 }
 
 function isLinkActive(
-  link: RegistrationFormLink | null,
+  link: RegistrationLink | null,
   testDay: TestDayResponse | null,
 ): boolean {
   if (!link) return false;
